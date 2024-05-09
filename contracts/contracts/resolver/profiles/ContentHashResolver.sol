@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import "../ResolverBase.sol";
-import "./IContentHashResolver.sol";
+import {ResolverBase} from "../ResolverBase.sol";
+import {IContentHashResolver} from "./IContentHashResolver.sol";
 
 abstract contract ContentHashResolver is IContentHashResolver, ResolverBase {
     mapping(uint64 => mapping(bytes32 => bytes)) versionable_hashes;

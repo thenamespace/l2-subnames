@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./IMulticallable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IMulticallable} from "./IMulticallable.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 abstract contract Multicallable is IMulticallable, ERC165 {
     function _multicall(

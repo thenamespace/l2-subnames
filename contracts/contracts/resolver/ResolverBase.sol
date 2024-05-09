@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "./profiles/IVersionableResolver.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IVersionableResolver} from "./profiles/IVersionableResolver.sol";
 
 abstract contract ResolverBase is ERC165, IVersionableResolver {
     mapping(bytes32 => uint64) public recordVersions;
@@ -10,7 +10,7 @@ abstract contract ResolverBase is ERC165, IVersionableResolver {
     function isAuthorised(bytes32 node) internal view virtual returns (bool);
 
     modifier authorised(bytes32 node) {
-        require(isAuthorised(node));
+        require(isAuthorised(node), "Not authorized");
         _;
     }
 
