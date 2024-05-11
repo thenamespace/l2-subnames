@@ -1,16 +1,16 @@
 [
-    {
-        "label":"gotframed.eth",
-        "namehash":"0x0",
-        "price": 0.001,
-        "network": "sepolia",
-        "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
-    },
-    {
-        "label":"level-up.eth",
-        "namehash":"0x0",
-        "price": 0.002,
-        "network": "sepolia",
-        "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
-    }
+  {
+    "name": "gotframed.eth",
+    "namehash": "0x0",
+    "price": 0.001,
+    "network": "sepolia",
+    "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
+  },
+  {
+    "name": "level-up.eth",
+    "namehash": "0x0",
+    "price": 0.002,
+    "network": "sepolia",
+    "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
+  }
 ]
