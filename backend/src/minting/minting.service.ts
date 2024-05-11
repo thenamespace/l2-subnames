@@ -7,10 +7,9 @@ export class MintingService {
   constructor(
     private registry: NameRegistryService,
     private listings: ListedNamesService,
-    private minting: MintingService,
   ) {}
 
-  public async mintSubname(label: string, domain: string) {
+  public async verifySubnameMint(label: string, domain: string) {
     const subname = `${label}.${domain}`;
     const taken = await this.registry.isSubnameTaken(subname);
 
