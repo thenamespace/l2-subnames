@@ -15,51 +15,50 @@ export class MintSigner {
     verifyingContract: Hash;
   };
 
+  readonly types = {
+    MintContext: [
+      { name: 'label', type: 'string' },
+      { name: 'parentNode', type: 'bytes32' },
+      { name: 'resolver', type: 'address' },
+      { name: 'owner', type: 'address' },
+      { name: 'price', type: 'uint256' },
+      { name: 'fee', type: 'uint256' },
+      { name: 'expiry', type: 'uint64' },
+      { name: 'paymentReceiver', type: 'address' },
+    ],
+  };
+
   constructor(
     private appConfig: AppConfig,
     private rpc: RpcClient,
   ) {
-    const chainId = this.appConfig.l2Chain.id;
-    const verifyingContract = getContracts(
-      this.appConfig.l2Chain.name as Network,
-    ).controller;
+    const chain = this.appConfig.l2Chain;
+    const network = chain.name as Network;
+    const verifyingContract = getContracts(network).controller;
 
     this.domain = {
       name: this.appConfig.appSignerName,
       version: this.appConfig.appSignerVersion,
-      chainId,
+      chainId: chain.id,
       verifyingContract,
     };
   }
 
   public async sign(params: MintContext): Promise<Hash> {
-    const types: Record<string, any> = {
-      MintContext: [
-        { name: 'label', type: 'string' },
-        { name: 'parentNode', type: 'bytes32' },
-        { name: 'resolver', type: 'address' },
-        { name: 'owner', type: 'address' },
-        { name: 'price', type: 'uint256' },
-        { name: 'fee', type: 'uint256' },
-        { name: 'expiry', type: 'uint64' },
-        { name: 'paymentReceiver', type: 'address' },
-      ],
-    };
-
-    const message: Record<string, any> = {
-      subnameLabel: params.label,
+    const message = {
+      label: params.label,
       parentNode: params.parentNode,
       resolver: params.resolver,
-      subnameOwner: params.owner,
-      mintPrice: params.price,
-      mintFee: params.fee,
+      owner: params.owner,
+      price: params.price,
+      fee: params.fee,
       expiry: params.expiry,
     };
 
     const signer = this.rpc.l2Signer;
     const signature = await signer.signTypedData({
       domain: this.domain,
-      types,
+      types: this.types,
       message,
       primaryType: 'MintContext',
       account: signer.account,
