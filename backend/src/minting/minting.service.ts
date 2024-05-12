@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AppConfig } from 'src/config';
+import { AppConfig } from 'src/config/app-config.service';
 import { MintContext } from 'src/dto/mint-context.dto';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
-import { Network } from 'src/types';
 import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { NameRegistryService } from 'src/web3/contracts/name-registry.service';
+import { getNetwork } from 'src/web3/utils';
 import { Address, Hash, namehash, parseEther } from 'viem';
 import { MintSigner } from './mint-signer';
 
@@ -18,7 +18,7 @@ export class MintingService {
     private signer: MintSigner,
     private config: AppConfig,
   ) {
-    const network = this.config.l2Chain.name as Network;
+    const network = getNetwork(this.config.l2Chain);
     this.resolver = getContracts(network).resolver;
   }
 
@@ -26,7 +26,7 @@ export class MintingService {
     label: string,
     domain: string,
     owner: Address,
-  ): Promise<Hash> {
+  ): Promise<{ signature: Hash; parameters: MintContext }> {
     const subname = `${label}.${domain}`;
     const taken = await this.registry.isSubnameTaken(subname);
 
@@ -42,7 +42,7 @@ export class MintingService {
 
     const price = BigInt(parseEther(listing.price.toString()));
 
-    const mintContext: MintContext = {
+    const parameters: MintContext = {
       label,
       parentNode: namehash(listing.name),
       resolver: this.resolver,
@@ -53,6 +53,8 @@ export class MintingService {
       paymentReceiver: listing.owner,
     };
 
-    return await this.signer.sign(mintContext);
+    const signature = await this.signer.sign(parameters);
+
+    return { signature, parameters };
   }
 }

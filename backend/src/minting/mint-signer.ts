@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AppConfig } from 'src/config';
+import { AppConfig } from 'src/config/app-config.service';
 import { MintContext } from 'src/dto/mint-context.dto';
-import { Network } from 'src/types';
 import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { RpcClient } from 'src/web3/rpc-client';
+import { getNetwork } from 'src/web3/utils';
 import { Hash } from 'viem';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class MintSigner {
     private rpc: RpcClient,
   ) {
     const chain = this.appConfig.l2Chain;
-    const network = chain.name as Network;
+    const network = getNetwork(chain);
     const verifyingContract = getContracts(network).controller;
 
     this.domain = {

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AppConfig } from 'src/config';
-import { Network } from 'src/types';
+import { AppConfig } from 'src/config/app-config.service';
 import abi from 'src/web3/abi/name-registry.json';
 import { Address, namehash, zeroAddress } from 'viem';
 import { RpcClient } from '../rpc-client';
+import { getNetwork } from '../utils';
 import { getContracts } from './contract-addresses';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class NameRegistryService {
     private rpc: RpcClient,
     private config: AppConfig,
   ) {
-    const network = this.config.l2Chain.name as Network;
+    const network = getNetwork(this.config.l2Chain);
     this.address = getContracts(network).registry;
   }
 

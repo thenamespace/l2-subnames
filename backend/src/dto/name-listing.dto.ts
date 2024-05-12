@@ -1,4 +1,4 @@
-import { Network } from 'src/types';
+import { Network } from 'src/dto/types';
 import { Address, Hash } from 'viem';
 
 export class NameListing {

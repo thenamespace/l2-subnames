@@ -1,3 +1,5 @@
+import { Address, Hash } from 'viem';
+
 export type Network = 'sepolia' | 'base' | 'optimism' | 'arbitrum';
 
 export interface ListedName {
@@ -11,18 +13,18 @@ export interface ListedName {
 export interface MintRequest {
   label: string;
   ensName: string;
-  owner: string;
+  owner: Address;
 }
 
 export interface MintResponse {
   signature: string;
   parameters: {
     label: string;
-    parentNode: string;
-    owner: string;
-    resolver: string;
-    price: string;
-    fee: string;
-    paymentReceiver: string;
+    parentNode: Hash;
+    owner: Address;
+    resolver: Address;
+    price: bigint;
+    fee: bigint;
+    paymentReceiver: Address;
   };
 }

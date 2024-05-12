@@ -1,5 +1,5 @@
 import { Address } from 'viem';
-import { Network } from '../../types';
+import { Network } from '../../dto/types';
 
 interface NamespaceContracts {
   resolver: Address;

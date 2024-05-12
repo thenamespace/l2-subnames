@@ -3,5 +3,6 @@ import { ListedNamesService } from './listed-names.service';
 
 @Module({
   providers: [ListedNamesService],
+  exports: [ListedNamesService],
 })
 export class ListedNamesModule {}
