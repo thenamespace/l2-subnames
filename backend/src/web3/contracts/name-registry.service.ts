@@ -3,8 +3,8 @@ import { AppConfig } from 'src/config';
 import { Network } from 'src/types';
 import abi from 'src/web3/abi/name-registry.json';
 import { Address, namehash, zeroAddress } from 'viem';
-import { getContracts } from './contract-addresses';
 import { RpcClient } from '../rpc-client';
+import { getContracts } from './contract-addresses';
 
 @Injectable()
 export class NameRegistryService {
@@ -14,7 +14,8 @@ export class NameRegistryService {
     private rpc: RpcClient,
     private config: AppConfig,
   ) {
-    this.address = getContracts(this.config.l2Chain.name as Network).registry;
+    const network = this.config.l2Chain.name as Network;
+    this.address = getContracts(network).registry;
   }
 
   public async isSubnameTaken(subname: string) {

@@ -1,15 +1,32 @@
 import { Injectable } from '@nestjs/common';
+import { AppConfig } from 'src/config';
+import { MintContext } from 'src/dto/mint-context.dto';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
+import { Network } from 'src/types';
+import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { NameRegistryService } from 'src/web3/contracts/name-registry.service';
+import { Address, Hash, namehash, parseEther } from 'viem';
+import { MintSigner } from './mint-signer';
 
 @Injectable()
 export class MintingService {
+  readonly resolver: Address;
+
   constructor(
     private registry: NameRegistryService,
     private listings: ListedNamesService,
-  ) {}
+    private signer: MintSigner,
+    private config: AppConfig,
+  ) {
+    const network = this.config.l2Chain.name as Network;
+    this.resolver = getContracts(network).resolver;
+  }
 
-  public async verifySubnameMint(label: string, domain: string) {
+  public async verifySubnameMint(
+    label: string,
+    domain: string,
+    owner: Address,
+  ): Promise<Hash> {
     const subname = `${label}.${domain}`;
     const taken = await this.registry.isSubnameTaken(subname);
 
@@ -22,5 +39,20 @@ export class MintingService {
     if (!listing) {
       throw Error(`Listing for '${domain}' does not exist.`);
     }
+
+    const price = BigInt(parseEther(listing.price.toString()));
+
+    const mintContext: MintContext = {
+      label,
+      parentNode: namehash(listing.name),
+      resolver: this.resolver,
+      owner,
+      price,
+      fee: 0n,
+      expiry: 0n,
+      paymentReceiver: listing.owner,
+    };
+
+    return await this.signer.sign(mintContext);
   }
 }
