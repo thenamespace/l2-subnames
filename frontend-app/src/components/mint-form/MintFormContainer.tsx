@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
   Card,
@@ -19,12 +20,21 @@ export const MintFormContainer = () => {
 
   useEffect(() => {
     getListings();
-  });
+  }, []);
 
   function getListings() {
     axios
-      .get("http://localhost:3000/l2/listings")
+      .get("/l2/listings")
       .then((resp) => setListings(resp.data))
+      .catch((err) => {
+        console.log(err.response.data.error[0].message);
+      });
+  }
+
+  function searchNames(evt: any) {
+    axios
+      .get(`/l2/listings/${evt.target.value}`)
+      .then((resp) => console.log(evt.target.value))
       .catch((err) => {
         console.log(err.response.data.error[0].message);
       });
@@ -34,12 +44,21 @@ export const MintFormContainer = () => {
     <Card>
       <ConnectButton />
       <Typography>Find your name</Typography>
-      <Input
-        icon={<MagnifyingGlassSimpleSVG />}
-        label="ENS Name"
-        placeholder="0xA0Cf…251e"
-        prefix={<EnsSVG />}
-      />
+      <div>
+        <Input
+          icon={<MagnifyingGlassSimpleSVG />}
+          label="ENS Name"
+          placeholder="0xA0Cf…251e"
+          prefix={<EnsSVG />}
+          onChange={searchNames}
+        />
+        <Input
+          icon={<MagnifyingGlassSimpleSVG />}
+          label="Label"
+          placeholder="0xA0Cf…251e"
+          prefix={<EnsSVG />}
+        />
+      </div>
       <Button>Click</Button>
     </Card>
   );

@@ -14,4 +14,9 @@ export class ListingController {
   public async getListing(@Param() label: string, @Param() domain: string) {
     return this.listing.getNameListing(`${label}.${domain}`);
   }
+
+  @Get('/:word')
+  public async searchForName(@Param('word') word: string) {
+    return this.listing.searchForName(word);
+  }
 }
