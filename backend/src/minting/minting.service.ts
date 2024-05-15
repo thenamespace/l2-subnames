@@ -40,7 +40,7 @@ export class MintingService {
       throw Error(`Listing for '${domain}' does not exist.`);
     }
 
-    const price = BigInt(parseEther(listing.price.toString()));
+    const price = BigInt(parseEther(listing.price.toString())).toString();
 
     const parameters: MintContext = {
       label,
@@ -48,8 +48,8 @@ export class MintingService {
       resolver: this.resolver,
       owner,
       price,
-      fee: 0n,
-      expiry: 0n,
+      fee: '0',
+      expiry: '0',
       paymentReceiver: listing.owner,
     };
 
