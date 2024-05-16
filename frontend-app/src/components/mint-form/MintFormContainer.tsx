@@ -9,35 +9,54 @@ import {
 } from "@ensdomains/thorin";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Listing {
   name: string;
 }
 
+interface ListingOption {
+  value: string;
+  label: string;
+}
+
 export const MintFormContainer = () => {
-  const [listings, setListings] = useState<Listing[]>();
+  const [listings, setListings] = useState<ListingOption[]>([]);
+  const [showListings, setShowlistings] = useState(false);
+  const [selectedName, setSelectedName] = useState<string>();
+  const [showLabel, setShowLabel] = useState(false);
 
-  useEffect(() => {
-    getListings();
-  }, []);
+  function searchNames(evt: any) {
+    const name = evt.target.value;
+    setSelectedName(name);
+    setShowLabel(false);
 
-  function getListings() {
+    if (name === "") {
+      setShowlistings(false);
+      return;
+    }
+
     axios
-      .get("/l2/listings")
-      .then((resp) => setListings(resp.data))
+      .get(`/l2/listings/${name}`)
+      .then((resp) => updateListings(resp.data as Listing[]))
       .catch((err) => {
         console.log(err.response.data.error[0].message);
       });
   }
 
-  function searchNames(evt: any) {
-    axios
-      .get(`/l2/listings/${evt.target.value}`)
-      .then((resp) => console.log(evt.target.value))
-      .catch((err) => {
-        console.log(err.response.data.error[0].message);
-      });
+  function updateListings(listings: Listing[]) {
+    const updated = listings.map((l) => {
+      return { value: l.name, label: l.name };
+    });
+
+    setListings(updated);
+    setShowlistings(updated?.length > 0);
+  }
+
+  function selectListing(name: string) {
+    setShowlistings(false);
+    setSelectedName(name);
+    setShowLabel(true);
   }
 
   return (
@@ -46,18 +65,39 @@ export const MintFormContainer = () => {
       <Typography>Find your name</Typography>
       <div>
         <Input
-          icon={<MagnifyingGlassSimpleSVG />}
           label="ENS Name"
           placeholder="0xA0Cf…251e"
           prefix={<EnsSVG />}
           onChange={searchNames}
+          value={selectedName}
         />
-        <Input
-          icon={<MagnifyingGlassSimpleSVG />}
-          label="Label"
-          placeholder="0xA0Cf…251e"
-          prefix={<EnsSVG />}
-        />
+
+        {showListings && (
+          <Card>
+            {listings.map((l) => {
+              return (
+                <ul>
+                  <li
+                    key={l.label}
+                    className="name-listing"
+                    onClick={() => selectListing(l.label)}
+                  >
+                    {l.label}
+                  </li>
+                </ul>
+              );
+            })}
+          </Card>
+        )}
+
+        {showLabel && (
+          <Input
+            icon={<MagnifyingGlassSimpleSVG />}
+            label="Label"
+            placeholder="0xA0Cf…251e"
+            suffix={selectedName}
+          />
+        )}
       </div>
       <Button>Click</Button>
     </Card>
