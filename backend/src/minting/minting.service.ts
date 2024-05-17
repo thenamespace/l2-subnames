@@ -51,6 +51,7 @@ export class MintingService {
       fee: '0',
       expiry: '0',
       paymentReceiver: listing.owner,
+      resolverData: [],
     };
 
     const signature = await this.signer.sign(parameters);

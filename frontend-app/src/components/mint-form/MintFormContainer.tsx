@@ -10,6 +10,10 @@ import {
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import axios from "axios";
 import { useState } from "react";
+import { Address, Hash } from "viem";
+import { useAccount } from "wagmi";
+import abi from "../../web3/abi/name-registry-controller.json";
+import { useWeb3Clients } from "../../web3/use-web3-clients";
 
 interface Listing {
   name: string;
@@ -20,11 +24,25 @@ interface ListingOption {
   label: string;
 }
 
+interface MintContext {
+  label: string;
+  parentNode: Hash;
+  resolver: Address;
+  owner: Address;
+  price: string;
+  fee: string;
+  expiry: string;
+  paymentReceiver: Address;
+}
+
 export const MintFormContainer = () => {
+  const { address } = useAccount();
   const [listings, setListings] = useState<ListingOption[]>([]);
   const [showListings, setShowlistings] = useState(false);
   const [selectedName, setSelectedName] = useState<string>();
   const [showLabel, setShowLabel] = useState(false);
+  const [label, setLabel] = useState<string>();
+  const { publicClient, walletClient } = useWeb3Clients();
 
   function searchNames(evt: any) {
     const name = evt.target.value;
@@ -57,6 +75,36 @@ export const MintFormContainer = () => {
     setShowlistings(false);
     setSelectedName(name);
     setShowLabel(true);
+  }
+
+  function handleLabelChange(evt: any) {
+    const label = evt.target.value;
+    setLabel(label);
+  }
+
+  function verifyMint() {
+    axios
+      .post(`/l2/subname/mint`, {
+        label,
+        ensName: selectedName,
+        owner: address,
+      })
+      .then((resp) => mint(resp.data.signature, resp.data.parameters))
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  async function mint(signature: string, mintContext: MintContext) {
+    const { request } = (await publicClient?.simulateContract({
+      address: "0xc075061f47cD1FB66CDDbB83dBE348CcfF48d1d2",
+      functionName: "mint",
+      args: [mintContext, signature],
+      abi,
+      account: address,
+    })) as any;
+    console.log(mintContext);
+    return await walletClient?.writeContract(request);
   }
 
   return (
@@ -96,10 +144,12 @@ export const MintFormContainer = () => {
             label="Label"
             placeholder="0xA0Cf…251e"
             suffix={selectedName}
+            onChange={handleLabelChange}
           />
         )}
       </div>
-      <Button>Click</Button>
+
+      {label && <Button onClick={verifyMint}>Mint</Button>}
     </Card>
   );
 };
