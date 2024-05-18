@@ -14,6 +14,7 @@ import { Address, Hash } from "viem";
 import { useAccount } from "wagmi";
 import abi from "../../web3/abi/name-registry-controller.json";
 import { useWeb3Clients } from "../../web3/use-web3-clients";
+import { useGetAddresses } from "../../web3/use-get-addresses";
 
 interface Listing {
   name: string;
@@ -43,6 +44,7 @@ export const MintFormContainer = () => {
   const [showLabel, setShowLabel] = useState(false);
   const [label, setLabel] = useState<string>();
   const { publicClient, walletClient } = useWeb3Clients();
+  const { nameRegistryController } = useGetAddresses();
 
   function searchNames(evt: any) {
     const name = evt.target.value;
@@ -97,7 +99,7 @@ export const MintFormContainer = () => {
 
   async function mint(signature: string, mintContext: MintContext) {
     const { request } = (await publicClient?.simulateContract({
-      address: "0xc075061f47cD1FB66CDDbB83dBE348CcfF48d1d2",
+      address: nameRegistryController,
       functionName: "mint",
       args: [mintContext, signature],
       abi,

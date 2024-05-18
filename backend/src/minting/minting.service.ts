@@ -49,7 +49,7 @@ export class MintingService {
       owner,
       price,
       fee: '0',
-      expiry: '0',
+      expiry: '1815993190',
       paymentReceiver: listing.owner,
       resolverData: [],
     };
