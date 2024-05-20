@@ -5,8 +5,9 @@ export class MintContext {
   parentNode: Hash;
   resolver: Address;
   owner: Address;
-  price: bigint;
-  fee: bigint;
-  expiry: bigint;
+  price: string;
+  fee: string;
+  expiry: string;
   paymentReceiver: Address;
+  resolverData: Hash[];
 }

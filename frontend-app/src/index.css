@@ -1,0 +1,22 @@
+.name-listing-form {
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 100px;
+
+  .listing-input {
+    padding-bottom: 20px;
+  }
+}
+
+.name-listing {
+  transition: background-color 0.3s ease;
+  padding-left: 10px;
+  cursor: pointer;
+}
+
+.name-listing:hover {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: #f0f0f0; /* Light grey background on hover */
+}

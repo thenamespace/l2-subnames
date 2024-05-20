@@ -6,7 +6,7 @@ function App() {
     <WalletConnect>
       <ThorinDesign>
         <div>
-        <MintFormContainer/>
+          <MintFormContainer />
         </div>
       </ThorinDesign>
     </WalletConnect>

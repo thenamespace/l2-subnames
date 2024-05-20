@@ -53,6 +53,7 @@ export class MintSigner {
       price: params.price,
       fee: params.fee,
       expiry: params.expiry,
+      paymentReceiver: params.paymentReceiver,
     };
 
     const signer = this.rpc.l2Signer;

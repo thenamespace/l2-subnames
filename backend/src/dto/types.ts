@@ -1,6 +1,11 @@
 import { Address, Hash } from 'viem';
 
-export type Network = 'sepolia' | 'base' | 'optimism' | 'arbitrum';
+export type Network =
+  | 'sepolia'
+  | 'base'
+  | 'optimism'
+  | 'arbitrum'
+  | 'localhost';
 
 export interface ListedName {
   label: string;
@@ -23,8 +28,8 @@ export interface MintResponse {
     parentNode: Hash;
     owner: Address;
     resolver: Address;
-    price: bigint;
-    fee: bigint;
+    price: string;
+    fee: string;
     paymentReceiver: Address;
   };
 }

@@ -14,9 +14,14 @@ const contracts: Record<Network, NamespaceContracts> = {
     controller: '0x0',
   },
   sepolia: {
-    registry: '0xCB4b265118f42511F273ae5Ff4CB9D1c59446E15',
-    resolver: '0x2793EEEB30aB9adAb2E1Fa0F08F2b27519220B1D',
-    controller: '0x0',
+    registry: '0x4fEfb2D4c6483777290F6e7e1957e36297F1124A',
+    resolver: '0xF3d81Ced4346e5c101f9e1eB1614B7b64386E5d1',
+    controller: '0xB3f2eA0fA4Ec33A2fDC0854780BBe2696Dd388E0',
+  },
+  localhost: {
+    registry: '0x4fEfb2D4c6483777290F6e7e1957e36297F1124A',
+    resolver: '0xF3d81Ced4346e5c101f9e1eB1614B7b64386E5d1',
+    controller: '0xB3f2eA0fA4Ec33A2fDC0854780BBe2696Dd388E0',
   },
   arbitrum: {
     registry: '0x0',

@@ -7,6 +7,7 @@ import { MintSigner } from './minting/mint-signer';
 import { MintingModule } from './minting/minting.module';
 import { MintingService } from './minting/minting.service';
 import { Web3Module } from './web3/web3.module';
+import { ListingController } from './controller/listing-controller';
 
 const nodeEnv = process.env.NODE_ENV;
 const isTest = nodeEnv === 'test';
@@ -22,7 +23,7 @@ const isTest = nodeEnv === 'test';
     MintingModule,
     Web3Module,
   ],
-  controllers: [MintController],
+  controllers: [MintController, ListingController],
   providers: [MintingService, MintSigner, AppConfig],
 })
 export class AppModule {}
