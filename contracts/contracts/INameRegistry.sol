@@ -5,11 +5,13 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 interface INameRegistry is IERC721 {
     function mint(
-        string memory label,
-        bytes32 parentNode,
+        bytes32 node,
         address owner,
         address resolver,
-        uint64 expiry,
-        bytes[] memory resolverData
+        uint64 expiry
     ) external;
+
+    function setResolver(bytes32 node, address resolver) external;
+
+    function setExpiry(bytes32 node, uint64 expiry) external;
 }

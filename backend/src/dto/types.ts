@@ -25,7 +25,7 @@ export interface MintResponse {
   signature: string;
   parameters: {
     label: string;
-    parentNode: Hash;
+    parentLabel: string;
     owner: Address;
     resolver: Address;
     price: string;

@@ -42,20 +42,22 @@ export class MintingService {
 
     const price = BigInt(parseEther(listing.price.toString())).toString();
 
+    const parentLabel = listing.name.endsWith(".eth") ? listing.name.split(".")[0] : listing.name;
+
     const parameters: MintContext = {
       label,
-      parentNode: namehash(listing.name),
+      parentLabel: parentLabel,
       resolver: this.resolver,
       owner,
       price,
       fee: '0',
-      expiry: '1815993190',
+      expiry: Number.MAX_SAFE_INTEGER,
       paymentReceiver: listing.owner,
       resolverData: [],
     };
 
     const signature = await this.signer.sign(parameters);
 
-    return { signature, parameters };
+    return { signature, parameters: parameters };
   }
 }

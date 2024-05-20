@@ -4,79 +4,88 @@ pragma solidity ^0.8.24;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Controllable} from "./access/Controllable.sol";
 import {EnsUtils} from "./libs/EnsUtils.sol";
-import {IMulticallable} from "./resolver/IMulticallable.sol";
 
 contract NameRegistry is ERC721, Controllable {
     mapping(bytes32 => address) public resolvers;
     mapping(bytes32 => uint64) public expirations;
-
-    // TODO functionality for checking whether uses has subnames for a parent
-    // problematic part is when name expires
-    mapping(bytes32 => mapping(address => uint8)) public ownedSubnamesPerParent;
-
-    event NameMinted (
-        string label,
-        bytes32 node,
-        bytes32 parentNode,
-        address owner
-    );
+    mapping(bytes32 => mapping(address => uint8)) public subnameParents;
 
     constructor() ERC721("ENS", "Namespace") {}
 
-    function mint(
-        string memory label,
-        bytes32 parentNode,
+    event NodeCreated(
+        bytes32 node,
         address owner,
         address resolver,
-        uint64 expiry,
-        bytes[] memory resolverData
+        uint64 expiry
+    );
+
+    function mint(
+        bytes32 node,
+        address owner,
+        address resolver,
+        uint64 expiry
     ) external onlyController {
-        require(owner != address(0), "Zero address not allowed");
-        require(expiry > block.timestamp, "Expiry to low");
+       _register(node, owner, resolver, expiry);
+    }
 
-        bytes32 subnameNode = EnsUtils.namehash(parentNode, label);
-
+    function _register(
+        bytes32 node,
+        address owner,
+        address resolver,
+        uint64 expiry
+    ) internal {
         require(
-            _unexpiredOwner(subnameNode) == address(0),
-            "Name already taken"
+            owner != address(0) && resolver != address(0),
+            "Zero address not allowed"
         );
 
-        resolvers[subnameNode] = resolver;
-        expirations[subnameNode] = expiry;
-        ownedSubnamesPerParent[parentNode][owner]++;
+        require(expiry > block.timestamp, "Expiry too low");
 
-        _mint(owner, uint256(subnameNode));
+        uint256 token = uint256(node);
+        address previousOwner = _ownerOf(token);
+        require(
+            previousOwner == address(0) || expirations[node] < block.timestamp,
+            "Name already present"
+        );
 
-        if (resolverData.length > 0) {
-            _setRecordsMulticall(subnameNode, resolver, resolverData);
+        resolvers[node] = resolver;
+        expirations[node] = expiry;
+        subnameParents[node][owner]++;
+
+        if (previousOwner != address(0)) {
+            _burn(token);
         }
 
-        emit NameMinted(label, subnameNode, parentNode, owner);
+        _mint(owner, uint256(node));
+
+        emit NodeCreated(node, owner, resolver, expiry);
     }
 
-    function ownerOf(
+    function setResolver(bytes32 node, address resolver) public onlyController {
+        resolvers[node] = resolver;
+    }
+
+    function setExpiry(bytes32 node, uint64 expiry) public onlyController {
+        expirations[node] += expiry;
+    }
+
+    function balanceOf(
+        address owner,
         uint256 tokenId
-    ) public view virtual override returns (address) {
-        return _unexpiredOwner(bytes32(tokenId));
+    ) external view returns (uint64) {
+        return subnameParents[bytes32(tokenId)][owner];
     }
 
-    function _unexpiredOwner(bytes32 node) internal view returns (address) {
-        if (expirations[node] < block.timestamp) {
+    // @dev We want a address(0) in case token doesn't have owner
+    // The default implementation throws error on unexsiting token
+    function ownerOf(uint256 tokenId) public override view returns(address) {
+        if (_isExpired(bytes32(tokenId))) {
             return address(0);
         }
-        return _ownerOf(uint256(node));
+        return _ownerOf(tokenId);
     }
 
-
-    function _setRecordsMulticall(
-        bytes32 node,
-        address resolver,
-        bytes[] memory data
-    ) internal {
-        IMulticallable(resolver).multicallWithNodeCheck(node, data);
-    }
-
-    function balanceOf(address owner, uint256 tokenId) external view returns (uint64) {
-        return ownedSubnamesPerParent[bytes32(tokenId)][owner];
+    function _isExpired(bytes32 node) internal view returns (bool) {
+        return expirations[node] < block.timestamp;
     }
 }

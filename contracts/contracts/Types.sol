@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 struct MintContext {
     address owner;
     string label;
-    bytes32 parentNode;
+    string parentLabel;
     address resolver;
     uint256 price;
     uint256 fee;
