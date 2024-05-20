@@ -20,3 +20,9 @@
   padding-bottom: 5px;
   background-color: #f0f0f0; /* Light grey background on hover */
 }
+
+.toast-error-message {
+  overflow: scroll;
+  white-space: pre-wrap;
+  font-family: monospace;
+}

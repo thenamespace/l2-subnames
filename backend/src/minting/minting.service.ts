@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AppConfig } from 'src/config/app-config.service';
 import { MintContext } from 'src/dto/mint-context.dto';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
@@ -31,13 +31,13 @@ export class MintingService {
     const taken = await this.registry.isSubnameTaken(subname);
 
     if (taken) {
-      throw Error(`Subname '${subname}' is already minted.`);
+      throw new BadRequestException(`Subname '${subname}' is already minted.`);
     }
 
     const listing = await this.listings.getNameListing(domain);
 
     if (!listing) {
-      throw Error(`Listing for '${domain}' does not exist.`);
+      throw new BadRequestException(`Listing for '${domain}' does not exist.`);
     }
 
     const price = BigInt(parseEther(listing.price.toString())).toString();
