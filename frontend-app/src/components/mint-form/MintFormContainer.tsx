@@ -14,7 +14,6 @@ import { Address, Hash } from "viem";
 import { useAccount } from "wagmi";
 import abi from "../../web3/abi/name-registry-controller.json";
 import { useWeb3Clients } from "../../web3/use-web3-clients";
-import { useGetAddresses } from "../../web3/use-get-addresses";
 
 interface Listing {
   name: string;
@@ -44,7 +43,6 @@ export const MintFormContainer = () => {
   const [showLabel, setShowLabel] = useState(false);
   const [label, setLabel] = useState<string>();
   const { publicClient, walletClient } = useWeb3Clients();
-  const { nameRegistryController } = useGetAddresses();
 
   function searchNames(evt: any) {
     const name = evt.target.value;
@@ -99,59 +97,63 @@ export const MintFormContainer = () => {
 
   async function mint(signature: string, mintContext: MintContext) {
     const { request } = (await publicClient?.simulateContract({
-      address: nameRegistryController,
+      address: "0xB3f2eA0fA4Ec33A2fDC0854780BBe2696Dd388E0",
       functionName: "mint",
       args: [mintContext, signature],
       abi,
       account: address,
     })) as any;
-    console.log(mintContext);
     return await walletClient?.writeContract(request);
   }
 
   return (
-    <Card>
+    <div>
       <ConnectButton />
-      <Typography>Find your name</Typography>
-      <div>
-        <Input
-          label="ENS Name"
-          placeholder="0xA0Cf…251e"
-          prefix={<EnsSVG />}
-          onChange={searchNames}
-          value={selectedName}
-        />
+      <Card className="name-listing-form">
+        <Typography>Find your name</Typography>
+        <div>
+          <div className="listing-input">
+            <Input
+              label="ENS Name"
+              placeholder="Start typing an ENS name.."
+              prefix={<EnsSVG />}
+              onChange={searchNames}
+              value={selectedName}
+            />
+          </div>
 
-        {showListings && (
-          <Card>
-            {listings.map((l) => {
-              return (
-                <ul>
-                  <li
-                    key={l.label}
-                    className="name-listing"
-                    onClick={() => selectListing(l.label)}
-                  >
-                    {l.label}
-                  </li>
-                </ul>
-              );
-            })}
-          </Card>
-        )}
+          {showListings && (
+            <Card>
+              {listings.map((l) => {
+                return (
+                  <ul>
+                    <li
+                      key={l.label}
+                      className="name-listing"
+                      onClick={() => selectListing(l.label)}
+                    >
+                      {l.label}
+                    </li>
+                  </ul>
+                );
+              })}
+            </Card>
+          )}
 
-        {showLabel && (
-          <Input
-            icon={<MagnifyingGlassSimpleSVG />}
-            label="Label"
-            placeholder="0xA0Cf…251e"
-            suffix={selectedName}
-            onChange={handleLabelChange}
-          />
-        )}
-      </div>
+          {showLabel && (
+            <div className="listing-input">
+              <Input
+                icon={<MagnifyingGlassSimpleSVG />}
+                label="Label"
+                suffix={selectedName}
+                onChange={handleLabelChange}
+              />
+            </div>
+          )}
+        </div>
 
-      {label && <Button onClick={verifyMint}>Mint</Button>}
-    </Card>
+        {label && <Button onClick={verifyMint}>Mint</Button>}
+      </Card>
+    </div>
   );
 };
