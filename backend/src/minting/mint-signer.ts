@@ -18,7 +18,7 @@ export class MintSigner {
   readonly types = {
     MintContext: [
       { name: 'label', type: 'string' },
-      { name: 'parentNode', type: 'bytes32' },
+      { name: 'parentLabel', type: 'string' },
       { name: 'resolver', type: 'address' },
       { name: 'owner', type: 'address' },
       { name: 'price', type: 'uint256' },
@@ -47,16 +47,18 @@ export class MintSigner {
   public async sign(params: MintContext): Promise<Hash> {
     const message = {
       label: params.label,
-      parentNode: params.parentNode,
+      parentLabel: params.parentLabel,
       resolver: params.resolver,
       owner: params.owner,
       price: params.price,
       fee: params.fee,
       expiry: params.expiry,
-      paymentReceiver: params.paymentReceiver,
+      paymentReceiver: params.paymentReceiver
     };
 
+
     const signer = this.rpc.l2Signer;
+  
     const signature = await signer.signTypedData({
       domain: this.domain,
       types: this.types,
