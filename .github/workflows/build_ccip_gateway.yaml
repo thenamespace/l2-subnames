@@ -1,0 +1,41 @@
+name: Build and publish ccip-gateway
+on: 
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    name: CCIP-Gateway
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkount
+        uses: actions/checkout@v2
+
+      - name: Setup node and npm
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Login to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{secrets.CONTANER_REGISTRY_URL}}
+          username: ${{secrets.CONTAINER_REGISTRY_KEY}}
+          password: ${{secrets.CONTAINER_REGISTRY_KEY}}
+
+      - name: Build ccip-gateway
+        run: |
+          cd ccip-gateway
+          yarn install
+          yarn run build
+
+      - name: Build image and push to container registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./ccip-gateway/Dockerfile
+          push: true
+          tags: ${{secrets.CONTANER_REGISTRY_URL}}/namespace/l2-ccip-gateway:latest
