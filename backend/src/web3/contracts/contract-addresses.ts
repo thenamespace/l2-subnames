@@ -9,9 +9,9 @@ interface NamespaceContracts {
 
 const contracts: Record<Network, NamespaceContracts> = {
   base: {
-    registry: '0x0',
-    resolver: '0x0',
-    controller: '0x0',
+    registry: '0xaE04a09CF2c408803AC7718e3dE22ac346a05B58',
+    resolver: '0xa4e093F2C9aA2D76Dc4478D324D844a9c6066DA0',
+    controller: '0x4b2aA1d4C269c6113Ca396f811F99580111f3A89',
   },
   sepolia: {
     registry: '0xcc230502499E76bB8ec26F04235587Ee154Ef415',

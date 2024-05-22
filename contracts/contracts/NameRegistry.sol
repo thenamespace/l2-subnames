@@ -9,8 +9,9 @@ contract NameRegistry is ERC721, Controllable {
     mapping(bytes32 => address) public resolvers;
     mapping(bytes32 => uint64) public expirations;
     mapping(bytes32 => mapping(address => uint8)) public subnameParents;
+    string public baseURI;
 
-    constructor() ERC721("ENS", "Namespace") {}
+    constructor() ERC721("Namespace", "ENS") {}
 
     event NodeCreated(
         bytes32 node,
@@ -88,4 +89,12 @@ contract NameRegistry is ERC721, Controllable {
     function _isExpired(bytes32 node) internal view returns (bool) {
         return expirations[node] < block.timestamp;
     }
+
+    function setBaseUri(string memory uri) public onlyOwner {
+        baseURI = uri;
+    }
+
+   function _baseURI() internal view virtual override returns (string memory) {
+        return baseURI;
+    } 
 }

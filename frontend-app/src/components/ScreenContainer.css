@@ -1,0 +1,12 @@
+.screen-container {
+    width: 100%;
+    height: 100%;
+    /* 100px is height of top navigation */
+    min-height: 100vh;
+}
+
+.screen-container.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
