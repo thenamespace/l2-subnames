@@ -38,7 +38,7 @@ jobs:
         with:
           envkey_SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
           envkey_BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          envkey_WALLET_SIGNER: ${{ secrets.CCIP_SIGNER_WALLET }}
+          envkey_SIGNER_WALLET: ${{ secrets.CCIP_SIGNER_WALLET }}
           fail_on_empty: true
           file_name: ./ccip-gateway/.env
 
