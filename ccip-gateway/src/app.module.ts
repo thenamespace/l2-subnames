@@ -10,6 +10,7 @@ import { Web3Module } from './web3/web3.module';
       envFilePath: ['.env'],
     }),
     GatewayModule,
+    Web3Module
   ],
 })
 export class AppModule {}
