@@ -9,32 +9,13 @@ import {
   Typography,
 } from "@ensdomains/thorin";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import axios from "axios";
 import { useState } from "react";
 import { Address, Hash } from "viem";
 import { useAccount } from "wagmi";
 import abi from "../../web3/abi/name-registry-controller.json";
 import { useWeb3Clients } from "../../web3/use-web3-clients";
-
-interface Listing {
-  name: string;
-}
-
-interface ListingOption {
-  value: string;
-  label: string;
-}
-
-interface MintContext {
-  label: string;
-  parentNode: Hash;
-  resolver: Address;
-  owner: Address;
-  price: string;
-  fee: string;
-  expiry: string;
-  paymentReceiver: Address;
-}
+import { Listing, ListingOption, MintContext} from "../../api/types";
+import { getListings, getMintingParameters } from "../../api";
 
 export const MintFormContainer = () => {
   const { address } = useAccount();
@@ -60,9 +41,8 @@ export const MintFormContainer = () => {
       return;
     }
 
-    axios
-      .get(`/l2/listings/${name}`)
-      .then((resp) => updateListings(resp.data as Listing[]))
+   getListings(name)
+      .then((resp) => updateListings(resp))
       .catch((err) => {
         console.log(err.response.data.error[0].message);
       });
@@ -92,13 +72,8 @@ export const MintFormContainer = () => {
   function verifyMint() {
     setMinting(true);
 
-    axios
-      .post(`/l2/subname/mint`, {
-        label,
-        ensName: selectedName,
-        owner: address,
-      })
-      .then((resp) => mint(resp.data.signature, resp.data.parameters))
+    getMintingParameters(label as string, selectedName as string, address as Address)
+      .then((resp) => mint(resp.signature, resp.parameters))
       .catch(handleError)
       .finally(handleMintDone);
   }
@@ -124,7 +99,7 @@ export const MintFormContainer = () => {
 
   async function mint(signature: string, mintContext: MintContext) {
     const { request } = (await publicClient?.simulateContract({
-      address: "0xB3f2eA0fA4Ec33A2fDC0854780BBe2696Dd388E0",
+      address: "0x6457FA238F5A41c0461801ad5417F32514E4F75f",
       functionName: "mint",
       args: [mintContext, signature],
       abi,

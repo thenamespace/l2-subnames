@@ -7,7 +7,7 @@ interface ContractAddresses {
 
 const addresses: Record<string, ContractAddresses> = {
   "11155111": {
-    nameRegistryController: "0xB3f2eA0fA4Ec33A2fDC0854780BBe2696Dd388E0",
+    nameRegistryController: "0x6457FA238F5A41c0461801ad5417F32514E4F75f",
   },
 };
 

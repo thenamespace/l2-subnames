@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
 
-@Controller('/l2/listings')
+@Controller('/api/v0.1.0/listings')
 export class ListingController {
   constructor(private listing: ListedNamesService) {}
 
