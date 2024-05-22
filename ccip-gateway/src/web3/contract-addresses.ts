@@ -6,12 +6,12 @@ export type SupportedNetworkContracs = Record<SupportedNetwork, Address>
 
 const nameResolvers: SupportedNetworkContracs = {
     base: "0x0",
-    sepolia: "0x0"
+    sepolia: "0xcc230502499E76bB8ec26F04235587Ee154Ef415"
 }
 
 const offchainResolvers: SupportedNetworkContracs = {
     base: "0x0",
-    sepolia: "0x0"
+    sepolia: "0xA3635655267D48906809E40CA8bdC79e4e0D22c2"
 }
 
 export const getNameResolverAddr = (network: SupportedNetwork) => {

@@ -19,7 +19,6 @@ import { ethers } from 'ethers';
 import { AppProperties } from 'src/configuration/app-properties';
 import { Web3Clients, NameResolver, getNetworkForOffchainResolver, getNameResolverAddr } from 'src/web3';
 
-
 const addr = 'addr';
 const text = 'text';
 const contentHash = 'contentHash';
@@ -75,6 +74,12 @@ export class GatewayService {
       decodedFunction.functionName,
       decodedFunction.args,
     );
+
+    console.log(`Sender contract ${resolverContract}, 
+      Resolving ${decodedName}, 
+      Function ${decodedFunction.functionName}, 
+      Args ${decodedFunction.args}, 
+      Result ${value}`);
 
     const result = encodeFunctionResult({
       abi: RESOLVER_ABI,

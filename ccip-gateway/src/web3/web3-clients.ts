@@ -14,11 +14,11 @@ export class Web3Clients implements OnModuleInit {
     
     onModuleInit() {
         const sepoliaClient = createPublicClient({
-            transport: http(),
+            transport: this.config.sepoliaRPC ? http(this.config.sepoliaRPC) : http(),
             chain: sepolia
         })
         const baseClient = createPublicClient({
-            transport: http(),
+            transport: this.config.baseRPC ? http(this.config.baseRPC) : http(),
             chain: base
         })
         this.clients = {

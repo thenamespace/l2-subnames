@@ -33,6 +33,16 @@ jobs:
           yarn install
           yarn run build
 
+      - name: Inject environment
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          envkey_BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          envkey_WALLET_SIGNER: ${{ secrets.CCIP_SIGNER_WALLET }}
+          fail_on_empty: true
+          file_name: ./ccip-gateway/.env
+
+
       - name: Build image and push to container registry
         uses: docker/build-push-action@v4
         with:
