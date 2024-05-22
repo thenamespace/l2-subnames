@@ -1,0 +1,6 @@
+.top-navigation {
+   display: flex;
+   align-items: center;
+   padding: 5px;
+   justify-content: space-between;
+}
