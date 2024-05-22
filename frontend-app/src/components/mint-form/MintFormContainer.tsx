@@ -10,12 +10,14 @@ import {
 } from "@ensdomains/thorin";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
-import { Address, Hash } from "viem";
+import { Address, Hash, encodeFunctionData, namehash } from "viem";
 import { useAccount } from "wagmi";
 import abi from "../../web3/abi/name-registry-controller.json";
 import { useWeb3Clients } from "../../web3/use-web3-clients";
 import { Listing, ListingOption, MintContext} from "../../api/types";
 import { getListings, getMintingParameters } from "../../api";
+import { useGetAddresses } from "../../web3";
+import NAME_RESOLVER_ABI from "../../web3/abi/name-resolver-abi.json";
 
 export const MintFormContainer = () => {
   const { address } = useAccount();
@@ -29,6 +31,8 @@ export const MintFormContainer = () => {
   const [isMinting, setMinting] = useState(false);
   const [mintDone, setMintDone] = useState(false);
   const { publicClient, walletClient } = useWeb3Clients();
+
+  const { nameRegistryController } = useGetAddresses();
 
   function searchNames(evt: any) {
     const name = evt.target.value;
@@ -87,6 +91,14 @@ export const MintFormContainer = () => {
     }
   }
 
+  const getSetAvatarFunc = (fullSubname: string) => {
+    return encodeFunctionData({
+      functionName: "setText",
+      abi: NAME_RESOLVER_ABI,
+      args: [namehash(fullSubname),"avatar", "https://wallpapers.com/images/featured/cool-profile-picture-87h46gcobjl5e4xu.jpg"]
+    })
+  }
+
   function handleErrorToastClosed() {
     setError(false);
     setMintDone(false);
@@ -98,13 +110,16 @@ export const MintFormContainer = () => {
   }
 
   async function mint(signature: string, mintContext: MintContext) {
+    const fllSubname = `${mintContext.label}.${mintContext.parentLabel}.eth`;
+    // mintContext.resolverData = [getSetAvatarFunc(fllSubname)];
     const { request } = (await publicClient?.simulateContract({
-      address: "0x6457FA238F5A41c0461801ad5417F32514E4F75f",
+      address: nameRegistryController,
       functionName: "mint",
       args: [mintContext, signature],
       abi,
       account: address,
     })) as any;
+
 
     const tx = (await walletClient?.writeContract(request)) as Hash;
     return await publicClient?.waitForTransactionReceipt({ hash: tx });
