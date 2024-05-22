@@ -46,6 +46,6 @@ jobs:
       - name: Build image and push to container registry
         uses: docker/build-push-action@v4
         with:
-          context: ./ccip-gateway/Dockerfile
+          context: ./ccip-gateway
           push: true
           tags: ${{secrets.CONTANER_REGISTRY_URL}}/namespace/l2-ccip-gateway:latest
