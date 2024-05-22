@@ -110,8 +110,6 @@ export const MintFormContainer = () => {
   }
 
   async function mint(signature: string, mintContext: MintContext) {
-    const fllSubname = `${mintContext.label}.${mintContext.parentLabel}.eth`;
-    // mintContext.resolverData = [getSetAvatarFunc(fllSubname)];
     const { request } = (await publicClient?.simulateContract({
       address: nameRegistryController,
       functionName: "mint",

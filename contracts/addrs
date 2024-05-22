@@ -4,6 +4,6 @@ Sepolia deployments:
     NamespaceModule#NameResolver - 0x0385E115c0D092Fc3D95eC56379BFDae8365c028
     NamespaceModule#OffchainResolver - 0xA3635655267D48906809E40CA8bdC79e4e0D22c2
 BaseDeployments:
-    NamespaceModule#NameRegistry - 0x0EFfBB1A0625AB728626882a7cbdf7aff712cf58
-    NamespaceModule#NameRegistryController - 0x85a6a146606Ec64033790f2480B60F88544d08d0
-    NamespaceModule#NameResolver - 0xFAb63CFA26587DFa20f375376BfFce4842ed559C
+    NamespaceModule#NameRegistry - 0xaE04a09CF2c408803AC7718e3dE22ac346a05B58
+    NamespaceModule#NameRegistryController - 0x4b2aA1d4C269c6113Ca396f811F99580111f3A89
+    NamespaceModule#NameResolver - 0xa4e093F2C9aA2D76Dc4478D324D844a9c6066DA0

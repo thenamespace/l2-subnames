@@ -10,7 +10,7 @@ const addresses: Record<string, ContractAddresses> = {
     nameRegistryController: "0x6457FA238F5A41c0461801ad5417F32514E4F75f",
   },
   "8453": {
-    nameRegistryController: "0x85a6a146606Ec64033790f2480B60F88544d08d0"
+    nameRegistryController: "0x4b2aA1d4C269c6113Ca396f811F99580111f3A89"
   }
 };
 
