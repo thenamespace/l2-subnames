@@ -1,4 +1,4 @@
-import { Select, Card } from '@ensdomains/thorin'
+import { Select } from '@ensdomains/thorin'
 import { Web3Network } from '../web3';
 import baseIcon from "../assets/networks/base.png";
 import optimismIcon from "../assets/networks/optimism.png";
