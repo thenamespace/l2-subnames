@@ -6,7 +6,7 @@ export type SupportedNetworkContracs = Record<SupportedNetwork, Address>
 
 const nameResolvers: SupportedNetworkContracs = {
     base: "0x0",
-    sepolia: "0xcc230502499E76bB8ec26F04235587Ee154Ef415"
+    sepolia: "0x0385E115c0D092Fc3D95eC56379BFDae8365c028"
 }
 
 const offchainResolvers: SupportedNetworkContracs = {
