@@ -148,7 +148,7 @@ export class GatewayService {
     const nameResolver = this.getNameResolver(resolverContract)
     switch (functionName) {
       case addr:
-        const coinType = args.length > 1 ? args.length[1] : defaultCoinType;
+        const coinType = args.length > 1 ? args[1] : defaultCoinType;
         return nameResolver.getAddress(ensName, coinType);
       case text:
         if (args.length < 2) {
