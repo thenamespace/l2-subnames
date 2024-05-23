@@ -40,6 +40,7 @@ export class GatewayService {
 
     // currently there is an issue when generating signature with viem signer
     this.ethersSigner = new ethers.SigningKey(_pk);
+    console.log(this.viemSigner.address)
   }
 
   public async handle(

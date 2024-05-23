@@ -10,8 +10,8 @@ const nameResolvers: SupportedNetworkContracs = {
 }
 
 const offchainResolvers: SupportedNetworkContracs = {
-    base: "0x0",
-    sepolia: "0xA3635655267D48906809E40CA8bdC79e4e0D22c2"
+    base: "0xaE04a09CF2c408803AC7718e3dE22ac346a05B58",
+    sepolia: "0xaa34Ba91cF6Cf642a6bfC76707Ca877E185d3774"
 }
 
 export const getNameResolverAddr = (network: SupportedNetwork) => {
