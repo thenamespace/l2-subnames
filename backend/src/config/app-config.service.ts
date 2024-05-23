@@ -13,17 +13,17 @@ const chains = {
 
 @Injectable()
 export class AppConfig {
-  public l2Rpc: string;
-  public l2Chain: Chain;
+  public baseRpc: string;
+  public sepoliaRpc: string;
   public signerKey: Hash;
   public appSignerName: string;
   public appSignerVersion: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.l2Rpc = this.configService.get('L2_RPC_URL');
-    this.l2Chain = chains[this.configService.get('L2_CHAIN')];
-    this.signerKey = this.configService.get('SIGNER_KEY');
-    this.appSignerName = this.configService.get('APP_SIGNER_NAME');
-    this.appSignerVersion = this.configService.get('APP_SIGNER_VERSION');
+    this.baseRpc = this.configService.get('BASE_RPC');
+    this.sepoliaRpc = chains[this.configService.get('SEPOLIA_RPC')];
+    this.signerKey = this.configService.getOrThrow('SIGNER_KEY');
+    this.appSignerName = this.configService.getOrThrow('APP_SIGNER_NAME');
+    this.appSignerVersion = this.configService.getOrThrow('APP_SIGNER_VERSION');
   }
 }

@@ -91,14 +91,6 @@ export const MintFormContainer = () => {
     }
   }
 
-  const getSetAvatarFunc = (fullSubname: string) => {
-    return encodeFunctionData({
-      functionName: "setText",
-      abi: NAME_RESOLVER_ABI,
-      args: [namehash(fullSubname),"avatar", "https://wallpapers.com/images/featured/cool-profile-picture-87h46gcobjl5e4xu.jpg"]
-    })
-  }
-
   function handleErrorToastClosed() {
     setError(false);
     setMintDone(false);
@@ -110,6 +102,16 @@ export const MintFormContainer = () => {
   }
 
   async function mint(signature: string, mintContext: MintContext) {
+    const fullName = `${mintContext.label}.${mintContext.parentLabel}.eth`;
+    const nameNode = namehash(fullName);
+    const setAddrFunc = encodeFunctionData({
+      abi: NAME_RESOLVER_ABI,
+      args: [nameNode, address],
+      functionName: "setAddr"
+    })
+
+    mintContext.resolverData = [setAddrFunc]
+
     const { request } = (await publicClient?.simulateContract({
       address: nameRegistryController,
       functionName: "mint",

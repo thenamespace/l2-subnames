@@ -7,10 +7,10 @@ import { NameRegistryService } from 'src/web3/contracts/name-registry.service';
 import { getNetwork } from 'src/web3/utils';
 import { Address, Hash, namehash, parseEther } from 'viem';
 import { MintSigner } from './mint-signer';
+import { MintRequest, Network } from 'src/dto/types';
 
 @Injectable()
 export class MintingService {
-  readonly resolver: Address;
 
   constructor(
     private registry: NameRegistryService,
@@ -18,36 +18,37 @@ export class MintingService {
     private signer: MintSigner,
     private config: AppConfig,
   ) {
-    const network = getNetwork(this.config.l2Chain);
-    this.resolver = getContracts(network).resolver;
+  
   }
 
   public async verifySubnameMint(
-    label: string,
-    domain: string,
-    owner: Address,
+    request: MintRequest
   ): Promise<{ signature: Hash; parameters: MintContext }> {
-    const subname = `${label}.${domain}`;
-    const taken = await this.registry.isSubnameTaken(subname);
+
+    const { label, ensName, network, owner } = request;
+    const subname = `${label}.${ensName}`;
+    const taken = await this.registry.isSubnameTaken(network, subname);
 
     if (taken) {
       throw new BadRequestException(`Subname '${subname}' is already minted.`);
     }
 
-    const listing = await this.listings.getNameListing(domain);
+    const listing = await this.listings.getNameListing(ensName);
 
     if (!listing) {
-      throw new BadRequestException(`Listing for '${domain}' does not exist.`);
+      throw new BadRequestException(`Listing for '${ensName}' does not exist.`);
     }
 
     const price = BigInt(parseEther(listing.price.toString())).toString();
 
     const parentLabel = listing.name.endsWith(".eth") ? listing.name.split(".")[0] : listing.name;
 
+    const nameResolverAddr = getContracts(network).resolver;
+
     const parameters: MintContext = {
       label,
       parentLabel: parentLabel,
-      resolver: this.resolver,
+      resolver: nameResolverAddr,
       owner,
       price,
       fee: '0',
@@ -56,7 +57,7 @@ export class MintingService {
       resolverData: [],
     };
 
-    const signature = await this.signer.sign(parameters);
+    const signature = await this.signer.sign(network, parameters);
 
     return { signature, parameters: parameters };
   }

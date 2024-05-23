@@ -8,10 +8,6 @@ export class MintController {
 
   @Post()
   public async mint(@Body() req: MintRequest): Promise<MintResponse> {
-    return this.mintService.verifySubnameMint(
-      req.label,
-      req.ensName,
-      req.owner,
-    );
+    return this.mintService.verifySubnameMint(req);
   }
 }
