@@ -19,6 +19,7 @@ export interface MintRequest {
   label: string;
   ensName: string;
   owner: Address;
+  network: Network
 }
 
 export interface MintResponse {

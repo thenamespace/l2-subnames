@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { NameListing } from 'src/dto/name-listing.dto';
 import listings from 'src/listed-names/listings.json';
 
@@ -8,11 +8,11 @@ export class ListedNamesService {
     return listings as NameListing[];
   }
 
-  public async getNameListing(name: string): Promise<NameListing> {
-    return listings.find((l) => l.name === name) as NameListing;
-  }
-
-  public async searchForName(word: string): Promise<NameListing[]> {
-    return listings.filter((l) => l.name.includes(word)) as NameListing[];
+  public async getNameListing(ensName: string): Promise<NameListing> {
+    const listing = listings.find((l) => l.name === ensName) as NameListing;
+    if (!listing) {
+      throw new NotFoundException("Listing not found")
+    }
+    return listing;
   }
 }

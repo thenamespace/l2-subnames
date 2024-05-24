@@ -1,0 +1,21 @@
+.name-selector-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: calc(100vh - 50px);
+}
+
+.name-selector-page .name-page-card {
+    width: 500px;
+    min-height: 400px;
+}
+
+.name-page-card .card-container {
+    cursor: pointer;
+}
+
+.name-page-card .card-container:hover {
+    transform: scale(1.05);
+    transition: 0.3s linear;
+}

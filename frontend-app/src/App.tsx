@@ -1,14 +1,13 @@
+import { AppRouter } from "./AppRouter";
 import { WalletConnect, ThorinDesign } from "./components";
-import { MintFormContainer } from "./components/mint-form/MintFormContainer";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
 
   return (
     <WalletConnect>
       <ThorinDesign>
-         <div>
-           <MintFormContainer/>
-         </div>
+         <AppRouter/>
       </ThorinDesign>
     </WalletConnect>
   );

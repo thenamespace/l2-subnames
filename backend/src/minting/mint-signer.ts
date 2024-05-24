@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AppConfig } from 'src/config/app-config.service';
 import { MintContext } from 'src/dto/mint-context.dto';
+import { Network } from 'src/dto/types';
 import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { RpcClient } from 'src/web3/rpc-client';
-import { getNetwork } from 'src/web3/utils';
 import { Hash } from 'viem';
 
 @Injectable()
@@ -31,20 +31,20 @@ export class MintSigner {
   constructor(
     private appConfig: AppConfig,
     private rpc: RpcClient,
-  ) {
-    const chain = this.appConfig.l2Chain;
-    const network = getNetwork(chain);
+  ) {}
+
+  public async sign(network: Network, params: MintContext): Promise<Hash> {
+
+    const chain = this.rpc.getChain(network);
     const verifyingContract = getContracts(network).controller;
 
-    this.domain = {
+    const domain = {
       name: this.appConfig.appSignerName,
       version: this.appConfig.appSignerVersion,
       chainId: chain.id,
-      verifyingContract,
-    };
-  }
+      verifyingContract
+    }
 
-  public async sign(params: MintContext): Promise<Hash> {
     const message = {
       label: params.label,
       parentLabel: params.parentLabel,
@@ -57,14 +57,13 @@ export class MintSigner {
     };
 
 
-    const signer = this.rpc.l2Signer;
+    const signer = this.rpc.getSigner();
   
     const signature = await signer.signTypedData({
-      domain: this.domain,
+      domain: domain,
       types: this.types,
       message,
       primaryType: 'MintContext',
-      account: signer.account,
     });
 
     return signature;

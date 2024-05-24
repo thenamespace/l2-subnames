@@ -10,13 +10,9 @@ export class ListingController {
     return this.listing.getListings();
   }
 
-  @Get('/:label/:domain')
-  public async getListing(@Param() label: string, @Param() domain: string) {
-    return this.listing.getNameListing(`${label}.${domain}`);
+  @Get('/:name')
+  public async getListing(@Param("name") name: string) {
+    return this.listing.getNameListing(name);
   }
 
-  @Get('/:word')
-  public async searchForName(@Param('word') word: string) {
-    return this.listing.searchForName(word);
-  }
 }

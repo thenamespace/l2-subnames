@@ -1,30 +1,16 @@
 [
   {
-    "name": "gotframed.eth",
-    "namehash": "0x0",
-    "price": 0.001,
-    "network": "sepolia",
-    "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
-  },
-  {
-    "name": "gotframes.eth",
-    "namehash": "0x0",
-    "price": 0.001,
-    "network": "sepolia",
-    "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
-  },
-  {
-    "name": "level-up.eth",
-    "namehash": "0x0",
-    "price": 0.001,
-    "network": "base",
-    "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
-  },
-  {
     "name": "terminator.eth",
-    "namehash": "0x0",
+    "namehash": "0xe4cc0d2b49871927f664e77465c21be7a97fc770967e3fa7fa35102b56f22fe2",
     "price": 0.002,
     "network": "sepolia",
-    "owner": "0x261aa31E25e3517cC204Ef21AfD73c47cC9b297b"
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name": "basedsubs.eth",
+    "namehash": "0xfa3f384d3b9aa962bf124b6e49e4aeb0fd1d4fcd08055e2239c90bbb0afe3147",
+    "price": 0.001,
+    "network": "base",
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
   }
 ]

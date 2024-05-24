@@ -1,7 +1,9 @@
 import { Address, Hash } from "viem";
+import { Web3Network } from "../web3";
 
 export interface Listing {
     name: string;
+    network: Web3Network
 }
 
 export interface ListingOption {
