@@ -3,6 +3,7 @@
     height: 100%;
     /* 100px is height of top navigation */
     min-height: 100vh;
+    background-color: rgb(244, 244, 244);
 }
 
 .screen-container.loading {

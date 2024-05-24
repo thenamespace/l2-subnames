@@ -3,13 +3,14 @@ import { NetworkSelector } from "./NetworkSelector"
 import "./TopNavigation.css"
 import { Profile, Dropdown, } from "@ensdomains/thorin";
 import { useEffect, useState } from "react";
-import { useWeb3Clients } from "../web3";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useMainnetPublicClient } from "../web3/useMainnetPublicClient";
 
 export const TopNavigation = () => {
 
     const { isConnected, address } = useAccount();
     const { disconnect } = useDisconnect();
-    const { publicClient } = useWeb3Clients();
+    const publicClient = useMainnetPublicClient();
     const [ensProfile, setProfile] = useState<{
         avatar?: string
         name?: string
@@ -36,7 +37,9 @@ export const TopNavigation = () => {
     }, [address])
 
     if (!isConnected || !address) {
-        return null;
+        return <div className="top-navigation">
+            <ConnectButton/>
+        </div>
     }
 
     return <div className="top-navigation">

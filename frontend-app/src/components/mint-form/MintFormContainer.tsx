@@ -76,7 +76,7 @@ export const MintFormContainer = () => {
   function verifyMint() {
     setMinting(true);
 
-    getMintingParameters(label as string, selectedName as string, address as Address)
+    getMintingParameters(label as string, selectedName as string, address as Address, "sepolia")
       .then((resp) => mint(resp.signature, resp.parameters))
       .catch(handleError)
       .finally(handleMintDone);
