@@ -1,10 +1,10 @@
-name: Build backend docker image
+name: Build frontend docker image
 on: 
   workflow_dispatch:
 
 jobs:
   build-and-publish:
-    name: Backend api
+    name: Frontend app
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,9 +29,9 @@ jobs:
 
       - name: Build ccip-gateway
         run: |
-          cd backend
+          cd frontend-app
           yarn install
-          yarn run build
+          yarn build
 
       - name: Build image and push to container registry
         uses: docker/build-push-action@v4
