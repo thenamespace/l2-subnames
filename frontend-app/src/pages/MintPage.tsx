@@ -5,20 +5,17 @@ import { useEffect, useState } from "react";
 import "./MintPage.css";
 import { getSingleListing } from "../api";
 import { Listing } from "../api/types";
-import { useNameRegistry, useWeb3Network } from "../web3";
-import { normalize } from "viem/ens";
+import { useWeb3Network } from "../web3";
 
 export const MintPage = () => {
 
     const { parentName } = useParams();
-    const [setSubnameLabel] = useState("");
     const [listing, setListing] = useState<{
         isFetching: boolean
         item?: Listing
     }>({
         isFetching: true,
     })
-    const { isSubnameAvailable } = useNameRegistry();
     const { networkName } = useWeb3Network();
 
     useEffect(() => {

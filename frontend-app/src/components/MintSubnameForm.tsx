@@ -42,6 +42,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     isAvailable: false,
     isChecking: false,
   });
+  //@ts-ignore
   const [mintSuccess, setMintSuccess] = useState(false);
 
   const handleLabelChange = (value: string) => {
