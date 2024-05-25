@@ -7,10 +7,19 @@ export class MetadataController {
   constructor(private metadataService: MetadataService) {}
 
   @Get('/:chain/:tokenId')
-  async getMetadata(
+  async getTokenMetadata(
     @Param('chain') chain: string,
     @Param('tokenId') tokenId: string,
   ): Promise<Metadata> {
-    return this.metadataService.getMetadata(chain, tokenId);
+    return this.metadataService.getTokenMetadata(chain, tokenId);
+  }
+
+  @Get('/:chain/:label/:parentName')
+  async getLabelMetadata(
+    @Param('chain') chain: string,
+    @Param('label') label: string,
+    @Param('parentName') parentName: string,
+  ): Promise<Metadata> {
+    return this.metadataService.getLabelMetadata(chain, label, parentName);
   }
 }
