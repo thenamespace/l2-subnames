@@ -8,6 +8,7 @@ import { MintingModule } from './minting/minting.module';
 import { MintingService } from './minting/minting.service';
 import { Web3Module } from './web3/web3.module';
 import { ListingController } from './controller/listing-controller';
+import { MetadataModule } from './metadata/metadata.module';
 
 const nodeEnv = process.env.NODE_ENV;
 const isTest = nodeEnv === 'test';
@@ -22,6 +23,7 @@ const isTest = nodeEnv === 'test';
     ListedNamesModule,
     MintingModule,
     Web3Module,
+    MetadataModule,
   ],
   controllers: [MintController, ListingController],
   providers: [MintingService, MintSigner, AppConfig],
