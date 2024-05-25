@@ -6,8 +6,11 @@ import { MetadataService } from 'src/metadata/metadata.service';
 export class MetadataController {
   constructor(private metadataService: MetadataService) {}
 
-  @Get('/:tokenId')
-  async getMetadata(@Param('tokenId') tokenId: string): Promise<Metadata> {
-    return this.metadataService.getMetadata(tokenId);
+  @Get('/:chain/:tokenId')
+  async getMetadata(
+    @Param('chain') chain: string,
+    @Param('tokenId') tokenId: string,
+  ): Promise<Metadata> {
+    return this.metadataService.getMetadata(chain, tokenId);
   }
 }

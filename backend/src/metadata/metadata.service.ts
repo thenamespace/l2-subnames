@@ -9,9 +9,11 @@ import { stringToBytes } from 'viem';
 export class MetadataService {
   constructor(private config: AppConfig) {}
 
-  async getMetadata(tokenId: string): Promise<Metadata> {
+  async getMetadata(chain: string, tokenId: string): Promise<Metadata> {
     const nodeHash = stringToBytes(tokenId);
-    const resp = await axios.get(this.config.namesApiUrl + `/${nodeHash}`);
+    const resp = await axios.get(
+      this.config.namesApiUrl + `/${chain}/${nodeHash}`,
+    );
     const subname = resp.data as MintedSubname;
 
     return {
