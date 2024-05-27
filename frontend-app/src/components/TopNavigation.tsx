@@ -1,5 +1,4 @@
 import { useAccount, useDisconnect } from "wagmi"
-import { NetworkSelector } from "./NetworkSelector"
 import "./TopNavigation.css"
 import { Profile, Dropdown, } from "@ensdomains/thorin";
 import { useEffect, useState } from "react";
@@ -43,7 +42,6 @@ export const TopNavigation = () => {
     }
 
     return <div className="top-navigation">
-        <NetworkSelector />
         <Dropdown
             label="asdf"
             items={[

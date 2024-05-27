@@ -50,10 +50,12 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         verifySignature(context, signature);
 
         uint256 totalPrice = context.fee + context.price;
-        require(totalPrice >= msg.value, "Insufficient funds");
+        require(totalPrice < msg.value, "Insufficient funds");
 
         bytes32 parentNode = EnsUtils.namehash(ETH_NODE, context.parentLabel);
         bytes32 subnameNode = EnsUtils.namehash(parentNode, context.label);
+
+        require(registry.ownerOf(uint256(subnameNode)) == address(0), "Name already taken");
 
         if (context.resolverData.length > 0) {
             _mintWithRecords(context, subnameNode);
@@ -139,6 +141,14 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
                 value: context.fee
             }("");
             require(sentToTreasury, "Could not transfer ETH to treasury");
+        }
+        
+        uint256 total = context.fee + context.price;
+        if (total > 0 && msg.value - total > 0) {
+             (bool sendRemainder, ) = payable(msg.sender).call{
+                value: msg.value - total
+            }("");
+            require(sendRemainder, "Could not transfer ETH to sender");
         }
     }
 

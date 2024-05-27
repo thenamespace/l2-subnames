@@ -5,6 +5,7 @@ import { Web3Network } from "../web3";
 
 const api = import.meta.env.VITE_BACKEND_API;
 
+//@ts-ignore
 export const getListings = (name: string): Promise<Listing[]> => {
     return axios.get<Listing[]>(`${api}/api/v0.1.0/listings`).then(res => res.data);
 }

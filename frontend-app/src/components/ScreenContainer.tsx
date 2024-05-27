@@ -12,7 +12,7 @@ export const ScreenContainer = ({ children, isLoading, hideNav }: ScreenContaine
 
     if (isLoading) {
         return <div className="screen-container loading">
-            <Spinner/>
+            <Spinner color="blue" size="large"/>
         </div>
     }
 

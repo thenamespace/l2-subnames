@@ -11,9 +11,6 @@ export const useNameController = () => {
   const { address } = useAccount();
 
   const mint = async (params: MintContextResponse): Promise<Hash> => {
-    console.log(params)
-    console.log(publicClient?.chain);
-    console.log(nameRegistryController)
     //@ts-ignore
     const { request } = await publicClient?.simulateContract({
       abi: REGISTRY_CONTROLLER_ABI,

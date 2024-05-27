@@ -18,6 +18,8 @@ import { Link } from "react-router-dom";
 import "./MintSubnameForm.css";
 import { Address, encodeFunctionData, namehash } from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import logoImage from "../assets/logo/namespace.png";
 
 export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   const [subnameLabel, setSubnameLabel] = useState("");
@@ -42,7 +44,9 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     isAvailable: false,
     isChecking: false,
   });
+  //@ts-ignore
   const [mintSuccess, setMintSuccess] = useState(false);
+  const {openConnectModal} = useConnectModal();
 
   const handleLabelChange = (value: string) => {
     const _value = value.toLocaleLowerCase();
@@ -81,6 +85,12 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   };
 
   const handleMint = async () => {
+
+    if (!address) {
+      openConnectModal?.();
+      return;
+    }
+
     try {
       const _params = await getMintingParameters(
         subnameLabel,
@@ -104,7 +114,6 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           confirmations: 2,
         });
         setMintSuccess(true);
-        console.log(tx, "TX");
       } catch (err) {
         console.log(err);
       }
@@ -140,6 +149,11 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     mintBtnLabel = "Waiting for tx";
   } else if (mintIndicators.waitingWallet) {
     mintBtnLabel = "Waiting for wallet";
+  }
+
+  const fullName = `${subnameLabel}.${parentName}`
+  if (mintSuccess) {
+    return <SuccessScreen fullName={fullName}/>
   }
 
   return (
@@ -192,3 +206,19 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     </div>
   );
 };
+
+export const SuccessScreen = ({fullName}:{fullName:string}) => {
+  return <div className="d-flex flex-column justify-content-center align-items-center mt-4">
+     <img src={logoImage} width="80px"></img>
+      <Typography className="mt-4">You have successfully minted</Typography>
+      <Typography fontVariant="largeBold" color="blue">{fullName}</Typography>
+      <div className="d-flex mt-3">
+      <Link to="/">
+      <Button colorStyle="accentSecondary" className="me-2" style={{width:150}}>Back</Button>
+      </Link>
+      <a href={`https://app.ens.domains/${fullName}`}>
+        <Button style={{width:150}}>Check on ENS</Button>
+      </a>
+      </div>
+  </div>
+}
