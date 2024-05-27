@@ -17,9 +17,9 @@ interface TextRecordCard {
 }
 
 export interface RecordsUpdateInput {
-    baseAddr?:string,
-    ethAddr?:string,
-    texts: TextRecord[]
+  baseAddr?: string;
+  ethAddr?: string;
+  texts: TextRecord[];
 }
 
 const generalIcons: TextRecordCard[] = [
@@ -74,7 +74,13 @@ const categories: Record<string, TextRecordCard[]> = {
   Social: socialIcons,
 };
 
-export const MintRecordsForm = ({onMint}: {onMint: (records: RecordsUpdateInput) => void}) => {
+export const MintRecordsForm = ({
+  onMint,
+  onBack,
+}: {
+  onMint: (records: RecordsUpdateInput) => void;
+  onBack: () => void;
+}) => {
   const [selectedRecords, setSelectedRecords] = useState<
     Record<string, string>
   >({});
@@ -85,7 +91,7 @@ export const MintRecordsForm = ({onMint}: {onMint: (records: RecordsUpdateInput)
   const [ethAddr, setEthAddr] = useState<string>(address as string);
 
   const handleAddRecord = (recordKeys: string[]) => {
-    const _records = { ...selectedRecords };
+    const _records: Record<string,string> =  {};
     recordKeys.forEach((key) => {
       _records[key] = "";
     });
@@ -105,11 +111,30 @@ export const MintRecordsForm = ({onMint}: {onMint: (records: RecordsUpdateInput)
     setSelectedRecords(_records);
   };
 
+  const handleMintWithRecords = () => {
+    const texts: TextRecord[] = [];
+    Object.keys(selectedRecords).forEach(key => {
+        const recordValue = selectedRecords[key];
+        if (recordValue.length > 0) {
+            texts.push({key, value: recordValue})
+        }
+    })
+
+    const _records: RecordsUpdateInput = {
+        texts: texts,
+        baseAddr: baseAddr,
+        ethAddr: ethAddr
+    }
+
+    onMint(_records);
+  }
+
   return (
     <div className="mint-records-form">
       <Typography fontVariant="largeBold">Add records to profile</Typography>
       {recordPicker && (
         <SelectRecordType
+          selectedRecords={selectedRecords}
           onBack={() => setRecordPicker(false)}
           onRecordAdded={(record) => handleAddRecord(record)}
         />
@@ -142,13 +167,14 @@ export const MintRecordsForm = ({onMint}: {onMint: (records: RecordsUpdateInput)
               ></Input>
             ))}
           </ScrollBox>
-          <div className="d-flex">
+          <div className="d-flex mt-3">
+            <Button onClick={() => onBack()} className="me-2" colorStyle="blueSecondary">Back</Button>
             <Button
-              className="mt-3"
               onClick={() => setRecordPicker(!recordPicker)}
             >
               + Add more to profile
             </Button>
+            <Button onClick={() => handleMintWithRecords()}>Mint</Button>
           </div>
         </div>
       )}
@@ -159,29 +185,39 @@ export const MintRecordsForm = ({onMint}: {onMint: (records: RecordsUpdateInput)
 export const SelectRecordType = ({
   onRecordAdded,
   onBack,
+  selectedRecords
 }: {
+  selectedRecords: Record<string,string>
   onRecordAdded: (records: string[]) => void;
   onBack: () => void;
 }) => {
-  const [selectedRecords, setSelectedRecords] = useState<
+  const [addedRecords, setAddedRecords] = useState<
     Record<string, boolean>
   >({});
 
+  useEffect(() => {
+    const _records = {...addedRecords};
+    Object.keys(selectedRecords).forEach(r => {
+        _records[r] = true;
+    })
+    setAddedRecords(_records);
+  }, [selectedRecords])
+
   const handleAddRecords = () => {
-    onRecordAdded(Object.keys(selectedRecords));
+    onRecordAdded(Object.keys(addedRecords));
   };
 
   const toggleRecords = (key: string) => {
-    const _records = { ...selectedRecords };
+    const _records = { ...addedRecords };
     if (_records[key]) {
       delete _records[key];
     } else {
       _records[key] = true;
     }
-    setSelectedRecords(_records);
+    setAddedRecords(_records);
   };
 
-  const selectedCount = Object.keys(selectedRecords).length;
+  const selectedCount = Object.keys(addedRecords).length;
 
   return (
     <div>
@@ -198,7 +234,9 @@ export const SelectRecordType = ({
                 <div className="col col-lg-4 col-md-6 col-sm-6 p-1">
                   <Card
                     onClick={() => toggleRecords(text.key)}
-                    className={`p-3 records-item ${selectedRecords[text.key] ? "active" : ""}`}
+                    className={`p-3 records-item ${
+                        addedRecords[text.key] ? "active" : ""
+                    }`}
                     key={text.key}
                   >
                     <Typography>{text.label}</Typography>

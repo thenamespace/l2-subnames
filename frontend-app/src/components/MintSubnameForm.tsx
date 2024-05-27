@@ -5,7 +5,7 @@ import {
   Spinner,
   LeftArrowSVG,
   Toggle,
-  Card
+  Card,
 } from "@ensdomains/thorin";
 import { useCallback, useState } from "react";
 import { normalize } from "viem/ens";
@@ -16,10 +16,13 @@ import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
 import { Link } from "react-router-dom";
 import "./MintSubnameForm.css";
-import { Address, encodeFunctionData, namehash } from "viem";
+import { Address, Hash, encodeFunctionData, isAddress, namehash} from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import logoImage from "../assets/logo/namespace.png";
+import { MintRecordsForm, RecordsUpdateInput } from "./MintRecordsForm";
+
+type MintFormMode = "mint" | "setRecords";
 
 export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   const [subnameLabel, setSubnameLabel] = useState("");
@@ -46,7 +49,8 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   });
   //@ts-ignore
   const [mintSuccess, setMintSuccess] = useState(false);
-  const {openConnectModal} = useConnectModal();
+  const { openConnectModal } = useConnectModal();
+  const [mode, setMode] = useState<MintFormMode>("mint");
 
   const handleLabelChange = (value: string) => {
     const _value = value.toLocaleLowerCase();
@@ -84,8 +88,45 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
-  const handleMint = async () => {
+  const handleMintWithRecords = async (recordsUpdate: RecordsUpdateInput) => {
+    const fullSubname = `${subnameLabel}.${parentName}`;
+    const node = namehash(fullSubname);
 
+    const { baseAddr, ethAddr, texts } = recordsUpdate;
+
+    const resolverData: Hash[] = [];
+    if (baseAddr && isAddress(baseAddr)) {
+      resolverData.push(encodeFunctionData({
+        abi: NAME_RESPOLVER_ABI,
+        functionName: "setAddr",
+        args: [node, BigInt(2147492101), baseAddr]
+      }))
+    }
+
+    if (ethAddr && isAddress(ethAddr)) {
+      resolverData.push(
+        encodeFunctionData({
+          abi: NAME_RESPOLVER_ABI,
+          functionName: "setAddr",
+           args: [node, BigInt(60), ethAddr]
+        })
+      );
+    }
+
+    if (texts && texts.length > 0) {
+      texts.forEach((textRecord) => {
+        const textData = encodeFunctionData({
+          abi: NAME_RESPOLVER_ABI,
+          functionName: "setText",
+          args: [node, textRecord.key, textRecord.value],
+        });
+        resolverData.push(textData);
+      });
+    }
+    handleMint(resolverData);
+  };
+
+  const handleMint = async (resolverData: any[] = []) => {
     if (!address) {
       openConnectModal?.();
       return;
@@ -101,10 +142,12 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       try {
         setMintIndicators({ ...mintIndicators, waitingWallet: true });
 
-        if (setAddr) {
+        if (resolverData.length === 0) {
           const fllName = `${subnameLabel}.${parentName}`;
-          const encodedFunc = getSetAddrFunc(fllName, address as Address)
-          _params.parameters.resolverData = [encodedFunc]
+          const encodedFunc = getSetAddrFunc(fllName, address as Address);
+          _params.parameters.resolverData = [encodedFunc];
+        } else {
+          _params.parameters.resolverData = resolverData;
         }
 
         const tx = await mint(_params);
@@ -127,9 +170,9 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     return encodeFunctionData({
       abi: NAME_RESPOLVER_ABI,
       functionName: "setAddr",
-      args:[namehash(fullName), wallet]
-    })
-  }
+      args: [namehash(fullName), wallet],
+    });
+  };
 
   const isTaken =
     !indicators.isChecking &&
@@ -151,9 +194,18 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     mintBtnLabel = "Waiting for wallet";
   }
 
-  const fullName = `${subnameLabel}.${parentName}`
+  const fullName = `${subnameLabel}.${parentName}`;
   if (mintSuccess) {
-    return <SuccessScreen fullName={fullName}/>
+    return <SuccessScreen fullName={fullName} />;
+  }
+
+  if (mode === "setRecords") {
+    return (
+      <MintRecordsForm
+        onMint={(records) => handleMintWithRecords(records)}
+        onBack={() => setMode("mint")}
+      />
+    );
   }
 
   return (
@@ -163,9 +215,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           <LeftArrowSVG />
         </Link>
       </div>
-      <Typography>
-        Minting
-      </Typography>
+      <Typography>Minting</Typography>
       <Typography fontVariant="largeBold" className="mt-1">
         <Typography
           style={{ marginRight: -5 }}
@@ -178,7 +228,9 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
         {`.${parentName}`}
       </Typography>
       <div className="mt-3 text-align-left" style={{ textAlign: "left" }}>
-        <Typography fontVariant="small" color="grey">Your subname</Typography>
+        <Typography fontVariant="small" color="grey">
+          Your subname
+        </Typography>
         <Input
           error={isTaken && "Subname is taken"}
           size="large"
@@ -190,10 +242,16 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
         ></Input>
       </div>
       <Card className="p-3 mt-2">
-         <div className="d-flex align-items-center justify-content-between w-100">
-         <Typography fontVariant="small" color="grey">Set address record</Typography>
-         <Toggle size="small" checked={setAddr} onClick={() => setSetAddr(!setAddr)}></Toggle>
-         </div>
+        <div className="d-flex align-items-center justify-content-between w-100">
+          <Typography fontVariant="small" color="grey">
+            Set address record
+          </Typography>
+          <Toggle
+            size="small"
+            checked={setAddr}
+            onClick={() => setSetAddr(!setAddr)}
+          ></Toggle>
+        </div>
       </Card>
       <Button
         loading={mintBtnLoading}
@@ -203,22 +261,38 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       >
         {mintBtnLabel}
       </Button>
+      {/* {!mintBtnLoading && <Button
+        disabled={isMintBtnDisabled}
+        onClick={() => setMode("setRecords")}
+      >
+        Mint with records
+      </Button>} */}
     </div>
   );
 };
 
-export const SuccessScreen = ({fullName}:{fullName:string}) => {
-  return <div className="d-flex flex-column justify-content-center align-items-center mt-4">
-     <img src={logoImage} width="80px"></img>
+export const SuccessScreen = ({ fullName }: { fullName: string }) => {
+  return (
+    <div className="d-flex flex-column justify-content-center align-items-center mt-4">
+      <img src={logoImage} width="80px"></img>
       <Typography className="mt-4">You have successfully minted</Typography>
-      <Typography fontVariant="largeBold" color="blue">{fullName}</Typography>
+      <Typography fontVariant="largeBold" color="blue">
+        {fullName}
+      </Typography>
       <div className="d-flex mt-3">
-      <Link to="/">
-      <Button colorStyle="accentSecondary" className="me-2" style={{width:150}}>Back</Button>
-      </Link>
-      <a href={`https://app.ens.domains/${fullName}`}>
-        <Button style={{width:150}}>Check on ENS</Button>
-      </a>
+        <Link to="/">
+          <Button
+            colorStyle="accentSecondary"
+            className="me-2"
+            style={{ width: 150 }}
+          >
+            Back
+          </Button>
+        </Link>
+        <a href={`https://app.ens.domains/${fullName}`}>
+          <Button style={{ width: 150 }}>Check on ENS</Button>
+        </a>
       </div>
-  </div>
-}
+    </div>
+  );
+};

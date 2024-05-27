@@ -1,11 +1,7 @@
-.mint-records-form {
-
-}
-
 .mint-records-form .records-item {
     cursor: pointer;
 }
 
 .records-item.active {
-    border-color: red;
+    border-color: lightblue;
 }
