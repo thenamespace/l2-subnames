@@ -9,8 +9,8 @@ import { PropsWithChildren } from "react";
 const queryClient = new QueryClient();
 
 const config = getDefaultConfig({
-  appName: "My RainbowKit App",
-  projectId: "YOUR_PROJECT_ID",
+  appName: 'Namespace',
+  projectId: 'e811e24d56cec721b6d7e53a5644b9c9',
   chains: [mainnet, sepolia, localhost, base],
 });
 

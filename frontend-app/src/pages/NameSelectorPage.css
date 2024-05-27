@@ -4,11 +4,12 @@
     justify-content: center;
     width: 100%;
     height: calc(100vh - 50px);
+    padding: 10px;
 }
 
 .name-selector-page .name-page-card {
-    width: 500px;
-    min-height: 400px;
+    max-width: 500px;
+    width: 100%;
 }
 
 .name-page-card .card-container {
