@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { AppConfiguration } from "./app-configuration";
 
 @Module({
-    exports: [AppConfiguration]
+  providers: [AppConfiguration],
+  exports: [AppConfiguration],
 })
 export class AppConfigurationModule {}
