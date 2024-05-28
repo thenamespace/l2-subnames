@@ -16,11 +16,17 @@ import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Hol
  * in order to be able to perform NameRegistry operations
  */
 contract NameRegistryController is EIP712, Controllable, ERC721Holder {
+
+    error NameAlreadyTaken(bytes32);
+    error InvalidSignature(address extractedVerifier);
+    error InsufficientFunds(uint256 required, uint256 supplied);
+
     address public treasury;
     address public verifier;
-    INameRegistry immutable registry;
     bytes32 private constant ETH_NODE =
         0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+
+    INameRegistry immutable registry;
 
     event NameMinted(
         string label,
@@ -59,14 +65,13 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
     ) public payable {
         verifySignature(context, signature);
 
-        uint256 totalPrice = context.fee + context.price;
-        require(totalPrice < msg.value, "Insufficient funds");
-
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
         bytes32 node = _namehash(parentNode, context.label);
         uint256 nodeTokenId = uint256(node);
 
-        require(registry.ownerOf(uint256(nodeTokenId)) == address(0), "Name already taken");
+        if (registry.ownerOf(nodeTokenId) != address(0)) {
+            revert NameAlreadyTaken(node);
+        }
 
         if (context.resolverData.length > 0) {
             _mintWithRecords(context, node);
@@ -113,10 +118,10 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         MintContext memory context,
         bytes memory signature
     ) internal view {
-        require(
-            extractSigner(context, signature) == verifier,
-            "Invalid signature"
-        );
+        address extractedAddr = extractSigner(context, signature);
+        if (extractedAddr != verifier) {
+            revert InvalidSignature(extractedAddr);
+        }
     }
 
     function extractSigner(
@@ -142,6 +147,12 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
     }
 
     function transferFunds(MintContext memory context) internal {
+
+        uint256 totalPrice = context.fee + context.price;
+        if (msg.value < totalPrice) {
+            revert InsufficientFunds(totalPrice, msg.value);
+        }
+
         if (context.price > 0) {
             (bool sentToOwner, ) = payable(context.paymentReceiver).call{
                 value: context.price
