@@ -1,0 +1,7 @@
+.mint-records-form .records-item {
+    cursor: pointer;
+}
+
+.records-item.active {
+    border-color: lightblue;
+}
