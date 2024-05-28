@@ -5,16 +5,26 @@ import {AddrResolver} from "./resolver/profiles/AddrResolver.sol";
 import {ContentHashResolver} from "./resolver/profiles/ContentHashResolver.sol";
 import {TextResolver} from "./resolver/profiles/TextResolver.sol";
 import {Multicallable} from "./resolver/Multicallable.sol";
+import {InterfaceResolver} from "./resolver/profiles/InterfaceResolver.sol";
+import {PubkeyResolver} from "./resolver/profiles/PubkeyResolver.sol";
+import {NameResolver} from "./resolver/profiles/NameResolver.sol";
+import {ABIResolver} from "./resolver/profiles/ABIResolver.sol";
 import {INameRegistry} from "./INameRegistry.sol";
+import {ExtendedResolver} from "./resolver/profiles/ExtendedResolver.sol";
 
 /**
  * A simple resolver anyone can use; only allows the owner of a node to set its
  * address.
  */
-contract NameResolver is
+contract NamePublicResolver is
     AddrResolver,
     ContentHashResolver,
     TextResolver,
+    InterfaceResolver,
+    PubkeyResolver,
+    NameResolver,
+    ABIResolver,
+    ExtendedResolver,
     Multicallable
 {
     INameRegistry immutable registry;
@@ -38,7 +48,16 @@ contract NameResolver is
         public
         view
         virtual
-        override(AddrResolver, ContentHashResolver, TextResolver, Multicallable)
+        override(
+            AddrResolver,
+            ContentHashResolver,
+            TextResolver,
+            ABIResolver,
+            InterfaceResolver,
+            PubkeyResolver,
+            NameResolver,
+            Multicallable
+        )
         returns (bool)
     {
         return super.supportsInterface(interfaceID);

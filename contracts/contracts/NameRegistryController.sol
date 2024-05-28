@@ -10,6 +10,11 @@ import {EnsUtils} from "./libs/EnsUtils.sol";
 import {IMulticallable} from "./resolver/IMulticallable.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 
+/**
+ * NameRegistryController controlls the NFT minting under NameRegistry contract
+ * The minter requires parameters signed by a verifier address
+ * in order to be able to perform NameRegistry operations
+ */
 contract NameRegistryController is EIP712, Controllable, ERC721Holder {
     address public treasury;
     address public verifier;
@@ -43,6 +48,11 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         registry = INameRegistry(_registry);
     }
 
+    /**
+     * Mints a new name node.
+     * @param context The information about minting a new subname.
+     * @param signature The address which owns the node, can update resolver and records
+     */
     function mint(
         MintContext memory context,
         bytes memory signature
@@ -52,21 +62,24 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         uint256 totalPrice = context.fee + context.price;
         require(totalPrice < msg.value, "Insufficient funds");
 
-        bytes32 parentNode = EnsUtils.namehash(ETH_NODE, context.parentLabel);
-        bytes32 subnameNode = EnsUtils.namehash(parentNode, context.label);
+        bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
+        bytes32 node = _namehash(parentNode, context.label);
+        uint256 nodeTokenId = uint256(node);
 
-        require(registry.ownerOf(uint256(subnameNode)) == address(0), "Name already taken");
+        require(registry.ownerOf(uint256(nodeTokenId)) == address(0), "Name already taken");
 
         if (context.resolverData.length > 0) {
-            _mintWithRecords(context, subnameNode);
+            _mintWithRecords(context, node);
         } else {
-            _mintSimple(context, subnameNode);
+            _mintSimple(context, node);
         }
+
+        transferFunds(context);
 
         emit NameMinted(
             context.label,
             context.parentLabel,
-            subnameNode,
+            node,
             parentNode,
             context.owner,
             context.price,
@@ -142,14 +155,6 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
             }("");
             require(sentToTreasury, "Could not transfer ETH to treasury");
         }
-        
-        uint256 total = context.fee + context.price;
-        if (total > 0 && msg.value - total > 0) {
-             (bool sendRemainder, ) = payable(msg.sender).call{
-                value: msg.value - total
-            }("");
-            require(sendRemainder, "Could not transfer ETH to sender");
-        }
     }
 
     function setTreasury(address _treasury) public onlyOwner {
@@ -166,5 +171,9 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         bytes[] memory data
     ) internal {
         IMulticallable(resolver).multicallWithNodeCheck(node, data);
+    }
+
+    function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {
+        return EnsUtils.namehash(parent, label);
     }
 }
