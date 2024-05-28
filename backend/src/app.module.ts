@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppConfig } from './config/app-config.service';
+import { ListingController } from './controller/listing-controller';
+import { MetadataController } from './controller/metadata-controller';
 import { MintController } from './controller/mint-controller';
 import { ListedNamesModule } from './listed-names/listed-names.module';
+import { MetadataModule } from './metadata/metadata.module';
 import { MintSigner } from './minting/mint-signer';
 import { MintingModule } from './minting/minting.module';
 import { MintingService } from './minting/minting.service';
 import { Web3Module } from './web3/web3.module';
-import { ListingController } from './controller/listing-controller';
 
 const nodeEnv = process.env.NODE_ENV;
 const isTest = nodeEnv === 'test';
@@ -22,8 +24,9 @@ const isTest = nodeEnv === 'test';
     ListedNamesModule,
     MintingModule,
     Web3Module,
+    MetadataModule,
   ],
-  controllers: [MintController, ListingController],
+  controllers: [MintController, ListingController, MetadataController],
   providers: [MintingService, MintSigner, AppConfig],
 })
 export class AppModule {}
