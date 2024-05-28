@@ -22,11 +22,11 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
     error InsufficientFunds(uint256 required, uint256 supplied);
 
     address public treasury;
-    address public verifier;
+    address private verifier;
     bytes32 private constant ETH_NODE =
         0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
-    INameRegistry immutable registry;
+    INameRegistry immutable public registry;
 
     event NameMinted(
         string label,
@@ -74,7 +74,7 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         }
 
         if (context.resolverData.length > 0) {
-            _mintWithRecords(context, node);
+            _mintWithRecords(context, node, parentNode);
         } else {
             _mintSimple(context, node);
         }
@@ -93,15 +93,16 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         );
     }
 
-    function _mintSimple(MintContext memory context, bytes32 node) internal {
-        registry.mint(node, context.owner, context.resolver, context.expiry);
+    function _mintSimple(MintContext memory context, bytes32 parentNode) internal {
+        registry.mint(context.label, parentNode, context.owner, context.resolver, context.expiry);
     }
 
     function _mintWithRecords(
         MintContext memory context,
-        bytes32 node
+        bytes32 node,
+        bytes32 parentNode
     ) internal {
-        registry.mint(node, address(this), context.resolver, context.expiry);
+        registry.mint(context.label, parentNode, address(this), context.resolver, context.expiry);
 
         _setRecordsMulticall(
             node,

@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-error ZeroAddressNotAllowed();
-error ExpiryTooLow(uint64);
-error NodeAlreadyTaken(bytes32);
-
 interface INameRegistry {
     function mint(
-        bytes32 node,
+        string memory label,
+        bytes32 parentNode,
         address owner,
         address resolver,
-        uint256 expiry
+        uint64 expiry
     ) external;
 
     function safeTransferFrom(address from, address to, uint256 token) external;

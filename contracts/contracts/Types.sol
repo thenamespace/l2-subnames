@@ -15,11 +15,5 @@ struct MintContext {
 
 struct NodeRecord {
     address resolver;
-    address owner;
-    uint64 expiry;
-}
-
-struct NodeExpiry {
-    bytes32 node;
     uint64 expiry;
 }

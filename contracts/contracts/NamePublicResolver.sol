@@ -27,7 +27,7 @@ contract NamePublicResolver is
     ExtendedResolver,
     Multicallable
 {
-    INameRegistry immutable registry;
+    INameRegistry immutable public registry;
 
     constructor(address _registry) {
         registry = INameRegistry(_registry);
