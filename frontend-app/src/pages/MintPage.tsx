@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ChangeMintNetwork,
   MintSubnameForm,
@@ -10,6 +10,7 @@ import "./MintPage.css";
 import { getSingleListing } from "../api";
 import { Listing } from "../api/types";
 import { useWeb3Network } from "../web3";
+import { toast } from "react-toastify";
 
 export const MintPage = () => {
   const { parentName } = useParams();
@@ -20,6 +21,7 @@ export const MintPage = () => {
     isFetching: true,
   });
   const { networkName } = useWeb3Network();
+  const navigate = useNavigate()
 
   useEffect(() => {
     getSingleListing(parentName as string).then((res) => {
@@ -27,6 +29,10 @@ export const MintPage = () => {
         isFetching: false,
         item: res,
       });
+    }).catch(err => {
+      console.error(err);
+      toast(parentName + " not found", { type: "warning" })
+      navigate("/")
     });
   }, []);
 
