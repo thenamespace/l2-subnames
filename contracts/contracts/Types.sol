@@ -12,3 +12,8 @@ struct MintContext {
     address paymentReceiver;
     bytes[] resolverData;
 }
+
+struct NodeRecord {
+    address resolver;
+    uint64 expiry;
+}
