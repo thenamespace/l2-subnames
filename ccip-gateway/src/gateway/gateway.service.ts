@@ -11,6 +11,7 @@ import {
   keccak256,
   namehash,
   parseAbiParameters,
+  zeroAddress,
 } from 'viem';
 import { decodeDnsName } from './gateway.utils';
 import RESOLVER_ABI from './resolver_abi.json';
@@ -78,7 +79,7 @@ export class GatewayService {
 
     let _value = value;
     if (value === "0x") {
-      _value = "";
+      _value = zeroAddress;
     }
 
     console.log(`Sender contract ${resolverContract}, 
