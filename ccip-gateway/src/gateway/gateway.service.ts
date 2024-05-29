@@ -21,7 +21,7 @@ import { Web3Clients, NameResolver, getNetworkForOffchainResolver, getNameResolv
 
 const addr = 'addr';
 const text = 'text';
-const contentHash = 'contentHash';
+const contentHash = 'contenthash';
 const supportedFunctions = [addr, text, contentHash];
 const defaultCoinType = '60';
 
@@ -76,16 +76,21 @@ export class GatewayService {
       decodedFunction.args,
     );
 
+    let _value = value;
+    if (value === "0x") {
+      _value = "";
+    }
+
     console.log(`Sender contract ${resolverContract}, 
       Resolving ${decodedName}, 
       Function ${decodedFunction.functionName}, 
       Args ${decodedFunction.args}, 
-      Result ${value}`);
+      Result ${_value}`);
 
     const result = encodeFunctionResult({
       abi: RESOLVER_ABI,
       functionName: decodedFunction.functionName,
-      result: [value],
+      result: [_value],
     });
 
     const digest = keccak256(

@@ -41,7 +41,7 @@ export class NameResolver {
         const contentHash = await this.publicClient.readContract({
             abi: NAME_RESOLVER_ABI,
             address: this.contractAddress,
-            functionName: "contentHash",
+            functionName: "contenthash",
             args: [namehash(fullName)]
         }) as string
 
