@@ -10,6 +10,7 @@ import "./MintPage.css";
 import { getSingleListing } from "../api";
 import { Listing } from "../api/types";
 import { useWeb3Network } from "../web3";
+import { toast } from "react-toastify";
 
 export const MintPage = () => {
   const { parentName } = useParams();
@@ -29,6 +30,8 @@ export const MintPage = () => {
         item: res,
       });
     }).catch(err => {
+      console.error(err);
+      toast(parentName + " not found", { type: "warning" })
       navigate("/")
     });
   }, []);

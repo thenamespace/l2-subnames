@@ -20,7 +20,7 @@ import { Address, Hash, encodeFunctionData, isAddress, namehash} from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import logoImage from "../assets/logo/namespace.png";
-import { MintRecordsForm, RecordsUpdateInput } from "./MintRecordsForm";
+import { RecordsUpdateInput, SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
 
 type MintFormMode = "mint" | "setRecords";
@@ -89,6 +89,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
+  //@ts-ignore
   const handleMintWithRecords = async (recordsUpdate: RecordsUpdateInput) => {
     const fullSubname = `${subnameLabel}.${parentName}`;
     const node = namehash(fullSubname);
@@ -126,6 +127,14 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     }
     handleMint(resolverData);
   };
+
+  // const handleSetRecords = async () => {
+  //   if (!address) {
+  //     openConnectModal?.();
+  //     return;
+  //   }
+  //   setMode("setRecords")
+  // }
 
   const handleMint = async (resolverData: any[] = []) => {
     if (!address) {
@@ -210,10 +219,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
 
   if (mode === "setRecords") {
     return (
-      <MintRecordsForm
-        onMint={(records) => handleMintWithRecords(records)}
-        onBack={() => setMode("mint")}
-      />
+      <SetRecordsForm onBack={() => setMode("mint")}/>
     );
   }
 
@@ -271,13 +277,13 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       >
         {mintBtnLabel}
       </Button>
-      {!mintBtnLoading && <Button
+      {/* {!mintBtnLoading && <Button
         colorStyle="blueGradient"
         disabled={isMintBtnDisabled}
-        onClick={() => setMode("setRecords")}
+        onClick={() => handleSetRecords()}
       >
-        Mint /w records
-      </Button>}
+        Set Records
+      </Button>} */}
       </div>
     </div>
   );
@@ -301,7 +307,7 @@ export const SuccessScreen = ({ fullName }: { fullName: string }) => {
             Back
           </Button>
         </Link>
-        <a href={`https://app.ens.domains/${fullName}`}>
+        <a href={`https://app.ens.domains/${fullName}`} target="_blank">
           <Button style={{ width: 150 }}>Check on ENS</Button>
         </a>
       </div>
