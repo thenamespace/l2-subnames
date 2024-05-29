@@ -11,6 +11,8 @@ export const useNameController = () => {
   const { address } = useAccount();
 
   const mint = async (params: MintContextResponse): Promise<Hash> => {
+    const mintFee = BigInt(params.parameters.fee || 0)
+    const mintPrice = BigInt(params.parameters.price || 0)
     //@ts-ignore
     const { request } = await publicClient?.simulateContract({
       abi: REGISTRY_CONTROLLER_ABI,
@@ -18,6 +20,7 @@ export const useNameController = () => {
       address: nameRegistryController,
       args: [params.parameters, params.signature],
       account: address,
+      value: mintFee + mintPrice
     });
     return (await walletClient?.writeContract(request)) as Hash;
   };

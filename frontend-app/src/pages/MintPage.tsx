@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ChangeMintNetwork,
   MintSubnameForm,
@@ -20,6 +20,7 @@ export const MintPage = () => {
     isFetching: true,
   });
   const { networkName } = useWeb3Network();
+  const navigate = useNavigate()
 
   useEffect(() => {
     getSingleListing(parentName as string).then((res) => {
@@ -27,6 +28,8 @@ export const MintPage = () => {
         isFetching: false,
         item: res,
       });
+    }).catch(err => {
+      navigate("/")
     });
   }, []);
 

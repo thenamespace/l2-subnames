@@ -21,6 +21,7 @@ import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import logoImage from "../assets/logo/namespace.png";
 import { MintRecordsForm, RecordsUpdateInput } from "./MintRecordsForm";
+import { toast } from "react-toastify";
 
 type MintFormMode = "mint" | "setRecords";
 
@@ -139,6 +140,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
         address as any,
         networkName
       );
+
       try {
         setMintIndicators({ ...mintIndicators, waitingWallet: true });
 
@@ -157,10 +159,17 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           confirmations: 2,
         });
         setMintSuccess(true);
-      } catch (err) {
-        console.log(err);
+      } catch (err:any) {
+        console.error(err)
+        if (err.details && err.details.includes("insufficient funds for gas")) {
+          toast("Insufficient ETH balance.", { type: "warning" })
+        } else {
+          toast("Error ocurred. Check console for more info", { type: "error" })
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error(err)
+      toast("Error ocurred. Check console for more info", { type: "error" })
     } finally {
       setMintIndicators({ waitingTx: false, waitingWallet: false });
     }
@@ -186,7 +195,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     indicators.isChecking ||
     !indicators.isAvailable ||
     mintBtnLoading;
-
+    
   let mintBtnLabel = "Mint";
   if (mintIndicators.waitingTx) {
     mintBtnLabel = "Waiting for tx";
@@ -253,20 +262,23 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           ></Toggle>
         </div>
       </Card>
+      <div className="mt-3 d-flex">
       <Button
         loading={mintBtnLoading}
-        className="mt-3"
+        className="me-3"
         disabled={isMintBtnDisabled}
         onClick={() => handleMint()}
       >
         {mintBtnLabel}
       </Button>
-      {/* {!mintBtnLoading && <Button
+      {!mintBtnLoading && <Button
+        colorStyle="blueGradient"
         disabled={isMintBtnDisabled}
         onClick={() => setMode("setRecords")}
       >
-        Mint with records
-      </Button>} */}
+        Mint /w records
+      </Button>}
+      </div>
     </div>
   );
 };
