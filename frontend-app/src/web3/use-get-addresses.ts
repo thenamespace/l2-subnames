@@ -13,8 +13,8 @@ const addresses: Record<Web3Network, ContractAddresses> = {
     nameRegistry: "0xcc230502499E76bB8ec26F04235587Ee154Ef415"
   },
   base: {
-    nameRegistryController: "0x4b2aA1d4C269c6113Ca396f811F99580111f3A89",
-    nameRegistry: "0xaE04a09CF2c408803AC7718e3dE22ac346a05B58"
+    nameRegistryController: "0x7535c805055a3452ef692986f76E57dbabA0810f",
+    nameRegistry: "0x7014a57DCC7E1acf03aEE7E2f642AA5BA3359798"
   },
   arbitrum: {
     nameRegistry: "0x0",
