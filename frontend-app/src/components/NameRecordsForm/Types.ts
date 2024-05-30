@@ -24,10 +24,12 @@ export interface TextRecordCard {
     icon?: string;
     key: string;
     label: string;
+    placeholder?: string
 }
 
 export interface AvailableAddressRecord {
     isValid: (value: string) => boolean
     chainName: string
     coinType: number
+    iconUrl?: string
 }

@@ -7,7 +7,7 @@ import {
   Toggle,
   Card,
 } from "@ensdomains/thorin";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { normalize } from "viem/ens";
 import { useNameRegistry, useWeb3Clients, useWeb3Network } from "../web3";
 import { getMintingParameters } from "../api";
@@ -16,18 +16,23 @@ import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
 import { Link } from "react-router-dom";
 import "./MintSubnameForm.css";
-import { Address, Hash, encodeFunctionData, isAddress, namehash} from "viem";
+import { Address, Hash, encodeFunctionData, isAddress, namehash } from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import logoImage from "../assets/logo/namespace.png";
-import { RecordsUpdateInput, SetRecordsForm } from "./MintRecordsForm";
+import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
+import { NameRecords, getAvailableAddrByCoin } from "./NameRecordsForm";
 
 type MintFormMode = "mint" | "setRecords";
 
 export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   const [subnameLabel, setSubnameLabel] = useState("");
 
+  const [nameRecords, setNameRecords] = useState<NameRecords>({
+    addresses: [],
+    texts: [],
+  });
   const { networkName } = useWeb3Network();
   const { publicClient } = useWeb3Clients();
   const { isSubnameAvailable } = useNameRegistry();
@@ -89,54 +94,76 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
-  //@ts-ignore
-  const handleMintWithRecords = async (recordsUpdate: RecordsUpdateInput) => {
-    const fullSubname = `${subnameLabel}.${parentName}`;
+  const convertRecordsToData = (fullSubname: string) => {
     const node = namehash(fullSubname);
+    const { texts, addresses } = nameRecords;
+    const data: Hash[] = [];
+    if (addresses.length > 0) {
+      addresses.forEach((addr) => {
+        // todo check values for different chains
+        if (!isAddress(addr.value)) {
+          return;
+        }
+        const coinType = BigInt(addr.coinType);
 
-    const { baseAddr, ethAddr, texts } = recordsUpdate;
-
-    const resolverData: Hash[] = [];
-    if (baseAddr && isAddress(baseAddr)) {
-      resolverData.push(encodeFunctionData({
-        abi: NAME_RESPOLVER_ABI,
-        functionName: "setAddr",
-        args: [node, BigInt(2147492101), baseAddr]
-      }))
-    }
-
-    if (ethAddr && isAddress(ethAddr)) {
-      resolverData.push(
-        encodeFunctionData({
-          abi: NAME_RESPOLVER_ABI,
-          functionName: "setAddr",
-           args: [node, BigInt(60), ethAddr]
-        })
-      );
-    }
-
-    if (texts && texts.length > 0) {
-      texts.forEach((textRecord) => {
-        const textData = encodeFunctionData({
-          abi: NAME_RESPOLVER_ABI,
-          functionName: "setText",
-          args: [node, textRecord.key, textRecord.value],
-        });
-        resolverData.push(textData);
+        data.push(
+          encodeFunctionData({
+            abi: NAME_RESPOLVER_ABI,
+            args: [node, coinType, addr.value],
+            functionName: "setAddr",
+          })
+        );
       });
     }
-    handleMint(resolverData);
+
+    if (texts.length > 0) {
+      texts.forEach((text) => {
+        if (!text.value || text.value.length === 0) {
+          return;
+        }
+
+        data.push(
+          encodeFunctionData({
+            abi: NAME_RESPOLVER_ABI,
+            args: [node, text.key, text.value],
+            functionName: "setText",
+          })
+        );
+      });
+    }
+    return data;
   };
 
-  // const handleSetRecords = async () => {
-  //   if (!address) {
-  //     openConnectModal?.();
-  //     return;
-  //   }
-  //   setMode("setRecords")
-  // }
+  const handleSetRecords = async () => {
+    if (!address) {
+      openConnectModal?.();
+      return;
+    }
+    setMode("setRecords");
+  };
 
-  const handleMint = async (resolverData: any[] = []) => {
+  const { selectedTexts, selectedAddr } = useMemo(() => {
+    let _texts = "";
+    let _addr = "";
+
+    const { texts, addresses } = nameRecords;
+    texts.forEach((t) => {
+      if (t.value.length > 0) {
+        _texts += t.key + ", ";
+      }
+    });
+    addresses.forEach((addr) => {
+      if (isAddress(addr.value)) {
+        const addrData = getAvailableAddrByCoin(addr.coinType);
+        if (addrData) {
+          _addr += addrData.chainName + ", ";
+        }
+      }
+    });
+    return { selectedTexts: _texts, selectedAddr: _addr };
+  }, [nameRecords]);
+
+  const handleMint = async () => {
     if (!address) {
       openConnectModal?.();
       return;
@@ -151,10 +178,11 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       );
 
       try {
+        const fllName = `${subnameLabel}.${parentName}`;
+        const resolverData = convertRecordsToData(fllName);
         setMintIndicators({ ...mintIndicators, waitingWallet: true });
 
         if (resolverData.length === 0) {
-          const fllName = `${subnameLabel}.${parentName}`;
           const encodedFunc = getSetAddrFunc(fllName, address as Address);
           _params.parameters.resolverData = [encodedFunc];
         } else {
@@ -168,17 +196,21 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           confirmations: 2,
         });
         setMintSuccess(true);
-      } catch (err:any) {
-        console.error(err)
+      } catch (err: any) {
+        console.log(err, "DETAILS");
         if (err.details && err.details.includes("insufficient funds for gas")) {
-          toast("Insufficient ETH balance.", { type: "warning" })
+          toast("Insufficient ETH balance.", { type: "warning" });
+        } else if (err.details && err.details.includes("User denied")) {
+          // do nothing, signature denied
         } else {
-          toast("Error ocurred. Check console for more info", { type: "error" })
+          toast("Error ocurred. Check console for more info", {
+            type: "error",
+          });
         }
       }
     } catch (err: any) {
-      console.error(err)
-      toast("Error ocurred. Check console for more info", { type: "error" })
+      console.error(err);
+      toast("Error ocurred. Check console for more info", { type: "error" });
     } finally {
       setMintIndicators({ waitingTx: false, waitingWallet: false });
     }
@@ -192,6 +224,34 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     });
   };
 
+  const handleNameRecordsSaved = (value: NameRecords) => {
+
+    const hasETHAddr = value.addresses.find(addr => addr.coinType === 60);
+    if (hasETHAddr) {
+      setSetAddr(true);
+    } else {
+      setSetAddr(false);
+    }
+
+    setNameRecords(value);
+  }
+
+  const onSetAddrChanged = () => {
+    if (!setAddr) {
+      setSetAddr(true);
+      setNameRecords({
+        ...nameRecords,
+        addresses: [...nameRecords.addresses, { coinType: 60, value: address as string}]
+      })
+    } else {
+      setSetAddr(false);
+      setNameRecords({
+        ...nameRecords,
+        addresses: nameRecords.addresses.filter(arr => arr.coinType !== 60)
+      })
+    }
+  }
+
   const isTaken =
     !indicators.isChecking &&
     !indicators.isAvailable &&
@@ -204,7 +264,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     indicators.isChecking ||
     !indicators.isAvailable ||
     mintBtnLoading;
-    
+
   let mintBtnLabel = "Mint";
   if (mintIndicators.waitingTx) {
     mintBtnLabel = "Waiting for tx";
@@ -219,7 +279,13 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
 
   if (mode === "setRecords") {
     return (
-      <SetRecordsForm onBack={() => setMode("mint")}/>
+      <SetRecordsForm
+        nameRecords={nameRecords}
+        setNameRecords={(v) => {
+          handleNameRecordsSaved(v);
+        }}
+        onBack={() => setMode("mint")}
+      />
     );
   }
 
@@ -264,26 +330,42 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           <Toggle
             size="small"
             checked={setAddr}
-            onClick={() => setSetAddr(!setAddr)}
+            onClick={() => onSetAddrChanged()}
           ></Toggle>
         </div>
       </Card>
+      <div className="mt-2" style={{textAlign:"left"}}>
+        {selectedAddr.length > 0 && (
+          <Typography
+            fontVariant="extraSmall"
+            color="grey"
+          >{`Address records set: ${selectedAddr}`}</Typography>
+        )}
+        {selectedTexts.length > 0 && (
+          <Typography
+            fontVariant="extraSmall"
+            color="grey"
+          >{`Text records set: ${selectedTexts}`}</Typography>
+        )}
+      </div>
       <div className="mt-3 d-flex">
-      <Button
-        loading={mintBtnLoading}
-        className="me-3"
-        disabled={isMintBtnDisabled}
-        onClick={() => handleMint()}
-      >
-        {mintBtnLabel}
-      </Button>
-      {/* {!mintBtnLoading && <Button
-        colorStyle="blueGradient"
-        disabled={isMintBtnDisabled}
-        onClick={() => handleSetRecords()}
-      >
-        Set Records
-      </Button>} */}
+        <Button
+          loading={mintBtnLoading}
+          className="me-3"
+          disabled={isMintBtnDisabled}
+          onClick={() => handleMint()}
+        >
+          {mintBtnLabel}
+        </Button>
+        {!mintBtnLoading && (
+          <Button
+            colorStyle="blueGradient"
+            disabled={isMintBtnDisabled}
+            onClick={() => handleSetRecords()}
+          >
+            Set Records
+          </Button>
+        )}
       </div>
     </div>
   );
