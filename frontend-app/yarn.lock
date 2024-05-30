@@ -278,6 +278,15 @@
   resolved "https://registry.yarnpkg.com/@emotion/unitless/-/unitless-0.8.1.tgz#182b5a4704ef8ad91bde93f7a860a88fd92c79a3"
   integrity sha512-KOEGMu6dmJZtpadb476IsZBclKvILjopjUii3V+7MnXIQCYh8W3NgNcgwo21n9LXZX6EDIKvqfjYxXebDwxKmQ==
 
+"@ensdomains/address-encoder@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@ensdomains/address-encoder/-/address-encoder-1.1.2.tgz#29bb2346f4da21f8e2f7f05a4755d9ccd3ecab6e"
+  integrity sha512-x+uUZbtvtWDh23dLH/U//re0s9v341tFB6SJeUElkQ31O3jkoUh3jvgnx+NxiohWW6JWW6QrXS4kigxuvwbi2A==
+  dependencies:
+    "@noble/curves" "^1.2.0"
+    "@noble/hashes" "^1.3.2"
+    "@scure/base" "^1.1.5"
+
 "@ensdomains/thorin@^0.6.49":
   version "0.6.49"
   resolved "https://registry.yarnpkg.com/@ensdomains/thorin/-/thorin-0.6.49.tgz#e54a3bbe8a51d648bfbac99ed5ca8b4fcc58ee30"
@@ -772,6 +781,13 @@
   dependencies:
     "@noble/hashes" "1.3.3"
 
+"@noble/curves@^1.2.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.4.0.tgz#f05771ef64da724997f69ee1261b2417a49522d6"
+  integrity sha512-p+4cb332SFCrReJkCYe8Xzm0OWi4Jji5jVdIZRL/PmacmDkFNw6MrrV+gGpiPxLHbV+zKFRywUWbaseT+tZRXg==
+  dependencies:
+    "@noble/hashes" "1.4.0"
+
 "@noble/hashes@1.3.2":
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.2.tgz#6f26dbc8fbc7205873ce3cee2f690eba0d421b39"
@@ -782,7 +798,7 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.3.tgz#39908da56a4adc270147bb07968bf3b16cfe1699"
   integrity sha512-V7/fPHgl+jsVPXqqeOzT8egNj2iBIVt+ECeMMG8TdcnTikP3oaBtUVqpT/gYCR68aEBJSF+XbYUxStjbFMqIIA==
 
-"@noble/hashes@^1.3.1":
+"@noble/hashes@1.4.0", "@noble/hashes@^1.3.1", "@noble/hashes@^1.3.2":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.4.0.tgz#45814aa329f30e4fe0ba49426f49dfccdd066426"
   integrity sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==
@@ -1020,7 +1036,7 @@
   resolved "https://registry.yarnpkg.com/@safe-global/safe-gateway-typescript-sdk/-/safe-gateway-typescript-sdk-3.21.1.tgz#984ec2d3d4211caf6a96786ab922b39909093538"
   integrity sha512-7nakIjcRSs6781LkizYpIfXh1DYlkUDqyALciqz/BjFU/S97sVjZdL4cuKsG9NEarytE+f6p0Qbq2Bo1aocVUA==
 
-"@scure/base@^1.1.3", "@scure/base@~1.1.0", "@scure/base@~1.1.2", "@scure/base@~1.1.4":
+"@scure/base@^1.1.3", "@scure/base@^1.1.5", "@scure/base@~1.1.0", "@scure/base@~1.1.2", "@scure/base@~1.1.4":
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.1.6.tgz#8ce5d304b436e4c84f896e0550c83e4d88cb917d"
   integrity sha512-ok9AWwhcgYuGG3Zfhyqg+zwl+Wn5uE+dwC0NV/2qQkx4dABbb/bx96vWu8NSj+BNjjSjno+JRYRjle1jV08k3g==
