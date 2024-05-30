@@ -76,7 +76,7 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         if (context.resolverData.length > 0) {
             _mintWithRecords(context, node, parentNode);
         } else {
-            _mintSimple(context, node);
+            _mintSimple(context, parentNode);
         }
 
         transferFunds(context);
