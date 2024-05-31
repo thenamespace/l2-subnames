@@ -1,6 +1,9 @@
-import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import { config as dotEnvConfig } from "dotenv";
+import { HardhatUserConfig } from "hardhat/config";
+import "./scripts/name-registry";
+import "./scripts/name-registry-controller";
+
 dotEnvConfig();
 
 const config: HardhatUserConfig = {
@@ -16,7 +19,7 @@ const config: HardhatUserConfig = {
       accounts: [
         {
           privateKey: process.env.SIGNER_KEY as string,
-          balance: "57131269468938504",
+          balance: "203109970411045308",
         },
       ],
     },
