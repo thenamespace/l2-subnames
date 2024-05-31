@@ -19,6 +19,7 @@ import {
 } from "./NameRecordsForm";
 import "./MintRecordsForm.css";
 import { isAddress } from "viem";
+import { useAccount } from "wagmi";
 
 export interface RecordsUpdateInput {
   baseAddr?: string;
@@ -26,31 +27,21 @@ export interface RecordsUpdateInput {
   texts: TextRecord[];
 }
 
-type RecordTypeNav = "address" | "texts";
-const NavItems: { label: string; value: RecordTypeNav }[] = [
-  {
-    label: "Address Records",
-    value: "address",
-  },
-  {
-    label: "Text Records",
-    value: "texts",
-  },
-];
-
 export type SetRecordsMode = "update" | "select";
 
 export const SetRecordsForm = ({
   onBack,
   nameRecords,
   setNameRecords,
+  onRecordsSelected,
 }: {
   onBack: () => void;
-  nameRecords: NameRecords,
+  nameRecords: NameRecords;
   setNameRecords: (value: NameRecords) => void;
+  onRecordsSelected: () => void;
 }) => {
   const [mode, setMode] = useState<SetRecordsMode>("select");
-  const [recordTypeNav, setRecordTypeNav] = useState<RecordTypeNav>("texts");
+  const { address } = useAccount();
 
   const handleToggleText = (key: string) => {
     const _records = { ...nameRecords };
@@ -71,12 +62,15 @@ export const SetRecordsForm = ({
     if (_addresses.find((i) => i.coinType === coinType)) {
       _addresses = _addresses.filter((addr) => addr.coinType !== coinType);
     } else {
-      _addresses.push({ value: "", coinType });
+      let addrValue = "";
+      if (coinType === 60 && address) {
+        addrValue = address;
+      }
+      _addresses.push({ value: addrValue, coinType });
     }
     _records.addresses = _addresses;
     setNameRecords(_records);
   };
-
 
   const handleTextsValueChanged = (key: string, value: string) => {
     const _records = { ...nameRecords };
@@ -118,79 +112,115 @@ export const SetRecordsForm = ({
     setNameRecords(_records);
   };
 
-  const noRecordsSelected = nameRecords.addresses.length === 0 && nameRecords.texts.length === 0;
+  const checkInputsValid = () => {
+    const { texts, addresses } = nameRecords;
+    let valid = true;
+
+    for (const text of texts) {
+      if (text.value.length === 0) {
+        valid = false;
+      }
+    }
+
+    for (const addr of addresses) {
+      const validatorFunc = getAvailableAddrByCoin(addr.coinType)?.isValid;
+      if (addr.value.length === 0 || !validatorFunc?.(addr.value)) {
+        valid = false;
+      }
+    }
+    return valid;
+  };
+
+  const handleRecordsSelected = () => {
+    if (checkInputsValid()) {
+      onRecordsSelected();
+    }
+  };
+
+  const noRecordsSelected =
+    nameRecords.addresses.length === 0 && nameRecords.texts.length === 0;
 
   if (mode === "select") {
     return (
       <div className="mint-records-form">
-        <Typography fontVariant="extraLargeBold">Select records</Typography>
-        {/* <div className="d-flex justify-content justify-content-center">
-          <div style={{ width: 120 }}>
-            <Avatar label="avatar"></Avatar>
-          </div>
-        </div> */}
-        {noRecordsSelected && <div className="mt-4">
-          <Helper>
-             <Typography>No records selected</Typography>
-             <Button style={{width:170}} onClick={() => setMode("update")}>+ Add records</Button>
+        <div className="d-flex justify-content-between mb-2">
+          <Typography fontVariant="extraLargeBold">Select records</Typography>
+          <Button style={{ width: 170 }} onClick={() => setMode("update")}>
+            + More records
+          </Button>
+        </div>
+        {noRecordsSelected && (
+          <Helper className="mt-4">
+            <Typography>No records selected</Typography>
           </Helper>
-          </div>}
-        {!noRecordsSelected && <ScrollBox style={{ maxHeight: 300, padding: 10 }}>
-          <TextsInputs
-            onTextChanged={(key, value) => handleTextsValueChanged(key, value)}
-            onTextRemoved={(key) => handleTextsRemoved(key)}
-            selectedTexts={nameRecords.texts}
-          />
-          <AddressesInputs
-            onAddrChange={(coin, val) => handleAddrValueChanged(coin, val)}
-            onAddrRemoved={handleAddrRemoved}
-            selectedAddresses={nameRecords.addresses}
-          />
-        </ScrollBox>}
+        )}
+
+        {!noRecordsSelected && (
+          <ScrollBox style={{ maxHeight: 300, padding: 10 }}>
+            <AddressesInputs
+              onAddrChange={(coin, val) => handleAddrValueChanged(coin, val)}
+              onAddrRemoved={handleAddrRemoved}
+              selectedAddresses={nameRecords.addresses}
+            />
+            <TextsInputs
+              onTextChanged={(key, value) =>
+                handleTextsValueChanged(key, value)
+              }
+              onTextRemoved={(key) => handleTextsRemoved(key)}
+              selectedTexts={nameRecords.texts}
+            />
+          </ScrollBox>
+        )}
         <div className="d-flex mt-4">
-          <Button className="me-2" colorStyle="blueSecondary" onClick={() => onBack()}>Back</Button>
-         {!noRecordsSelected && <Button onClick={() => setMode("update")}>+ Add records</Button>}
+          <Button
+            className="me-2"
+            colorStyle="blueSecondary"
+            onClick={() => onBack()}
+          >
+            Back
+          </Button>
+          <Button
+            disabled={!checkInputsValid()}
+            onClick={() => handleRecordsSelected()}
+          >
+            {noRecordsSelected ? "Skip" : "Next"}
+          </Button>
         </div>
       </div>
     );
   }
 
+  const recordsSelectedCount =
+    nameRecords.addresses.length + nameRecords.texts.length;
+
   if (mode === "update") {
     return (
       <div className="mint-records-form">
-        <Typography fontVariant="largeBold" className="mb-2">
+        <Typography fontVariant="extraLargeBold" className="mb-2">
           Select records
         </Typography>
-        <div className="d-flex align-items-center mb-4">
-          {NavItems.map((navItem) => (
-            <Typography
-              className="me-2"
-              key={navItem.label}
-              style={{ cursor: "pointer" }}
-              onClick={() => setRecordTypeNav(navItem.value)}
-              color={navItem.value === recordTypeNav ? "blue" : "grey"}
-            >
-              {navItem.label}
+        <ScrollBox style={{ height: 300, padding: 10, overflowX: "hidden" }}>
+          <div>
+            <Typography color="grey" fontVariant="small" className="mb-2">
+              Addresses
             </Typography>
-          ))}
-        </div>
-        {recordTypeNav === "texts" && (
+            <SelectAddresses
+              onAddrToggled={(coinType: number) => handleTogglAddr(coinType)}
+              selectedAddrs={nameRecords.addresses}
+            />
+          </div>
           <div>
             <SelectTexts
               textToggled={(key) => handleToggleText(key)}
               selectedTexts={nameRecords.texts}
             />
           </div>
-        )}
-        {recordTypeNav === "address" && (
-          <div>
-            <SelectAddresses
-              onAddrToggled={(coinType: number) => handleTogglAddr(coinType)}
-              selectedAddrs={nameRecords.addresses}
-            />
-          </div>
-        )}
-        <Button onClick={() => setMode("select")}>Back</Button>
+        </ScrollBox>
+        <div className="d-flex mt-4">
+          <Button
+            onClick={() => setMode("select")}
+          >{`Save (${recordsSelectedCount})`}</Button>
+        </div>
       </div>
     );
   }
@@ -222,7 +252,7 @@ const SelectAddresses = ({
     <div className="row mb-2">
       {Object.keys(availableAddresses).map((addr) => (
         <div
-          className="col col-lg-4 col-sm-6 col-xs-12 p-1"
+          className="col-lg-4 col-sm-6 col-xs-12 p-1"
           onClick={() => onAddrToggled(getCoinType(addr))}
         >
           <Card
@@ -261,12 +291,13 @@ const SelectTexts = ({
           </Typography>
           {textsCategories[category].map((text) => (
             <div
-              className="col col-lg-4 col-sm-6 col-xs-12 p-1"
+              className="col-lg-4 col-sm-6 col-xs-12 p-1"
               onClick={() => textToggled(text.key)}
             >
               <Card
-                className={`p-3 records-item ${isActive(text.key) ? "active" : ""
-                  }`}
+                className={`p-3 records-item ${
+                  isActive(text.key) ? "active" : ""
+                }`}
               >
                 <div className="d-flex justify-content-between">
                   <img src={text.icon} alt={text.key} width="20px"></img>
@@ -306,7 +337,7 @@ const AddressesInputs = ({
 
   const isValidAddr = (value: string) => {
     return isAddress(value);
-  }
+  };
 
   return (
     <div>
@@ -364,6 +395,7 @@ const TextsInputs = ({
           <Input
             label={getLabel(txt.key)}
             labelSecondary={txt.key}
+            error={txt.value.length === 0}
             placeholder={getPlaceholder(txt.key)}
             icon={<img src={getIcon(txt.key)} width="18px"></img>}
             value={txt.value}

@@ -63,7 +63,7 @@ const generalTexts: TextRecordCard[] = [
       placeholder: "eg. namespace"
     },
     {
-      key: "com.telegram",
+      key: "org.telegram",
       label: "Telegram",
       icon: telegram,
       placeholder: "eg. namespace"
