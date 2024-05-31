@@ -4,10 +4,8 @@ import {
   Button,
   Spinner,
   LeftArrowSVG,
-  Toggle,
-  Card,
 } from "@ensdomains/thorin";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
 import { useNameRegistry, useWeb3Clients, useWeb3Network } from "../web3";
 import { getMintingParameters } from "../api";
@@ -15,16 +13,21 @@ import { useAccount } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
 import { Link } from "react-router-dom";
-import "./MintSubnameForm.css";
 import { Address, Hash, encodeFunctionData, isAddress, namehash } from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import logoImage from "../assets/logo/namespace.png";
 import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
-import { NameRecords, getAvailableAddrByCoin } from "./NameRecordsForm";
+import { NameRecords } from "./NameRecordsForm";
+import "./MintSubnameForm.css";
 
-type MintFormMode = "mint" | "setRecords";
+const enum MintProcess {
+  SelectSubname = 1,
+  SelectRecords = 2,
+  Mint = 3,
+  MintSuccess = 4,
+}
 
 export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   const [subnameLabel, setSubnameLabel] = useState("");
@@ -33,12 +36,35 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     addresses: [],
     texts: [],
   });
+  const { address } = useAccount();
+  const [addrAdded, setAddrAdded] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    // we want to add eth address record by default
+    // but only once, if user removes it we don't want to add it again
+    if (address) {
+      if (
+        nameRecords.addresses.find((addr) => addr.coinType === 60) ||
+        addrAdded[address]
+      ) {
+        return;
+      } else {
+        setNameRecords({
+          ...nameRecords,
+          addresses: [
+            ...nameRecords.addresses,
+            { coinType: 60, value: address },
+          ],
+        });
+        setAddrAdded({ ...addrAdded, [address]: true });
+      }
+    }
+  }, [address, nameRecords, addrAdded]);
+
   const { networkName } = useWeb3Network();
   const { publicClient } = useWeb3Clients();
   const { isSubnameAvailable } = useNameRegistry();
   const { mint } = useNameController();
-  const { address } = useAccount();
-  const [setAddr, setSetAddr] = useState(false);
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
     waitingTx: boolean;
@@ -53,10 +79,9 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     isAvailable: false,
     isChecking: false,
   });
-  //@ts-ignore
-  const [mintSuccess, setMintSuccess] = useState(false);
+
   const { openConnectModal } = useConnectModal();
-  const [mode, setMode] = useState<MintFormMode>("mint");
+  const [mode, setMode] = useState<MintProcess>(MintProcess.SelectSubname);
 
   const handleLabelChange = (value: string) => {
     const _value = value.toLocaleLowerCase();
@@ -139,29 +164,8 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       openConnectModal?.();
       return;
     }
-    setMode("setRecords");
+    setMode(MintProcess.SelectRecords);
   };
-
-  const { selectedTexts, selectedAddr } = useMemo(() => {
-    let _texts = "";
-    let _addr = "";
-
-    const { texts, addresses } = nameRecords;
-    texts.forEach((t) => {
-      if (t.value.length > 0) {
-        _texts += t.key + ", ";
-      }
-    });
-    addresses.forEach((addr) => {
-      if (isAddress(addr.value)) {
-        const addrData = getAvailableAddrByCoin(addr.coinType);
-        if (addrData) {
-          _addr += addrData.chainName + ", ";
-        }
-      }
-    });
-    return { selectedTexts: _texts, selectedAddr: _addr };
-  }, [nameRecords]);
 
   const handleMint = async () => {
     if (!address) {
@@ -195,9 +199,8 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           hash: tx,
           confirmations: 2,
         });
-        setMintSuccess(true);
+        setMode(MintProcess.MintSuccess);
       } catch (err: any) {
-        console.log(err, "DETAILS");
         if (err.details && err.details.includes("insufficient funds for gas")) {
           toast("Insufficient ETH balance.", { type: "warning" });
         } else if (err.details && err.details.includes("User denied")) {
@@ -225,32 +228,8 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   };
 
   const handleNameRecordsSaved = (value: NameRecords) => {
-
-    const hasETHAddr = value.addresses.find(addr => addr.coinType === 60);
-    if (hasETHAddr) {
-      setSetAddr(true);
-    } else {
-      setSetAddr(false);
-    }
-
     setNameRecords(value);
-  }
-
-  const onSetAddrChanged = () => {
-    if (!setAddr) {
-      setSetAddr(true);
-      setNameRecords({
-        ...nameRecords,
-        addresses: [...nameRecords.addresses, { coinType: 60, value: address as string}]
-      })
-    } else {
-      setSetAddr(false);
-      setNameRecords({
-        ...nameRecords,
-        addresses: nameRecords.addresses.filter(arr => arr.coinType !== 60)
-      })
-    }
-  }
+  };
 
   const isTaken =
     !indicators.isChecking &&
@@ -273,19 +252,55 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
   }
 
   const fullName = `${subnameLabel}.${parentName}`;
-  if (mintSuccess) {
+  if (mode === MintProcess.MintSuccess) {
     return <SuccessScreen fullName={fullName} />;
   }
 
-  if (mode === "setRecords") {
+  if (mode === MintProcess.SelectRecords) {
     return (
       <SetRecordsForm
         nameRecords={nameRecords}
         setNameRecords={(v) => {
           handleNameRecordsSaved(v);
         }}
-        onBack={() => setMode("mint")}
+        onRecordsSelected={() => setMode(MintProcess.Mint)}
+        onBack={() => setMode(MintProcess.SelectSubname)}
       />
+    );
+  }
+
+  if (mode === MintProcess.Mint) {
+    return (
+      <div>
+        <div className="mb-3 text-center">
+          <img src={logoImage} width="80px" className="mb-3"></img>
+          <Typography fontVariant="bodyBold">Minting</Typography>
+          <Typography fontVariant="largeBold" className="mt-1">
+            <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
+              {subnameLabel}
+            </Typography>
+            {`.${parentName}`}
+          </Typography>
+        </div>
+        <div className="d-flex">
+          {!mintBtnLoading && (
+            <Button
+              className="me-2"
+              colorStyle="blueSecondary"
+              onClick={() => setMode(MintProcess.SelectRecords)}
+            >
+              Back
+            </Button>
+          )}
+          <Button
+            onClick={() => handleMint()}
+            loading={mintBtnLoading}
+            disabled={isMintBtnDisabled}
+          >
+            {mintBtnLabel}
+          </Button>
+        </div>
+      </div>
     );
   }
 
@@ -296,7 +311,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           <LeftArrowSVG />
         </Link>
       </div>
-      <Typography>Minting</Typography>
+      <Typography>Select your subname</Typography>
       <Typography fontVariant="largeBold" className="mt-1">
         <Typography
           style={{ marginRight: -5 }}
@@ -313,7 +328,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           Your subname
         </Typography>
         <Input
-          error={isTaken && "Subname is taken"}
+          error={isTaken && `Name ${fullName} is already taken`}
           size="large"
           value={subnameLabel}
           onChange={(e) => handleLabelChange(e.target.value)}
@@ -322,56 +337,20 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           suffix={indicators.isChecking ? <Spinner /> : null}
         ></Input>
       </div>
-      <Card className="p-3 mt-2">
-        <div className="d-flex align-items-center justify-content-between w-100">
-          <Typography fontVariant="small" color="grey">
-            Set address record
-          </Typography>
-          <Toggle
-            size="small"
-            checked={setAddr}
-            onClick={() => onSetAddrChanged()}
-          ></Toggle>
-        </div>
-      </Card>
-      <div className="mt-2" style={{textAlign:"left"}}>
-        {selectedAddr.length > 0 && (
-          <Typography
-            fontVariant="extraSmall"
-            color="grey"
-          >{`Address records set: ${selectedAddr}`}</Typography>
-        )}
-        {selectedTexts.length > 0 && (
-          <Typography
-            fontVariant="extraSmall"
-            color="grey"
-          >{`Text records set: ${selectedTexts}`}</Typography>
-        )}
-      </div>
       <div className="mt-3 d-flex">
         <Button
-          loading={mintBtnLoading}
-          className="me-3"
+          colorStyle="blueGradient"
           disabled={isMintBtnDisabled}
-          onClick={() => handleMint()}
+          onClick={() => handleSetRecords()}
         >
-          {mintBtnLabel}
+          Next
         </Button>
-        {!mintBtnLoading && (
-          <Button
-            colorStyle="blueGradient"
-            disabled={isMintBtnDisabled}
-            onClick={() => handleSetRecords()}
-          >
-            Set Records
-          </Button>
-        )}
       </div>
     </div>
   );
 };
 
-export const SuccessScreen = ({ fullName }: { fullName: string }) => {
+const SuccessScreen = ({ fullName }: { fullName: string }) => {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center mt-4">
       <img src={logoImage} width="80px"></img>
