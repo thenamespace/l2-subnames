@@ -273,8 +273,9 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     return (
       <div>
         <div className="mb-3 text-center">
+          <Typography style={{textAlign:"left"}} fontVariant="extraLarge">Minting</Typography>
           <img src={logoImage} width="80px" className="mb-3"></img>
-          <Typography fontVariant="bodyBold">Minting</Typography>
+          <Typography fontVariant="small" color="grey">You are about to mint</Typography>
           <Typography fontVariant="largeBold" className="mt-1">
             <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
               {subnameLabel}
@@ -311,7 +312,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           <LeftArrowSVG />
         </Link>
       </div>
-      <Typography>Select your subname</Typography>
+      <Typography fontVariant="large">Find perfect Subname</Typography>
       <Typography fontVariant="largeBold" className="mt-1">
         <Typography
           style={{ marginRight: -5 }}

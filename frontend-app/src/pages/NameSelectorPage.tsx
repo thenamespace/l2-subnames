@@ -44,7 +44,7 @@ export const NameSelectorPage = () => {
             {listedNames.items.map((i) => (
               <div
                 onClick={() => setSelectedName(i)}
-                className="col col-lg-6 card-container"
+                className="col col-lg-6 card-container p-1"
                 key={i.name}
               >
                 <ListedNameCard

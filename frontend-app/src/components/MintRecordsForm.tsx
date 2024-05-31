@@ -143,12 +143,7 @@ export const SetRecordsForm = ({
   if (mode === "select") {
     return (
       <div className="mint-records-form">
-        <div className="d-flex justify-content-between mb-2">
-          <Typography fontVariant="extraLargeBold">Select records</Typography>
-          <Button style={{ width: 170 }} onClick={() => setMode("update")}>
-            + More records
-          </Button>
-        </div>
+        <Typography fontVariant="extraLarge" className="mb-2">Select records</Typography>
         {noRecordsSelected && (
           <Helper className="mt-4">
             <Typography>No records selected</Typography>
@@ -171,7 +166,10 @@ export const SetRecordsForm = ({
             />
           </ScrollBox>
         )}
-        <div className="d-flex mt-4">
+        <div className="p-1 mt-1">
+           <Typography color="blue" style={{cursor:"pointer"}} onClick={() => setMode("update")}>+ Add records</Typography>
+        </div>
+        <div className="d-flex mt-3">
           <Button
             className="me-2"
             colorStyle="blueSecondary"
@@ -196,10 +194,16 @@ export const SetRecordsForm = ({
   if (mode === "update") {
     return (
       <div className="mint-records-form">
-        <Typography fontVariant="extraLargeBold" className="mb-2">
+        <Typography fontVariant="extraLarge" className="mb-2">
           Select records
         </Typography>
         <ScrollBox style={{ height: 300, padding: 10, overflowX: "hidden" }}>
+          <div>
+            <SelectTexts
+              textToggled={(key) => handleToggleText(key)}
+              selectedTexts={nameRecords.texts}
+            />
+          </div>
           <div>
             <Typography color="grey" fontVariant="small" className="mb-2">
               Addresses
@@ -207,12 +211,6 @@ export const SetRecordsForm = ({
             <SelectAddresses
               onAddrToggled={(coinType: number) => handleTogglAddr(coinType)}
               selectedAddrs={nameRecords.addresses}
-            />
-          </div>
-          <div>
-            <SelectTexts
-              textToggled={(key) => handleToggleText(key)}
-              selectedTexts={nameRecords.texts}
             />
           </div>
         </ScrollBox>
