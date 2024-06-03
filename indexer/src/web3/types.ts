@@ -1,1 +1,1 @@
-export type Network = "sepolia" | "base";
+export type Network = "sepolia" | "base" | "localhost";

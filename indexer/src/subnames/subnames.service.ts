@@ -10,6 +10,6 @@ export class SubnamesService {
   async getSubname(label: string, parentName: string): Promise<ISubnameNode> {
     const nodeHash = namehash(`${label}.${parentName}`);
 
-    return await this.dbService.getSubnameNode(nodeHash);
+    return await this.dbService.getSubnameNode("localhost", nodeHash);
   }
 }
