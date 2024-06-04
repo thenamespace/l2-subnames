@@ -31,9 +31,7 @@ export class SponsoredBaseMinter implements OnModuleInit {
         this.walletClient = walletClient;
     }
 
-
-
-    public async sponsorMint(params: MintContext, sig: string) {
+    private async execute(params: MintContext, sig: string) {
         const { request } = await this.publicClient.simulateContract({
             abi: CONTORLLER_ABI,
             address: getContracts("base").controller,
@@ -41,5 +39,17 @@ export class SponsoredBaseMinter implements OnModuleInit {
             args: [params, sig]
         })
         return await this.walletClient.writeContract(request);
+    }
+
+
+    public async sponsorMint(params: MintContext, sig: string) {
+        try {
+            const tx = await this.execute(params, sig);
+            console.log(`Succssfully minted ${params.label}.${params.parentLabel}.eth tx ${tx}`)
+            return tx;
+        } catch(err) {
+            console.error(`Error while minting ${params.label}.${params.parentLabel}.eth`)
+            console.error(err)
+        }
     }
 }
