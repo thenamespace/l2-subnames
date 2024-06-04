@@ -7,21 +7,22 @@ import {
 } from "@ensdomains/thorin";
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
-import { getChainId, useNameRegistry, useWeb3Clients, useWeb3Network } from "../web3";
+import { getChainId, useNameRegistry, useWeb3Clients } from "../web3";
 import { getMintingParameters, mintSponsored } from "../api";
 import { useAccount } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Address, Hash, encodeFunctionData, isAddress, namehash } from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import logoImage from "../assets/logo/namespace.png";
 import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
 import { NameRecords } from "./NameRecordsForm";
 import "./MintSubnameForm.css";
 import { Listing } from "../api/types";
+import calmNinjaImg from "../assets/logo/calm-ninja.png";
+import happyNinjaImg from "../assets/logo/happy-ninja.png";
 
 const enum MintProcess {
   SelectSubname = 1,
@@ -30,7 +31,15 @@ const enum MintProcess {
   MintSuccess = 4,
 }
 
-export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, sponsored?: boolean }) => {
+export const MintSubnameForm = ({
+  listing,
+  basedSummer,
+  defaultAvatar,
+}: {
+  listing: Listing;
+  basedSummer?: boolean;
+  defaultAvatar?: string;
+}) => {
   const [subnameLabel, setSubnameLabel] = useState("");
 
   const [nameRecords, setNameRecords] = useState<NameRecords>({
@@ -85,6 +94,10 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
 
   const { openConnectModal } = useConnectModal();
   const [mode, setMode] = useState<MintProcess>(MintProcess.SelectSubname);
+
+  if (listing.name === "gotbased.eth" && !window.location.pathname.includes("based-summer")) {
+    return <Navigate to="/based-summer/gotbased.eth"></Navigate>
+  }
 
   const handleLabelChange = (value: string) => {
     const _value = value.toLocaleLowerCase();
@@ -159,6 +172,17 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
         );
       });
     }
+
+    if (defaultAvatar && defaultAvatar.length) {
+      data.push(
+        encodeFunctionData({
+          abi: NAME_RESPOLVER_ABI,
+          args: [node, "avatar", defaultAvatar],
+          functionName: "setText",
+        })
+      );
+    }
+
     return data;
   };
 
@@ -187,7 +211,6 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
       try {
         const fllName = `${subnameLabel}.${listing.name}`;
         const resolverData = convertRecordsToData(fllName);
-        setMintIndicators({ ...mintIndicators, waitingWallet: true });
 
         if (resolverData.length === 0) {
           const encodedFunc = getSetAddrFunc(fllName, address as Address);
@@ -197,9 +220,11 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
         }
 
         let tx;
-        if (sponsored) {
-          tx = await _mintSponsored(resolverData);
+        if (basedSummer) {
+          setMintIndicators({ ...mintIndicators, waitingTx: true });
+            tx = await _mintSponsored(resolverData);
         } else {
+          setMintIndicators({ ...mintIndicators, waitingWallet: true });
           tx = await mint(_params);
         }
 
@@ -229,8 +254,14 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
   };
 
   const _mintSponsored = async (resolverData: Hash[]) => {
-    return await mintSponsored(subnameLabel, listing.name, address as any, networkName, resolverData);
-  }
+    return await mintSponsored(
+      subnameLabel,
+      listing.name,
+      address as any,
+      networkName,
+      resolverData
+    );
+  };
 
   const getSetAddrFunc = (fullName: string, wallet: Address) => {
     return encodeFunctionData({
@@ -286,10 +317,11 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
     return (
       <div>
         <div className="mb-3 text-center">
-          <Typography style={{textAlign:"left"}} fontVariant="extraLarge">Minting</Typography>
-          <img src={logoImage} width="80px" className="mb-3"></img>
-          <Typography fontVariant="small" color="grey">You are about to mint</Typography>
-          <Typography fontVariant="largeBold" className="mt-1">
+          <img src={calmNinjaImg} width="100px" className="mb-3"></img>
+          <Typography>
+            You are about to mint
+          </Typography>
+          <Typography fontVariant="extraLargeBold" className="mt-1">
             <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
               {subnameLabel}
             </Typography>
@@ -320,26 +352,25 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
 
   return (
     <div className="text-center mint-subname-form">
-      <div className="back-icon">
-        <Link to="/">
-          <LeftArrowSVG />
-        </Link>
-      </div>
-      <Typography fontVariant="large">Find perfect Subname</Typography>
-      <Typography fontVariant="largeBold" className="mt-1">
-        <Typography
-          style={{ marginRight: -5 }}
-          fontVariant="largeBold"
-          color="blue"
-          asProp="span"
-        >
-          {subnameLabel.length > 0 ? subnameLabel : "{yourName}"}{" "}
-        </Typography>
-        {`.${listing.name}`}
-      </Typography>
+      {!basedSummer && (
+        <>
+          <div className="back-icon">
+            <Link to="/">
+              <LeftArrowSVG />
+            </Link>
+          </div>
+          <Typography fontVariant="large">Find perfect Subname</Typography>
+        </>
+      )}
+      {basedSummer && <>
+        <div className="d-flex justify-content-center flex-column align-items-center">
+             <Typography color="grey">☀️ Onchain Summer ☀️</Typography>
+             <Typography fontVariant="extraLargeBold" color="blue" className="title">GotBased.eth yet?</Typography>
+        </div>
+      </>}
       <div className="mt-3 text-align-left" style={{ textAlign: "left" }}>
         <Typography fontVariant="small" color="grey">
-          Your subname
+          <Typography asProp="span" color="blue">{subnameLabel.length > 0 ? subnameLabel : "{yourName}"}</Typography>.{listing.name}
         </Typography>
         <Input
           error={isTaken && `Name ${fullName} is already taken`}
@@ -352,11 +383,7 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
         ></Input>
       </div>
       <div className="mt-3 d-flex">
-        <Button
-          colorStyle="blueGradient"
-          disabled={isMintBtnDisabled}
-          onClick={() => handleSetRecords()}
-        >
+        <Button disabled={isMintBtnDisabled} onClick={() => handleSetRecords()}>
           Next
         </Button>
       </div>
@@ -367,9 +394,10 @@ export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, spon
 const SuccessScreen = ({ fullName }: { fullName: string }) => {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center mt-4">
-      <img src={logoImage} width="80px"></img>
-      <Typography className="mt-4">You have successfully minted</Typography>
-      <Typography fontVariant="largeBold" color="blue">
+      <img src={happyNinjaImg} width="80px"></img>
+      <Typography className="mt-4 mb-2" fontVariant="extraLargeBold">Congratulations</Typography>
+      <Typography className="mb-2">You have successfully minted</Typography>
+      <Typography fontVariant="extraLargeBold" color="blue">
         {fullName}
       </Typography>
       <div className="d-flex mt-3">

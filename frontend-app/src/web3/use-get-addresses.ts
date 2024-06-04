@@ -35,5 +35,5 @@ export const useGetAddresses = (chainId?:number) => {
   }
 
 
-  return addresses[networkName];
+  return addresses[networkName] || addresses["base"];
 };

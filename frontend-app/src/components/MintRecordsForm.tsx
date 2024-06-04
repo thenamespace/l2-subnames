@@ -143,7 +143,7 @@ export const SetRecordsForm = ({
   if (mode === "select") {
     return (
       <div className="mint-records-form">
-        <Typography fontVariant="extraLarge" className="mb-2">Select records</Typography>
+        <Typography fontVariant="extraLarge" className="mb-2">Web3 Profile</Typography>
         {noRecordsSelected && (
           <Helper className="mt-4">
             <Typography>No records selected</Typography>
@@ -195,7 +195,7 @@ export const SetRecordsForm = ({
     return (
       <div className="mint-records-form">
         <Typography fontVariant="extraLarge" className="mb-2">
-          Select records
+          Update Web3 profile
         </Typography>
         <ScrollBox style={{ height: 300, padding: 10, overflowX: "hidden" }}>
           <div>

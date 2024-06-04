@@ -67,6 +67,15 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Satoshi';
+  src: url('./assets/fonts/satoshi/Satoshi-Black.otf') format('truetype');
+  font-weight: 900;
+  font-display: swap;
+  font-style: black;
+}
+
+
 * {
   font-family: "Satoshi" !important;
 }
