@@ -20,9 +20,13 @@ export const getNameResolverAddr = (network: SupportedNetwork) => {
 
 export const getNetworkForOffchainResolver = (address: Address): SupportedNetwork => {
     for (const network of Object.keys(offchainResolvers)) {
-        if (offchainResolvers[network] === address ) {
+        if (equalsIgnoreCase(offchainResolvers[network], address)) {
             return network as SupportedNetwork;
         }
     }
     throw new Error("Network not found for offchain resolver address " + address);
+}
+
+const equalsIgnoreCase = (a: string, b: string) => {
+    return a.toLocaleLowerCase() === b.toLocaleLowerCase();
 }
