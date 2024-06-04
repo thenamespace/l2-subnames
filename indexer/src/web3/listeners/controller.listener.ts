@@ -14,8 +14,8 @@ export class ControllerListener implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap() {
+    this.listen("localhost");
     this.initialize("localhost");
-    // this.listen("localhost");
   }
 
   private async initialize(network: Network) {
@@ -69,7 +69,7 @@ export class ControllerListener implements OnApplicationBootstrap {
       onLogs: (logs) => {
         logs.map(async (log: any) => {
           this.storageService.setSubnameNode(
-            "localhost",
+            network,
             toBlock,
             this.createSubnode(log.args),
           );
