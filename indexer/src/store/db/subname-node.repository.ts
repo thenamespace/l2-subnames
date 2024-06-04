@@ -19,13 +19,9 @@ export class SubnameNodeRepository {
     syncBlock: bigint,
     subname: SubnameNode,
   ) {
-    const regex = "^(?!" + subname.node + "$)";
     await this.dao.updateOne(
       {
         network,
-        // "network.subnames.node": {
-        //   $nin: [subname.node],
-        // },
       },
       { $set: { syncBlock }, $addToSet: { subnames: subname } },
       { upsert: true },
