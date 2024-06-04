@@ -7,9 +7,9 @@ import {
 } from "@ensdomains/thorin";
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
-import { getChainId, useNameRegistry, useWeb3Clients } from "../web3";
+import { getChainId, useNameRegistry } from "../web3";
 import { getMintingParameters, mintSponsored } from "../api";
-import { useAccount } from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
 import { Link, Navigate } from "react-router-dom";
@@ -72,8 +72,8 @@ export const MintSubnameForm = ({
   }, [address, nameRecords, addrAdded]);
 
   // const { networkName: currentNetwork } = useWeb3Network();
-  const { publicClient } = useWeb3Clients();
   const listingChainId = getChainId(listing.network);
+  const publicClient = usePublicClient({chainId: listingChainId})
   const networkName = listing.network;
   const { isSubnameAvailable } = useNameRegistry(listingChainId);
   const { mint } = useNameController();
