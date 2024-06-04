@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ChangeMintNetwork,
   MintSubnameForm,
   ScreenContainer,
 } from "../components";
@@ -9,10 +8,9 @@ import { useEffect, useState } from "react";
 import "./MintPage.css";
 import { getSingleListing } from "../api";
 import { Listing } from "../api/types";
-import { useWeb3Network } from "../web3";
 import { toast } from "react-toastify";
 
-export const MintPage = () => {
+export const MintPageSponsored = () => {
   const { parentName } = useParams();
   const [listing, setListing] = useState<{
     isFetching: boolean;
@@ -20,7 +18,6 @@ export const MintPage = () => {
   }>({
     isFetching: true,
   });
-  const { networkName } = useWeb3Network();
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -40,20 +37,12 @@ export const MintPage = () => {
     return <ScreenContainer isLoading={true} />;
   }
 
-  const isProperNetwork = listing.item.network === networkName;
 
   return (
     <ScreenContainer>
       <div className="mint-page">
         <Card className="mint-page-container">
-          <>
-            {!isProperNetwork && (
-              <ChangeMintNetwork requiredNetwork={listing.item.network} />
-            )}
-            {isProperNetwork && (
-              <MintSubnameForm listing={listing.item} />
-            )}
-          </>
+            <MintSubnameForm listing={listing.item} sponsored={true}/>
         </Card>
       </div>
     </ScreenContainer>

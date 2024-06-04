@@ -18,6 +18,7 @@ export class AppConfig {
   public appSignerName: string;
   public appSignerVersion: string;
   public namesApiUrl: string;
+  public sponsorWallet: string
 
   constructor(private readonly configService: ConfigService) {
     this.baseRpc = this.configService.get('BASE_RPC');
@@ -25,6 +26,7 @@ export class AppConfig {
     this.signerKey = this.configService.getOrThrow('SIGNER_KEY');
     this.appSignerName = this.configService.getOrThrow('APP_SIGNER_NAME');
     this.appSignerVersion = this.configService.getOrThrow('APP_SIGNER_VERSION');
-    this.namesApiUrl = this.configService.getOrThrow('NAMES_API_URL');
+    this.namesApiUrl = this.configService.get('NAMES_API_URL');
+    this.sponsorWallet = this.configService.get("SPONSOR_WALLET")
   }
 }

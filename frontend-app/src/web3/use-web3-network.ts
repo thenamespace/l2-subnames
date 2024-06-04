@@ -26,3 +26,11 @@ export const useWeb3Network = (): { networkName: Web3Network, networkId: number,
         networksMap: networkNamesMap
     }
 }
+
+export const getChainId = (network: Web3Network) => {
+    return networkNamesMap[network];
+}
+
+export const getChainName = (chainId: number) => {
+    return networkIdNameMapping[`${chainId}`];
+}

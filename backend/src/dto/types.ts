@@ -20,6 +20,7 @@ export interface MintRequest {
   ensName: string;
   owner: Address;
   network: Network
+  resolverData?: Hash[]
 }
 
 export interface MintResponse {

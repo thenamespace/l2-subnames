@@ -1,6 +1,6 @@
 import { Address } from "viem";
 import { Web3Network } from "./types";
-import { useWeb3Network } from "./use-web3-network";
+import { getChainName, useWeb3Network } from "./use-web3-network";
 
 interface ContractAddresses {
   nameRegistryController: Address;
@@ -26,8 +26,14 @@ const addresses: Record<Web3Network, ContractAddresses> = {
   }
 };
 
-export const useGetAddresses = () => {
+export const useGetAddresses = (chainId?:number) => {
   const { networkName } = useWeb3Network();
+
+  if (chainId) {
+    const network = getChainName(chainId);
+    return addresses[network];
+  }
+
 
   return addresses[networkName];
 };

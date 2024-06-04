@@ -7,8 +7,8 @@ import {
 } from "@ensdomains/thorin";
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
-import { useNameRegistry, useWeb3Clients, useWeb3Network } from "../web3";
-import { getMintingParameters } from "../api";
+import { getChainId, useNameRegistry, useWeb3Clients, useWeb3Network } from "../web3";
+import { getMintingParameters, mintSponsored } from "../api";
 import { useAccount } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
@@ -21,6 +21,7 @@ import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
 import { NameRecords } from "./NameRecordsForm";
 import "./MintSubnameForm.css";
+import { Listing } from "../api/types";
 
 const enum MintProcess {
   SelectSubname = 1,
@@ -29,7 +30,7 @@ const enum MintProcess {
   MintSuccess = 4,
 }
 
-export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
+export const MintSubnameForm = ({ listing, sponsored }: { listing: Listing, sponsored?: boolean }) => {
   const [subnameLabel, setSubnameLabel] = useState("");
 
   const [nameRecords, setNameRecords] = useState<NameRecords>({
@@ -61,9 +62,11 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     }
   }, [address, nameRecords, addrAdded]);
 
-  const { networkName } = useWeb3Network();
+  // const { networkName: currentNetwork } = useWeb3Network();
   const { publicClient } = useWeb3Clients();
-  const { isSubnameAvailable } = useNameRegistry();
+  const listingChainId = getChainId(listing.network);
+  const networkName = listing.network;
+  const { isSubnameAvailable } = useNameRegistry(listingChainId);
   const { mint } = useNameController();
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
@@ -114,7 +117,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       return;
     }
 
-    const fllName = `${subnameLabel}.${parentName}`;
+    const fllName = `${subnameLabel}.${listing.name}`;
     const available = await isSubnameAvailable(fllName);
     setIndicators({ isAvailable: available, isChecking: false });
   };
@@ -176,13 +179,13 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     try {
       const _params = await getMintingParameters(
         subnameLabel,
-        parentName,
+        listing.name,
         address as any,
         networkName
       );
 
       try {
-        const fllName = `${subnameLabel}.${parentName}`;
+        const fllName = `${subnameLabel}.${listing.name}`;
         const resolverData = convertRecordsToData(fllName);
         setMintIndicators({ ...mintIndicators, waitingWallet: true });
 
@@ -193,7 +196,13 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           _params.parameters.resolverData = resolverData;
         }
 
-        const tx = await mint(_params);
+        let tx;
+        if (sponsored) {
+          tx = await _mintSponsored(resolverData);
+        } else {
+          tx = await mint(_params);
+        }
+
         setMintIndicators({ waitingTx: true, waitingWallet: false });
         await publicClient?.waitForTransactionReceipt({
           hash: tx,
@@ -218,6 +227,10 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       setMintIndicators({ waitingTx: false, waitingWallet: false });
     }
   };
+
+  const _mintSponsored = async (resolverData: Hash[]) => {
+    return await mintSponsored(subnameLabel, listing.name, address as any, networkName, resolverData);
+  }
 
   const getSetAddrFunc = (fullName: string, wallet: Address) => {
     return encodeFunctionData({
@@ -251,7 +264,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     mintBtnLabel = "Waiting for wallet";
   }
 
-  const fullName = `${subnameLabel}.${parentName}`;
+  const fullName = `${subnameLabel}.${listing.name}`;
   if (mode === MintProcess.MintSuccess) {
     return <SuccessScreen fullName={fullName} />;
   }
@@ -280,7 +293,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
             <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
               {subnameLabel}
             </Typography>
-            {`.${parentName}`}
+            {`.${listing.name}`}
           </Typography>
         </div>
         <div className="d-flex">
@@ -322,7 +335,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
         >
           {subnameLabel.length > 0 ? subnameLabel : "{yourName}"}{" "}
         </Typography>
-        {`.${parentName}`}
+        {`.${listing.name}`}
       </Typography>
       <div className="mt-3 text-align-left" style={{ textAlign: "left" }}>
         <Typography fontVariant="small" color="grey">

@@ -1,12 +1,12 @@
 import { namehash, zeroAddress } from "viem";
 import NAME_REGISTRY_ABI from "./abi/name-registry.json";
-import { useWeb3Clients } from "./use-web3-clients";
 import { useGetAddresses } from "./use-get-addresses";
+import { usePublicClient } from "wagmi";
 
-export const useNameRegistry = () => {
+export const useNameRegistry = (chainId: number) => {
 
-    const { publicClient } = useWeb3Clients();
-    const { nameRegistry } = useGetAddresses()
+    const publicClient = usePublicClient({chainId: chainId})
+    const { nameRegistry } = useGetAddresses(chainId)
 
     const isSubnameAvailable = async (fullSubname:string) => {
         const node = namehash(fullSubname);
