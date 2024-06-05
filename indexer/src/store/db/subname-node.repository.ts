@@ -14,6 +14,10 @@ export class SubnameNodeRepository {
   @InjectModel(SUBNAME_NODES_DOMAIN)
   private dao: Model<SubnameNodeDocument>;
 
+  public async createNode(network: Network) {
+    await this.dao.create({ network });
+  }
+
   public async setNode(
     network: Network,
     syncBlock: bigint,
@@ -22,9 +26,11 @@ export class SubnameNodeRepository {
     await this.dao.updateOne(
       {
         network,
+        "subnames.node": {
+          $ne: subname.node,
+        },
       },
       { $set: { syncBlock }, $addToSet: { subnames: subname } },
-      { upsert: true },
     );
   }
 

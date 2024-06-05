@@ -11,7 +11,7 @@ export class SubnameNode {
   @Prop({ required: true, type: String })
   parentNode: Hash;
 
-  @Prop({ required: true, type: String, unique: true })
+  @Prop({ required: true, type: String })
   node: Hash;
 
   @Prop({ required: true, type: String })
@@ -38,20 +38,15 @@ export class SubnameNodes {
   @Prop({ required: true, type: String })
   network: Network;
 
-  @Prop({ required: true, type: BigInt })
+  @Prop({ type: BigInt })
   syncBlock: bigint;
 
-  @Prop({ required: true, type: [SubnameNode], unique: true })
+  @Prop({ required: true, type: [SubnameNode] })
   subnames: SubnameNode[];
 }
 
 export const SubnameNodesSchema = SchemaFactory.createForClass(SubnameNodes);
-SubnameNodesSchema.index(
-  { "network.subnames.node": 1 },
-  {
-    unique: true,
-  },
-);
+SubnameNodesSchema.index({ "subnames.node": 1, network: 1 }, { unique: true });
 
 export const SUBNAME_NODES_DOMAIN = "SubnameNodes";
 export type SubnameNodeDocument = HydratedDocument<SubnameNodes>;

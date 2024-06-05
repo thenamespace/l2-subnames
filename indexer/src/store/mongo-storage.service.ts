@@ -1,12 +1,35 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from "@nestjs/common";
 import { Network } from "src/web3/types";
 import { SubnameNodeRepository } from "./db/subname-node.repository";
 import { SubnameNode } from "./db/subname-node.schema";
 import { IStorageService, ISubnameNode } from "./types";
 
 @Injectable()
-export class MongoStorageService implements IStorageService {
+export class MongoStorageService
+  implements IStorageService, OnApplicationBootstrap
+{
   constructor(private readonly repository: SubnameNodeRepository) {}
+
+  async onApplicationBootstrap() {
+    try {
+      await this.initNode("localhost");
+      await this.initNode("base");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async initNode(network: Network) {
+    const node = await this.repository.getByNetwork(network);
+
+    if (!node) {
+      await this.repository.createNode(network);
+    }
+  }
 
   // async setText(node: string, key: string, record: string) {
   //   const subname = await this._getSubnameNode(node);

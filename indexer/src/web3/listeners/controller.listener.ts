@@ -1,7 +1,6 @@
 import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { MongoStorageService } from "src/store/mongo-storage.service";
 import { parseAbiItem } from "viem";
-import ABI from "../abi/nameregistry-controller.json";
 import { Web3Clients } from "../clients";
 import { getContractAddresses } from "../contract-addresses";
 import { Network } from "../types";
@@ -13,9 +12,13 @@ export class ControllerListener implements OnApplicationBootstrap {
     private readonly storageService: MongoStorageService,
   ) {}
 
-  onApplicationBootstrap() {
-    this.listen("localhost");
-    this.initialize("localhost");
+  async onApplicationBootstrap() {
+    try {
+      await this.initialize("localhost");
+      await this.listen("localhost");
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   private async initialize(network: Network) {
@@ -39,19 +42,11 @@ export class ControllerListener implements OnApplicationBootstrap {
     });
 
     logs.map(async (log) => {
-      const nodeAlreadyMinted = nodes?.subnames?.some(
-        (s) =>
-          s.node.toLocaleLowerCase() ===
-          log.args.subnameNode.toLocaleLowerCase(),
+      await this.storageService.setSubnameNode(
+        network,
+        toBlock,
+        this.createSubnode(log.args),
       );
-
-      if (!nodeAlreadyMinted) {
-        this.storageService.setSubnameNode(
-          "localhost",
-          toBlock,
-          this.createSubnode(log.args),
-        );
-      }
     });
   }
 
@@ -60,17 +55,19 @@ export class ControllerListener implements OnApplicationBootstrap {
 
     const address = getContractAddresses(network).controller;
 
-    const toBlock = await publicClient.getBlockNumber();
+    const fromBlock = await publicClient.getBlockNumber();
 
-    publicClient.watchContractEvent({
+    publicClient.watchEvent({
+      fromBlock,
       address,
-      abi: ABI,
-      eventName: "NameMinted",
+      event: parseAbiItem(
+        "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver, uint64 expiry)",
+      ),
       onLogs: (logs) => {
         logs.map(async (log: any) => {
-          this.storageService.setSubnameNode(
+          await this.storageService.setSubnameNode(
             network,
-            toBlock,
+            fromBlock,
             this.createSubnode(log.args),
           );
         });
