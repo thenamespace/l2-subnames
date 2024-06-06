@@ -7,5 +7,5 @@ export class NameListing {
   price: number;
   network: Network;
   owner: Address;
-  paymentReciever: Address;
+  paymentReceiver: Address;
 }

@@ -6,14 +6,14 @@ import { Address, Hash, verifyTypedData } from 'viem';
 type ListingContext = {
   name: string;
   price: number;
-  paymentReciever: Address;
+  paymentReceiver: Address;
 };
 
 @Injectable()
 export class ListingVerifier {
   readonly types = {
     ListContext: [
-      { name: 'owner', type: 'string' },
+      { name: 'name', type: 'string' },
       { name: 'price', type: 'uint256' },
       { name: 'paymentReceiver', type: 'address' },
     ],
@@ -31,12 +31,12 @@ export class ListingVerifier {
     const domain = {
       name: 'Namespace',
       version: '1',
-      chainId,
+      chainId: chainId.id,
     };
 
     const message: ListingContext = {
       name: listing.name,
-      paymentReciever: listing.paymentReciever,
+      paymentReceiver: listing.paymentReceiver,
       price: listing.price,
     };
 

@@ -22,6 +22,7 @@ export class ListedNamesService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     try {
       this.initListingRepo('localhost');
+      this.initListingRepo('sepolia');
     } catch (error) {
       console.log('Error initializing ListedNameService', error);
     }
@@ -33,6 +34,16 @@ export class ListedNamesService implements OnApplicationBootstrap {
     if (!listings) {
       await this.nameListingRepo.initListing(network);
     }
+  }
+
+  public async verifyNameListing(
+    ensName: string,
+    lister: Address,
+  ): Promise<{ hasOwnerPermission: boolean }> {
+    const hasOwnerPermission =
+      await this.permissionValidator.hasOwnerPermission(ensName, lister);
+
+    return { hasOwnerPermission: Boolean(hasOwnerPermission) };
   }
 
   public async addListing(
@@ -51,7 +62,6 @@ export class ListedNamesService implements OnApplicationBootstrap {
     }
 
     const permittedToList = await this.permissionValidator.hasOwnerPermission(
-      listing.network,
       listing.name,
       lister,
     );

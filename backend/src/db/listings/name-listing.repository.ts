@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { NameListing as NameListingDto } from 'src/dto/name-listing.dto';
 import { Network } from 'src/dto/types';
 import {
   NAMELISTINGS_DOMAIN,
-  NameListingsDocument,
   NameListing,
+  NameListingsDocument,
 } from './name-listing.schema';
-import { NameListing as NameListingDto } from 'src/dto/name-listing.dto';
 
 @Injectable()
 export class NameListingRepository {
@@ -28,10 +28,12 @@ export class NameListingRepository {
       },
       {
         $addToSet: {
-          owner: listing.owner,
-          priceEth: listing.price,
-          paymentReceiver: listing.owner,
-          ensName: listing.name,
+          listings: {
+            owner: listing.owner,
+            priceEth: listing.price,
+            paymentReceiver: listing.owner,
+            ensName: listing.name,
+          },
         },
       },
     );
