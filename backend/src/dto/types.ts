@@ -1,11 +1,12 @@
-import { Address, Hash } from 'viem';
+import { Address } from 'viem';
 
 export type Network =
   | 'sepolia'
   | 'base'
   | 'optimism'
   | 'arbitrum'
-  | 'localhost';
+  | 'localhost'
+  | 'mainnet';
 
 export interface ListedName {
   label: string;
@@ -19,7 +20,7 @@ export interface MintRequest {
   label: string;
   ensName: string;
   owner: Address;
-  network: Network
+  network: Network;
 }
 
 export interface MintResponse {

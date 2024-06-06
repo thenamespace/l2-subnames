@@ -9,6 +9,7 @@ import { MetadataModule } from './metadata/metadata.module';
 import { MintSigner } from './minting/mint-signer';
 import { MintingModule } from './minting/minting.module';
 import { MintingService } from './minting/minting.service';
+import { EnsRegistryService } from './web3/ens-registry/ens-registry.service';
 import { Web3Module } from './web3/web3.module';
 
 const nodeEnv = process.env.NODE_ENV;
@@ -27,6 +28,6 @@ const isTest = nodeEnv === 'test';
     MetadataModule,
   ],
   controllers: [MintController, ListingController, MetadataController],
-  providers: [MintingService, MintSigner, AppConfig],
+  providers: [MintingService, MintSigner, AppConfig, EnsRegistryService],
 })
 export class AppModule {}
