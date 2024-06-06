@@ -1,30 +1,23 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AppConfig } from 'src/config/app-config.service';
 import { MintContext } from 'src/dto/mint-context.dto';
+import { MintRequest } from 'src/dto/types';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
 import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { NameRegistryService } from 'src/web3/contracts/name-registry.service';
-import { getNetwork } from 'src/web3/utils';
-import { Address, Hash, namehash, parseEther } from 'viem';
+import { Hash, parseEther } from 'viem';
 import { MintSigner } from './mint-signer';
-import { MintRequest, Network } from 'src/dto/types';
 
 @Injectable()
 export class MintingService {
-
   constructor(
     private registry: NameRegistryService,
     private listings: ListedNamesService,
     private signer: MintSigner,
-    private config: AppConfig,
-  ) {
-  
-  }
+  ) {}
 
   public async verifySubnameMint(
-    request: MintRequest
+    request: MintRequest,
   ): Promise<{ signature: Hash; parameters: MintContext }> {
-
     const { label, ensName, network, owner } = request;
     const subname = `${label}.${ensName}`;
     const taken = await this.registry.isSubnameTaken(network, subname);
@@ -41,7 +34,9 @@ export class MintingService {
 
     const price = BigInt(parseEther(listing.price.toString())).toString();
 
-    const parentLabel = listing.name.endsWith(".eth") ? listing.name.split(".")[0] : listing.name;
+    const parentLabel = listing.name.endsWith('.eth')
+      ? listing.name.split('.')[0]
+      : listing.name;
 
     const nameResolverAddr = getContracts(network).resolver;
 

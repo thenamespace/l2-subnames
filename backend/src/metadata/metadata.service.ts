@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { AppConfig } from 'src/config/app-config.service';
 import { Metadata } from 'src/dto/meta-data.dto';
-import { MintedSubname } from 'src/dto/minted-subname';
+import { MintedSubname } from 'src/dto/minted-subname.dto';
 import { Hash, namehash, stringToBytes } from 'viem';
 
 @Injectable()
