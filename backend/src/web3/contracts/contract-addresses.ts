@@ -33,6 +33,7 @@ const contracts: Record<Network, NamespaceContracts> = {
     resolver: '0x0',
     controller: '0x0',
   },
+  mainnet: undefined,
 };
 
 export const getContracts = (network: Network) => {

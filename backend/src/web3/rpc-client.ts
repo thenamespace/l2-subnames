@@ -18,7 +18,14 @@ const supportedChains = {
 @Injectable()
 export class RpcClient {
   private readonly signer: PrivateKeyAccount;
-  private readonly clients: Record<Network, PublicClient>;
+  private readonly clients: Record<Network, PublicClient> = {
+    sepolia: undefined,
+    base: undefined,
+    optimism: undefined,
+    arbitrum: undefined,
+    localhost: undefined,
+    mainnet: undefined,
+  };
 
   constructor(private readonly config: AppConfig) {
     const sepoliaClient = createPublicClient({

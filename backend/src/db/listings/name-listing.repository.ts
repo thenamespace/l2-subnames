@@ -40,6 +40,6 @@ export class NameListingRepository {
   async getListings(network: Network): Promise<NameListing[]> {
     const result = await this.repository.findOne({ network });
 
-    return result.listings;
+    return result?.listings;
   }
 }

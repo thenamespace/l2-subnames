@@ -12,6 +12,7 @@ const chains = {
 
 @Injectable()
 export class AppConfig {
+  public mongoConnectionString: string;
   public baseRpc: string;
   public sepoliaRpc: string;
   public mainnetRpc: string;
@@ -23,6 +24,9 @@ export class AppConfig {
   public ensRegistryAddress: Address;
 
   constructor(private readonly configService: ConfigService) {
+    this.mongoConnectionString = this.configService.getOrThrow(
+      'MONGO_CONNECTION_STRING',
+    );
     this.baseRpc = this.configService.get('BASE_RPC');
     this.sepoliaRpc = chains[this.configService.get('SEPOLIA_RPC')];
     this.mainnetRpc = chains[this.configService.get('MAINNET_RPC')];

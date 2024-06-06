@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppConfig } from './config/app-config.service';
+import { AppConfigModule } from './config/config.module';
 import { ListingController } from './controller/listing-controller';
 import { MetadataController } from './controller/metadata-controller';
 import { MintController } from './controller/mint-controller';
+import { StoreModule } from './db/store.module';
 import { ListedNamesModule } from './listed-names/listed-names.module';
 import { MetadataModule } from './metadata/metadata.module';
 import { MintSigner } from './minting/mint-signer';
@@ -22,10 +25,22 @@ const isTest = nodeEnv === 'test';
       isGlobal: true,
       envFilePath: isTest ? ['./test/.env', '.env'] : ['.env'],
     }),
+
+    MongooseModule.forRootAsync({
+      imports: [AppConfigModule],
+      useFactory: (config: AppConfig) => {
+        return {
+          uri: config.mongoConnectionString,
+        };
+      },
+      inject: [AppConfig],
+    }),
+
     ListedNamesModule,
     MintingModule,
     Web3Module,
     MetadataModule,
+    StoreModule,
   ],
   controllers: [MintController, ListingController, MetadataController],
   providers: [MintingService, MintSigner, AppConfig, EnsRegistryService],
