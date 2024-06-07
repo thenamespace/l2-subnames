@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Address } from "viem";
 import { useAccount, useSignTypedData } from "wagmi";
 import { useWeb3Network } from "../../web3";
+import "./NameListingCard.css";
 
 type ListingContext = {
   name: string;
@@ -122,6 +123,7 @@ export const NameListingCard = () => {
   function handleListingDone() {
     setListing(false);
     setListingDone(true);
+    setReadyToList(false);
   }
 
   async function onListName() {
@@ -153,7 +155,7 @@ export const NameListingCard = () => {
           },
         }
       )
-      .then((resp) => console.log(resp));
+      .then(handleListingDone);
   }
 
   return (
@@ -190,7 +192,9 @@ export const NameListingCard = () => {
         )}
 
         {listingDone && !isError && (
-          <Typography>{`Congrats! You have successfully listed ${selectedName}`}</Typography>
+          <div className="listed-name-confirmation">
+            <Typography>{`Congrats! You have successfully listed ${selectedName}`}</Typography>
+          </div>
         )}
       </Card>
 
