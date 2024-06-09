@@ -7,10 +7,16 @@ import {NameRegistry} from "./NameRegistry.sol";
 import {NameListingManager} from "./NameListingManager.sol";
 import {EnsName} from "./EnsName.sol";
 import {MintContext} from "./Types.sol";
+import {NameMinted} from "./Events.sol";
+import {NameAlreadyTaken, InsufficientFunds, InvalidSignature} from "./Errors.sol";
 import {Controllable} from "../access/Controllable.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+
+bytes32 constant MINT_CONTEXT = keccak256(
+    "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,uint64 expiry,address paymentReceiver)"
+);
 
 /**
  * NameRegistryController controlls the NFT minting under NameRegistry contract
@@ -18,33 +24,12 @@ import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Hol
  * in order to be able to perform NameRegistry operations
  */
 contract NameRegistryController is EIP712, Controllable, ERC721Holder {
-    error NameAlreadyTaken(bytes32);
-    error InvalidSignature(address extractedVerifier);
-    error InsufficientFunds(uint256 required, uint256 supplied);
-
     address public treasury;
     address private verifier;
     bytes32 private immutable ETH_NODE;
-    // bytes32 private constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
 
     NameRegistry public immutable registry;
     NameListingManager public immutable manager;
-
-    event NameMinted(
-        string label,
-        string parentLabel,
-        bytes32 subnameNode,
-        bytes32 parentNode,
-        address owner,
-        uint256 price,
-        uint256 fee,
-        address paymentReceiver,
-        uint64 expiry
-    );
-
-    bytes32 constant MINT_CONTEXT = keccak256(
-        "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,uint64 expiry,address paymentReceiver)"
-    );
 
     constructor(
         address _treasury,
@@ -72,16 +57,16 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         bytes32 node = _namehash(parentNode, context.label);
         uint256 nodeTokenId = uint256(node);
 
-        EnsName name = EnsName(manager.listedNames(parentNode));
+        address ensName = manager.listedNames(parentNode);
 
-        if (registry.ownerOf(name, nodeTokenId) != address(0)) {
+        if (registry.operations().ownerOf(ensName, nodeTokenId) != address(0)) {
             revert NameAlreadyTaken(node);
         }
 
         if (context.resolverData.length > 0) {
-            _mintWithRecords(context, node, parentNode, name);
+            _mintWithRecords(context, node, parentNode, ensName);
         } else {
-            _mintSimple(context, parentNode, name);
+            _mintSimple(context, parentNode, ensName);
         }
 
         transferFunds(context);
@@ -99,18 +84,16 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         );
     }
 
-    function _mintSimple(MintContext memory context, bytes32 parentNode, EnsName name) internal {
-        registry.mint(name, context.label, parentNode, context.owner, context.resolver, context.expiry);
+    function _mintSimple(MintContext memory context, bytes32 parentNode, address ensName) internal {
+        _mint(ensName, context.label, parentNode, address(this), context.resolver, context.expiry);
     }
 
-    function _mintWithRecords(MintContext memory context, bytes32 node, bytes32 parentNode, EnsName name) internal {
-        registry.mint(name, context.label, parentNode, address(this), context.resolver, context.expiry);
+    function _mintWithRecords(MintContext memory context, bytes32 node, bytes32 parentNode, address ensName) internal {
+        _mint(ensName, context.label, parentNode, address(this), context.resolver, context.expiry);
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
 
-        uint256 token = uint256(node);
-
-        name.safeTransferFrom(address(this), context.owner, token);
+        EnsName(ensName).safeTransferFrom(address(this), context.owner, uint256(node));
     }
 
     function verifySignature(MintContext memory context, bytes memory signature) internal view {
@@ -166,6 +149,36 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
 
     function _setRecordsMulticall(bytes32 node, address resolver, bytes[] memory data) internal {
         IMulticallable(resolver).multicallWithNodeCheck(node, data);
+    }
+
+    function _mint(
+        address ensName,
+        string memory label,
+        bytes32 parentNode,
+        address owner,
+        address resolver,
+        uint64 expiry
+    ) internal {
+        bytes memory result = registry.performOperation(
+            abi.encodeWithSignature(
+                "mint(address,string,bytes32,address,address,uint64)",
+                ensName,
+                label,
+                parentNode,
+                owner,
+                resolver,
+                expiry
+            )
+        );
+        bool isNewNode = abi.decode(result, (bool));
+
+        uint256 tokenId = uint256(_namehash(parentNode, label));
+
+        if (!isNewNode) {
+            EnsName(ensName).burn(tokenId);
+        }
+
+        EnsName(ensName).mint(owner, tokenId);
     }
 
     function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {

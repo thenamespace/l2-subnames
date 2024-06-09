@@ -5,27 +5,26 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {RegistryContext} from "./Types.sol";
-import {NameRegistry} from "./NameRegistry.sol";
+import {InvalidSignature} from "./Errors.sol";
+import {NameRegistryController} from "./NameRegistryController.sol";
 import {NameListingManager} from "./NameListingManager.sol";
 import {EnsName} from "./EnsName.sol";
 
 bytes32 constant REGISTRY_CONTEXT =
     keccak256("RegistryContext(string listingName,string symbol,string ensName,string baseUri)");
 
-error InvalidSignature(address extractedVerifier);
-
 contract NameRegistryFactory is EIP712 {
     address private verifier;
     NameListingManager manager;
-    NameRegistry registry;
+    NameRegistryController controller;
     bytes32 private immutable ETH_NODE;
 
-    constructor(address _verifier, NameListingManager _manager, NameRegistry _registry, bytes32 ethNode)
+    constructor(address _verifier, NameListingManager _manager, NameRegistryController _controller, bytes32 ethNode)
         EIP712("Namespace", "1")
     {
         verifier = _verifier;
         manager = _manager;
-        registry = _registry;
+        controller = _controller;
         ETH_NODE = ethNode;
     }
 
@@ -39,10 +38,10 @@ contract NameRegistryFactory is EIP712 {
         verifySignature(RegistryContext(listingName, symbol, ensName, baseUri), verificationSignature);
 
         EnsName name = new EnsName(listingName, symbol, baseUri);
-        name.setController(address(registry), true);
+        name.setController(address(controller), true);
 
-        bytes32 parentLabel = EnsUtils.namehash(ETH_NODE, ensName);
-        manager.setName(name, parentLabel);
+        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, ensName);
+        manager.setName(name, nameNode);
     }
 
     function verifySignature(RegistryContext memory context, bytes memory signature) internal view {

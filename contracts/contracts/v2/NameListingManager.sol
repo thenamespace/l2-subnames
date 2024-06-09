@@ -11,10 +11,10 @@ contract NameListingManager is Controllable {
 
     NameRegistryFactory private factory;
 
-    function setName(EnsName name, bytes32 parentNode) external {
+    function setName(EnsName name, bytes32 nameNode) external {
         require(msg.sender == address(factory), "Only NameRegistryFactory can set names.");
 
-        listedNames[parentNode] = (address(name));
+        listedNames[nameNode] = (address(name));
     }
 
     function setFactory(NameRegistryFactory _factory) external onlyController {
