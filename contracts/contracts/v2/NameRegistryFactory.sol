@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
@@ -13,15 +15,19 @@ import {EnsName} from "./EnsName.sol";
 bytes32 constant REGISTRY_CONTEXT =
     keccak256("RegistryContext(string listingName,string symbol,string ensName,string baseUri)");
 
-contract NameRegistryFactory is EIP712 {
+contract NameRegistryFactory is EIP712, Ownable {
     address private verifier;
     NameListingManager manager;
     NameRegistryController controller;
     bytes32 private immutable ETH_NODE;
 
-    constructor(address _verifier, NameListingManager _manager, NameRegistryController _controller, bytes32 ethNode)
-        EIP712("Namespace", "1")
-    {
+    constructor(
+        address _verifier,
+        NameListingManager _manager,
+        NameRegistryController _controller,
+        bytes32 ethNode,
+        address owner
+    ) EIP712("Namespace", "1") Ownable(owner) {
         verifier = _verifier;
         manager = _manager;
         controller = _controller;
@@ -56,5 +62,9 @@ contract NameRegistryFactory is EIP712 {
             keccak256(abi.encode(REGISTRY_CONTEXT, context.listingName, context.symbol, context.ensName))
         );
         return ECDSA.recover(digest, signature);
+    }
+
+    function setVerifier(address _verifier) public onlyOwner {
+        verifier = _verifier;
     }
 }

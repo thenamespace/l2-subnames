@@ -49,7 +49,7 @@ contract NameRegistry is Controllable {
         }
     }
 
-    function setOperations(NameRegistryOperations _operations) external onlyController {
+    function setOperations(NameRegistryOperations _operations) external onlyOwner {
         operations = _operations;
     }
 }

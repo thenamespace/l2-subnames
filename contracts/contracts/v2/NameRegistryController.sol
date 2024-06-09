@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {NameRegistry} from "./NameRegistry.sol";
@@ -9,7 +10,6 @@ import {EnsName} from "./EnsName.sol";
 import {MintContext} from "./Types.sol";
 import {NameMinted} from "./Events.sol";
 import {NameAlreadyTaken, InsufficientFunds, InvalidSignature} from "./Errors.sol";
-import {Controllable} from "../access/Controllable.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
@@ -23,7 +23,7 @@ bytes32 constant MINT_CONTEXT = keccak256(
  * The minter requires parameters signed by a verifier address
  * in order to be able to perform NameRegistry operations
  */
-contract NameRegistryController is EIP712, Controllable, ERC721Holder {
+contract NameRegistryController is EIP712, Ownable, ERC721Holder {
     address public treasury;
     address private verifier;
     bytes32 private immutable ETH_NODE;
@@ -36,8 +36,9 @@ contract NameRegistryController is EIP712, Controllable, ERC721Holder {
         address _verifier,
         NameRegistry _registry,
         NameListingManager _manager,
-        bytes32 ethNode
-    ) EIP712("Namespace", "1") {
+        bytes32 ethNode,
+        address owner
+    ) EIP712("Namespace", "1") Ownable(owner) {
         treasury = _treasury;
         verifier = _verifier;
         registry = _registry;
