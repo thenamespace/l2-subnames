@@ -59,6 +59,7 @@ contract NameRegistryController is EIP712, Ownable, ERC721Holder {
         uint256 nodeTokenId = uint256(node);
 
         address ensName = manager.listedNames(parentNode);
+        manager.setSubname(EnsName(ensName), node);
 
         if (registry.operations().ownerOf(ensName, nodeTokenId) != address(0)) {
             revert NameAlreadyTaken(node);
