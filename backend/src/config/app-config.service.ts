@@ -20,6 +20,7 @@ export class AppConfig {
   public appSignerName: string;
   public appSignerVersion: string;
   public namesApiUrl: string;
+  public metadataUrl: string;
   public nameWrapperAddress: Address;
   public ensRegistryAddress: Address;
 
@@ -34,6 +35,7 @@ export class AppConfig {
     this.appSignerName = this.configService.getOrThrow('APP_SIGNER_NAME');
     this.appSignerVersion = this.configService.getOrThrow('APP_SIGNER_VERSION');
     this.namesApiUrl = this.configService.getOrThrow('NAMES_API_URL');
+    this.metadataUrl = this.configService.getOrThrow('METADATA_URL');
     this.nameWrapperAddress = this.configService.getOrThrow(
       'NAME_WRAPPER_ADDRESS',
     );

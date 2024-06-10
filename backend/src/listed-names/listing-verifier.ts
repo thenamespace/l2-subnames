@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { NameListing } from 'src/dto/name-listing.dto';
-import { RpcClient } from 'src/web3/rpc-client';
 import { Address, Hash, verifyTypedData } from 'viem';
 
 type ListingContext = {
@@ -19,19 +18,16 @@ export class ListingVerifier {
     ],
   };
 
-  constructor(private rpcClient: RpcClient) {}
-
   async verify(
     lister: Address,
     signature: Hash,
     listing: NameListing,
+    chainId: number,
   ): Promise<boolean> {
-    const chainId = this.rpcClient.getChain(listing.network);
-
     const domain = {
       name: 'Namespace',
       version: '1',
-      chainId: chainId.id,
+      chainId,
     };
 
     const message: ListingContext = {

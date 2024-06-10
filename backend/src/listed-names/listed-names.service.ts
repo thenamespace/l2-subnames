@@ -10,6 +10,9 @@ import listings from 'src/listed-names/listings.json';
 import { PermissionValidator } from 'src/web3/permission.validator';
 import { Address, Hash } from 'viem';
 import { ListingVerifier } from './listing-verifier';
+import { RpcClient } from 'src/web3/rpc-client';
+import { ListingRegistration } from './listing-registration';
+import { AppConfig } from 'src/config/app-config.service';
 
 @Injectable()
 export class ListedNamesService implements OnApplicationBootstrap {
@@ -17,6 +20,9 @@ export class ListedNamesService implements OnApplicationBootstrap {
     private nameListingRepo: NameListingRepository,
     private permissionValidator: PermissionValidator,
     private listingVerifier: ListingVerifier,
+    private listingRegistration: ListingRegistration,
+    private rpcClient: RpcClient,
+    private appConfig: AppConfig,
   ) {}
 
   async onApplicationBootstrap() {
@@ -36,7 +42,7 @@ export class ListedNamesService implements OnApplicationBootstrap {
     }
   }
 
-  public async verifyNameListing(
+  public async validateNameListing(
     ensName: string,
     lister: Address,
   ): Promise<{ hasOwnerPermission: boolean }> {
@@ -50,11 +56,14 @@ export class ListedNamesService implements OnApplicationBootstrap {
     lister: Address,
     listingSignature: Hash,
     listing: NameListing,
-  ) {
+  ): Promise<Hash> {
+    const chainId = this.rpcClient.getChain(listing.network);
+
     const verified = await this.listingVerifier.verify(
       lister,
       listingSignature,
       listing,
+      chainId,
     );
 
     if (!verified) {
@@ -71,6 +80,14 @@ export class ListedNamesService implements OnApplicationBootstrap {
     }
 
     await this.nameListingRepo.setListing(listing.network, listing);
+
+    return await this.listingRegistration.generateContext(
+      listing.name,
+      listing.name,
+      listing.name,
+      this.appConfig.metadataUrl.concat(`/${chainId}/`),
+      chainId,
+    );
   }
 
   public async getListings(): Promise<NameListing[]> {

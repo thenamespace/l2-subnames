@@ -25,12 +25,12 @@ export class ListingController {
     return this.listing.getNameListing(name);
   }
 
-  @Get('/verify/:name')
-  public async verifyNameListing(
+  @Get('/validate/:name')
+  public async validateNameListing(
     @Param('name') name: string,
     @Query('lister') lister: Address,
   ): Promise<{ hasOwnerPermission: boolean }> {
-    return await this.listing.verifyNameListing(name, lister);
+    return await this.listing.validateNameListing(name, lister);
   }
 
   @Post('/:lister')
