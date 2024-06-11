@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { AppConfig } from 'src/config/app-config.service';
+import { Network } from 'src/dto/types';
+import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { RpcClient } from 'src/web3/rpc-client';
-import { Address, Hash } from 'viem';
+import { Hash } from 'viem';
 
 export type RegistryContext = {
   ensName: string;
@@ -20,22 +23,23 @@ export class ListingRegistration {
     ],
   };
 
-  constructor(private rpcClient: RpcClient) {}
+  constructor(
+    private rpcClient: RpcClient,
+    private appConfig: AppConfig,
+  ) {}
 
   async generateContext(
     context: RegistryContext,
+    network: Network,
     chainId: number,
   ): Promise<Hash> {
+    const verifyingContract = getContracts(network).factory;
     const domain = {
       name: 'Namespace',
       version: '1',
       chainId,
-      verifyingContract:
-        '0x29a5ea2b300d6c886b20229b9e663d68fce2e3a5' as Address,
+      verifyingContract,
     };
-
-    console.log(domain);
-    console.log(context);
 
     const types = {
       RegistryContext: [
@@ -50,7 +54,7 @@ export class ListingRegistration {
       listingName: context.listingName,
       symbol: context.symbol,
       ensName: context.ensName,
-      baseUri: 'http://localhost:3000/api/v0.1.0/metadata/1337/',
+      baseUri: this.appConfig.metadataUrl,
     };
 
     return await this.rpcClient.getSigner().signTypedData({

@@ -90,6 +90,7 @@ export class ListedNamesService implements OnApplicationBootstrap {
 
     const signature = await this.listingRegistration.generateContext(
       context,
+      listing.network,
       chainId.id,
     );
 
