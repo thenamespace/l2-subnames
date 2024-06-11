@@ -4,7 +4,7 @@ task("getAddresses")
   .addParam("deployer")
   .setAction(async (args, hre) => {
     const deployer = await hre.viem.getContractAt(
-      "NamespaceDeployer",
+      "contracts/v2/NamespaceDeployer.sol:NamespaceDeployer",
       args.deployer
     );
 

@@ -1,1 +1,6 @@
-export type Web3Network = "sepolia" | "base" | "arbitrum" | "optimism"
+export type Web3Network =
+  | "sepolia"
+  | "base"
+  | "arbitrum"
+  | "optimism"
+  | "localhost";

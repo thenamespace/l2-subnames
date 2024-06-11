@@ -11,7 +11,7 @@ import { PermissionValidator } from 'src/web3/permission.validator';
 import { Address, Hash } from 'viem';
 import { ListingVerifier } from './listing-verifier';
 import { RpcClient } from 'src/web3/rpc-client';
-import { ListingRegistration } from './listing-registration';
+import { ListingRegistration, RegistryContext } from './listing-registration';
 import { AppConfig } from 'src/config/app-config.service';
 
 @Injectable()
@@ -56,14 +56,14 @@ export class ListedNamesService implements OnApplicationBootstrap {
     lister: Address,
     listingSignature: Hash,
     listing: NameListing,
-  ): Promise<Hash> {
+  ): Promise<{ context: RegistryContext; signature: Hash }> {
     const chainId = this.rpcClient.getChain(listing.network);
 
     const verified = await this.listingVerifier.verify(
       lister,
       listingSignature,
       listing,
-      chainId,
+      chainId.id,
     );
 
     if (!verified) {
@@ -81,13 +81,19 @@ export class ListedNamesService implements OnApplicationBootstrap {
 
     await this.nameListingRepo.setListing(listing.network, listing);
 
-    return await this.listingRegistration.generateContext(
-      listing.name,
-      listing.name,
-      listing.name,
-      this.appConfig.metadataUrl.concat(`/${chainId}/`),
-      chainId,
+    const context: RegistryContext = {
+      ensName: listing.label,
+      listingName: listing.listingName,
+      symbol: listing.symbol,
+      baseUri: this.appConfig.metadataUrl.concat(`/${chainId.id}/`),
+    };
+
+    const signature = await this.listingRegistration.generateContext(
+      context,
+      chainId.id,
     );
+
+    return { context, signature };
   }
 
   public async getListings(): Promise<NameListing[]> {

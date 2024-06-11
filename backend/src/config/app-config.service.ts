@@ -16,6 +16,7 @@ export class AppConfig {
   public baseRpc: string;
   public sepoliaRpc: string;
   public mainnetRpc: string;
+  public localhostRpc: string;
   public signerKey: Hash;
   public appSignerName: string;
   public appSignerVersion: string;
@@ -31,6 +32,7 @@ export class AppConfig {
     this.baseRpc = this.configService.get('BASE_RPC');
     this.sepoliaRpc = chains[this.configService.get('SEPOLIA_RPC')];
     this.mainnetRpc = chains[this.configService.get('MAINNET_RPC')];
+    this.localhostRpc = chains[this.configService.get('LOCALHOST_RPC')];
     this.signerKey = this.configService.getOrThrow('SIGNER_KEY');
     this.appSignerName = this.configService.getOrThrow('APP_SIGNER_NAME');
     this.appSignerVersion = this.configService.getOrThrow('APP_SIGNER_VERSION');

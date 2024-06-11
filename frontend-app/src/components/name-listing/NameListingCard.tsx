@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Address } from "viem";
 import { useAccount, useSignTypedData } from "wagmi";
 import { useWeb3Network } from "../../web3";
+import { useNameRegistryFactory } from "../../web3/use-name-registry-factory";
 import "./NameListingCard.css";
 
 type ListingContext = {
@@ -38,21 +39,24 @@ const types = {
 export const NameListingCard = () => {
   const { address, chainId } = useAccount();
   const [selectedName, setSelectedName] = useState("");
+  const [label, setLabel] = useState("");
   const [price, setPrice] = useState(BigInt(0));
   const [isError, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isListing, setListing] = useState(false);
-  const [listingDone, setListingDone] = useState(false);
+  const [listingSigned, setListingSigned] = useState(false);
+  const [registrySignature, setRegistrySignature] = useState(false);
   const [domain, setDomain] = useState<Domain>();
   const [message, setMessage] = useState<ListingContext>();
-  const [readyToList, setReadyToList] = useState(false);
+  const [readyToSingListing, setReadyToSignListing] = useState(false);
   const { networkName } = useWeb3Network();
   const {
-    data: signature,
+    data: listingSignature,
     isError: errorSigning,
     isSuccess: signingSucceeded,
     signTypedDataAsync,
   } = useSignTypedData();
+  const { launchNewName } = useNameRegistryFactory();
 
   useEffect(() => {
     if (chainId) {
@@ -71,19 +75,19 @@ export const NameListingCard = () => {
   }, [signingSucceeded]);
 
   async function onNameChange(evt: any) {
-    const name = evt.target.value;
+    const name: string = evt.target.value;
     setSelectedName(name);
 
     const isFullName =
       name && name.length > 0 ? /.{3,}\.eth$/.test(name) : false;
 
     if (isFullName) {
-      const verified = await axios.get(
-        `http://localhost:3000/api/v0.1.0/listings/verify/${name}?lister=${address}`
+      const validation = await axios.get(
+        `http://localhost:3000/api/v0.1.0/listings/validate/${name}?lister=${address}`
       );
 
-      const hasOwnerPermission = verified.data.hasOwnerPermission;
-      setReadyToList(hasOwnerPermission);
+      const hasOwnerPermission = validation.data.hasOwnerPermission;
+      setReadyToSignListing(hasOwnerPermission);
 
       if (hasOwnerPermission) {
         setMessage({
@@ -93,7 +97,7 @@ export const NameListingCard = () => {
         });
       }
     } else {
-      setReadyToList(false);
+      setReadyToSignListing(false);
     }
   }
 
@@ -117,13 +121,26 @@ export const NameListingCard = () => {
 
   function handleErrorToastClosed() {
     setError(false);
-    setListingDone(false);
+    setListingSigned(false);
   }
 
-  function handleListingDone() {
+  async function handleSignedListing(resp: any) {
     setListing(false);
-    setListingDone(true);
-    setReadyToList(false);
+    setListingSigned(true);
+    setReadyToSignListing(false);
+
+    const signature = resp?.data?.signature;
+    setRegistrySignature(signature);
+
+    const context = resp?.data?.context;
+
+    await launchNewName(
+      context.listingName,
+      context.symbol,
+      context.listingName,
+      context.baseUri,
+      signature
+    );
   }
 
   async function onListName() {
@@ -139,11 +156,16 @@ export const NameListingCard = () => {
   }
 
   function addListing() {
+    const label = selectedName.replace(".eth", "");
+
     axios
       .post(
         `http://localhost:3000/api/v0.1.0/listings/${address}`,
         {
           name: selectedName,
+          label,
+          symbol: label,
+          listingName: label,
           price: price.toString(),
           network: networkName,
           owner: address,
@@ -151,11 +173,11 @@ export const NameListingCard = () => {
         },
         {
           headers: {
-            Authorization: signature,
+            Authorization: listingSignature,
           },
         }
       )
-      .then(handleListingDone);
+      .then(handleSignedListing);
   }
 
   return (
@@ -185,16 +207,17 @@ export const NameListingCard = () => {
           </div>
         </div>
 
-        {readyToList && (
-          <Button onClick={onListName} disabled={isListing || listingDone}>
+        {readyToSingListing && (
+          <Button onClick={onListName} disabled={isListing || listingSigned}>
             List
           </Button>
         )}
 
-        {listingDone && !isError && (
-          <div className="listed-name-confirmation">
-            <Typography>{`Congrats! You have successfully listed ${selectedName}`}</Typography>
-          </div>
+        {listingSigned && !isError && (
+          // <div className="listed-name-confirmation">
+          //   <Typography>{`Congrats! You have successfully listed ${selectedName}`}</Typography>
+          // </div>
+          <Button onClick={onListName}>List</Button>
         )}
       </Card>
 

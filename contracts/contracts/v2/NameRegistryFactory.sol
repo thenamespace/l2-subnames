@@ -59,7 +59,15 @@ contract NameRegistryFactory is EIP712, Ownable {
 
     function extractSigner(RegistryContext memory context, bytes memory signature) internal view returns (address) {
         bytes32 digest = _hashTypedDataV4(
-            keccak256(abi.encode(REGISTRY_CONTEXT, context.listingName, context.symbol, context.ensName))
+            keccak256(
+                abi.encode(
+                    REGISTRY_CONTEXT,
+                    keccak256(abi.encodePacked(context.listingName)),
+                    keccak256(abi.encodePacked(context.symbol)),
+                    keccak256(abi.encodePacked(context.ensName)),
+                    keccak256(abi.encodePacked(context.baseUri))
+                )
+            )
         );
         return ECDSA.recover(digest, signature);
     }

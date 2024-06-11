@@ -8,6 +8,7 @@ const networkIdNameMapping: Record<string, Web3Network> = {
   "8453": "base",
   "11155111": "sepolia",
   "20": "optimism",
+  "1337": "localhost",
 };
 
 const networkNamesMap: Record<Web3Network, number> = {
@@ -15,6 +16,7 @@ const networkNamesMap: Record<Web3Network, number> = {
   sepolia: 11155111,
   arbitrum: 10,
   optimism: 20,
+  localhost: 1337,
 };
 
 export const useWeb3Network = (): {

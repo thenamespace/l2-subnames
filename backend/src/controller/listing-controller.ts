@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { NameListing } from 'src/dto/name-listing.dto';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
+import { RegistryContext } from 'src/listed-names/listing-registration';
 import { Address, Hash } from 'viem';
 
 @Controller('/api/v0.1.0/listings')
@@ -38,7 +39,7 @@ export class ListingController {
     @Param('lister') lister: Address,
     @Body() listing: NameListing,
     @Headers('Authorization') signature: Hash,
-  ) {
-    return this.listing.addListing(lister, signature, listing);
+  ): Promise<{ context: RegistryContext; signature: Hash }> {
+    return await this.listing.addListing(lister, signature, listing);
   }
 }

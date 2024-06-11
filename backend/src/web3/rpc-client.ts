@@ -7,12 +7,13 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { AppConfig } from '../config/app-config.service';
-import { base as baseChain, mainnet, sepolia } from 'viem/chains';
+import { base as baseChain, localhost, mainnet, sepolia } from 'viem/chains';
 import { Network } from 'src/dto/types';
 
 const supportedChains = {
   base: baseChain,
   sepolia,
+  localhost,
 };
 
 @Injectable()
@@ -43,9 +44,17 @@ export class RpcClient {
       transport: this.config.mainnetRpc ? http(this.config.mainnetRpc) : http(),
     });
 
+    const localhostClient = createPublicClient({
+      chain: localhost,
+      transport: this.config.localhostRpc
+        ? http(this.config.localhostRpc)
+        : http(),
+    });
+
     this.clients['base'] = baseClient as PublicClient;
     this.clients['sepolia'] = sepoliaClient as PublicClient;
     this.clients['mainnet'] = mainnetClient as PublicClient;
+    this.clients['localhost'] = localhostClient as PublicClient;
 
     this.signer = privateKeyToAccount(this.config.signerKey);
   }
