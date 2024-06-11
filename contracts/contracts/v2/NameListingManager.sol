@@ -26,14 +26,14 @@ contract NameListingManager is Ownable {
     function setSubname(EnsName name, bytes32 subnameNode) external {
         require(msg.sender == address(controller), "Only NameRegistryController can set subnames.");
 
-        listedNames[subnameNode] = (address(name));
+        mintedSubnames[subnameNode] = (address(name));
     }
 
     function setFactory(NameRegistryFactory _factory) external onlyOwner {
         factory = _factory;
     }
 
-    function setConstroller(NameRegistryController _controller) external onlyOwner {
+    function setController(NameRegistryController _controller) external onlyOwner {
         controller = _controller;
     }
 }

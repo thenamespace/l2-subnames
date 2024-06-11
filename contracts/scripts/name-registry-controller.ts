@@ -28,7 +28,7 @@ const types = {
 /**
 yarn hardhat mintSubname \
 --label 123 \
---parent-label namespace.eth \
+--parent-label namespace \
 --resolver 0x8FADE66B79cC9f707aB26799354482EB93a5B7dD \
 --owner 0xEf2c32797724C2572D83Dd69E71c1A821e07FECa \
 --payment-receiver 0xEf2c32797724C2572D83Dd69E71c1A821e07FECa \
@@ -56,9 +56,11 @@ task("mintSubname")
 
     const controllerAddress = await deployer.read.controllerAddress();
     const controller = await hre.viem.getContractAt(
-      "NameRegistryController",
+      "contracts/v2/NameRegistryController.sol:NameRegistryController",
       controllerAddress
     );
+
+    console.log("controllerAddress", controllerAddress);
 
     const blockTime = await time.latest();
 
@@ -75,7 +77,7 @@ task("mintSubname")
 
     const domain: Domain = {
       name: "Namespace",
-      version: "0.1.0",
+      version: "1",
       chainId: args.chainId,
       verifyingContract: controller.address,
     };

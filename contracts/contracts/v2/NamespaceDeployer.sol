@@ -26,17 +26,18 @@ contract NamespaceDeployer {
         NameRegistryFactory factory = new NameRegistryFactory(verifier, manager, controller, ETH_NODE, owner);
         NamePublicResolver resolver = new NamePublicResolver(operations, manager);
 
-        registry.setOperations(operations);
-        registry.setController(address(controller), true);
-        registry.transferOwnership(owner);
-
-        manager.setFactory(factory);
-        manager.transferOwnership(owner);
-
         registryAddress = address(registry);
         controllerAddress = address(controller);
         managerAddress = address(manager);
         factoryAddress = address(factory);
         resolverAddress = address(resolver);
+
+        registry.setOperations(operations);
+        registry.setController(controllerAddress, true);
+        registry.transferOwnership(owner);
+
+        manager.setFactory(factory);
+        manager.setController(controller);
+        manager.transferOwnership(owner);
     }
 }

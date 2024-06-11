@@ -30,11 +30,11 @@ contract NameRegistryOperations {
         address owner,
         address resolver,
         uint64 expiry
-    ) external returns (bool newNode) {
+    ) external returns (bool isNewNode) {
         bytes32 node = namehash(parentNode, label);
-        newNode = _register(ensName, node, owner, resolver, expiry);
+        isNewNode = _register(ensName, node, owner, resolver, expiry);
 
-        if (newNode) {
+        if (isNewNode) {
             NameRegistryLibrary.nameRegistryStorage().nodeChildren[parentNode].push(node);
         }
     }
@@ -95,9 +95,9 @@ contract NameRegistryOperations {
         NameRegistryLibrary.nameRegistryStorage().records[node].expiry += expiry;
     }
 
-    function _register(address name, bytes32 node, address owner, address resolver, uint64 expiry)
+    function _register(address ensName, bytes32 node, address owner, address resolver, uint64 expiry)
         internal
-        returns (bool)
+        returns (bool isNewNode)
     {
         if (owner == address(0) || resolver == address(0)) {
             revert ZeroAddressNotAllowed();
@@ -109,32 +109,30 @@ contract NameRegistryOperations {
 
         uint256 token = uint256(node);
 
-        if (_ownerOf(name, token) != address(0)) {
+        if (ownerOf(ensName, token) != address(0)) {
             revert NodeAlreadyTaken(node);
         }
 
-        address previousOwner = _ownerOf(name, token);
-        bool isNewNode = previousOwner == address(0);
+        isNewNode = _ownerOf(ensName, token) == address(0);
+
         NameRegistryLibrary.nameRegistryStorage().records[node] = NodeRecord(resolver, expiry);
 
         emit NodeCreated(node, owner, resolver, expiry);
-
-        return isNewNode;
     }
 
     function _isExpired(bytes32 node) internal view returns (bool) {
         return NameRegistryLibrary.nameRegistryStorage().records[node].expiry < block.timestamp;
     }
 
-    function ownerOfWithExpiry(address name, bytes32 node) internal view returns (address) {
+    function ownerOfWithExpiry(address ensName, bytes32 node) internal view returns (address) {
         if (_isExpired(node)) {
             return address(0);
         }
-        return _ownerOf(name, uint256(node));
+        return _ownerOf(ensName, uint256(node));
     }
 
-    function _ownerOf(address name, uint256 tokenId) internal view returns (address) {
-        try EnsName(name).ownerOf(tokenId) returns (address owner) {
+    function _ownerOf(address ensName, uint256 tokenId) internal view returns (address) {
+        try EnsName(ensName).ownerOf(tokenId) returns (address owner) {
             return owner;
         } catch {
             return address(0);
