@@ -5,11 +5,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {NameRegistry} from "./NameRegistry.sol";
-import {NameRegistryOperations} from "./NameRegistryOperations.sol";
 import {NameListingManager} from "./NameListingManager.sol";
-import {EnsName} from "./EnsName.sol";
+import {NameRegistry} from "./NameRegistry.sol";
 import {MintContext} from "./Types.sol";
-import {NameMinted} from "./Events.sol";
+import {NameMinted, NodeCreated} from "./Events.sol";
+import {ZeroAddressNotAllowed, NodeAlreadyTaken} from "./Errors.sol";
 import {NameAlreadyTaken, InsufficientFunds, InvalidSignature} from "./Errors.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
@@ -28,66 +28,16 @@ contract NameRegistryController is EIP712, Ownable {
     address private verifier;
     bytes32 private immutable ETH_NODE;
 
-    NameRegistry public immutable registry;
     NameListingManager public immutable manager;
 
-    constructor(
-        address _treasury,
-        address _verifier,
-        NameRegistry _registry,
-        NameListingManager _manager,
-        bytes32 ethNode,
-        address owner
-    ) EIP712("Namespace", "1") Ownable(owner) {
+    constructor(address _treasury, address _verifier, NameListingManager _manager, bytes32 ethNode, address owner)
+        EIP712("Namespace", "1")
+        Ownable(owner)
+    {
         treasury = _treasury;
         verifier = _verifier;
-        registry = _registry;
         manager = _manager;
         ETH_NODE = ethNode;
-    }
-
-    /**
-     * Mints a new name node.
-     * @param context The information about minting a new subname.
-     * @param signature The address which owns the node, can update resolver and records
-     */
-    function mint(MintContext memory context, bytes memory signature) public payable {
-        verifySignature(context, signature);
-
-        bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
-        bytes32 node = _namehash(parentNode, context.label);
-
-        address ensName = manager.listedNames(parentNode);
-        manager.setSubname(ensName, node);
-
-        if (context.resolverData.length > 0) {
-            _mintWithRecords(context, node, parentNode, ensName);
-        } else {
-            _mintSimple(context, parentNode, ensName);
-        }
-
-        transferFunds(context);
-
-        emit NameMinted(
-            context.label,
-            context.parentLabel,
-            node,
-            parentNode,
-            context.owner,
-            context.price,
-            context.fee,
-            context.paymentReceiver
-        );
-    }
-
-    function _mintSimple(MintContext memory context, bytes32 parentNode, address ensName) internal {
-        _mint(ensName, context.label, parentNode, context.owner, context.resolver);
-    }
-
-    function _mintWithRecords(MintContext memory context, bytes32 node, bytes32 parentNode, address ensName) internal {
-        _mint(ensName, context.label, parentNode, context.owner, context.resolver);
-
-        _setRecordsMulticall(node, context.resolver, context.resolverData);
     }
 
     function verifySignature(MintContext memory context, bytes memory signature) internal view {
@@ -115,7 +65,94 @@ contract NameRegistryController is EIP712, Ownable {
         return ECDSA.recover(digest, signature);
     }
 
-    function transferFunds(MintContext memory context) internal {
+    /**
+     * Mints a new name node.
+     * @param context The information about minting a new subname.
+     * @param signature The address which owns the node, can update resolver and records
+     */
+    function mint(MintContext memory context, bytes memory signature) public payable {
+        verifySignature(context, signature);
+
+        bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
+        bytes32 node = _namehash(parentNode, context.label);
+
+        address registry = manager.listedNames(parentNode);
+        manager.setSubname(registry, node);
+
+        if (context.resolverData.length > 0) {
+            _mintWithRecords(context, node, parentNode, registry);
+        } else {
+            _mintSimple(context, parentNode, registry);
+        }
+
+        _transferFunds(context);
+
+        emit NameMinted(
+            context.label,
+            context.parentLabel,
+            node,
+            parentNode,
+            context.owner,
+            context.price,
+            context.fee,
+            context.paymentReceiver
+        );
+    }
+
+    function _mintSimple(MintContext memory context, bytes32 parentNode, address registry) internal {
+        _mint(registry, context.label, parentNode, context.owner, context.resolver);
+    }
+
+    function _mintWithRecords(MintContext memory context, bytes32 node, bytes32 parentNode, address registry)
+        internal
+    {
+        _mint(registry, context.label, parentNode, context.owner, context.resolver);
+
+        _setRecordsMulticall(node, context.resolver, context.resolverData);
+    }
+
+    function _mint(address registry, string memory label, bytes32 parentNode, address owner, address resolver)
+        internal
+    {
+        bytes32 node = _namehash(parentNode, label);
+
+        if (owner == address(0) || resolver == address(0)) {
+            revert ZeroAddressNotAllowed();
+        }
+
+        uint256 tokenId = uint256(node);
+
+        if (_ownerOf(registry, tokenId) != address(0)) {
+            revert NodeAlreadyTaken(node);
+        }
+
+        bool isNewNode = _ownerOf(registry, tokenId) == address(0);
+        if (!isNewNode) {
+            NameRegistry(registry).burn(tokenId);
+        }
+
+        NameRegistry(registry).mint(owner, tokenId, resolver);
+
+        emit NodeCreated(node, owner, resolver);
+    }
+
+    function _ownerOf(address registry, uint256 tokenId) internal view returns (address) {
+        try NameRegistry(registry).ownerOf(tokenId) returns (address owner) {
+            return owner;
+        } catch {
+            return address(0);
+        }
+    }
+
+    function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {
+        return EnsUtils.namehash(parent, label);
+    }
+
+    function _setRecordsMulticall(bytes32 node, address resolver, bytes[] memory data) internal {
+        IMulticallable(resolver).multicallWithNodeCheck(node, data);
+    }
+
+    function _transferFunds(MintContext memory context) internal {
         uint256 totalPrice = context.fee + context.price;
         if (msg.value < totalPrice) {
             revert InsufficientFunds(totalPrice, msg.value);
@@ -138,32 +175,5 @@ contract NameRegistryController is EIP712, Ownable {
 
     function setVerifier(address _verifier) public onlyOwner {
         verifier = _verifier;
-    }
-
-    function _setRecordsMulticall(bytes32 node, address resolver, bytes[] memory data) internal {
-        IMulticallable(resolver).multicallWithNodeCheck(node, data);
-    }
-
-    function _mint(address ensName, string memory label, bytes32 parentNode, address owner, address resolver)
-        internal
-    {
-        bytes memory result = registry.performOperation(
-            abi.encodeWithSignature(
-                "mint(address,string,bytes32,address,address,uint64)", ensName, label, parentNode, owner, resolver
-            )
-        );
-        bool isNewNode = abi.decode(result, (bool));
-
-        uint256 tokenId = uint256(_namehash(parentNode, label));
-
-        if (!isNewNode) {
-            EnsName(ensName).burn(tokenId);
-        }
-
-        EnsName(ensName).mint(owner, tokenId);
-    }
-
-    function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {
-        return EnsUtils.namehash(parent, label);
     }
 }

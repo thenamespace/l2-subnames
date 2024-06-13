@@ -7,13 +7,13 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {RegistryContext} from "./Types.sol";
 import {InvalidSignature} from "./Errors.sol";
-import {EnsName} from "./EnsName.sol";
+import {NameRegistry} from "./NameRegistry.sol";
 
 bytes32 constant REGISTRY_CONTEXT =
     keccak256("RegistryContext(string listingName,string symbol,string ensName,string baseUri)");
 
 interface NameListingManager {
-    function setName(EnsName name, bytes32 nameNode) external;
+    function setName(NameRegistry name, bytes32 nameNode) external;
 }
 
 contract NameRegistryFactory is EIP712, Ownable {
@@ -32,10 +32,16 @@ contract NameRegistryFactory is EIP712, Ownable {
         ETH_NODE = ethNode;
     }
 
-    function create(string memory ensName, string memory baseUri, bytes memory verificationSignature) external {
-        verifySignature(RegistryContext(ensName, baseUri), verificationSignature);
+    function create(
+        string memory listingName,
+        string memory symbol,
+        string memory ensName,
+        string memory baseUri,
+        bytes memory verificationSignature
+    ) external {
+        verifySignature(RegistryContext(listingName, symbol, ensName, baseUri), verificationSignature);
 
-        EnsName name = new EnsName(baseUri);
+        NameRegistry name = new NameRegistry(listingName, symbol, baseUri);
         name.setController(controller, true);
 
         bytes32 nameNode = EnsUtils.namehash(ETH_NODE, ensName);
@@ -54,6 +60,8 @@ contract NameRegistryFactory is EIP712, Ownable {
             keccak256(
                 abi.encode(
                     REGISTRY_CONTEXT,
+                    keccak256(abi.encodePacked(context.listingName)),
+                    keccak256(abi.encodePacked(context.symbol)),
                     keccak256(abi.encodePacked(context.ensName)),
                     keccak256(abi.encodePacked(context.baseUri))
                 )

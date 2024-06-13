@@ -14,11 +14,13 @@ struct MintContext {
 }
 
 struct NodeRecord {
+    address owner;
     address resolver;
-    uint64 expiry;
 }
 
 struct RegistryContext {
+    string listingName;
+    string symbol;
     string ensName;
     string baseUri;
 }

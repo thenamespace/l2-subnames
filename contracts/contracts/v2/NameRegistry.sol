@@ -1,59 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Controllable} from "../access/Controllable.sol";
+import {NodeRecord} from "./Types.sol";
 
-struct NameRegistryStorage {
-    mapping(bytes32 => address) resolvers;
-    mapping(bytes32 => bytes32[]) nodeChildren;
-}
+contract NameRegistry is ERC721, Controllable {
+    string private baseURI;
+    mapping(bytes32 => NodeRecord) public tokenOwners;
 
-library NameRegistryLibrary {
-    bytes32 constant STORAGE_POSITION = keccak256("namespace.name.registry.storage");
-
-    function nameRegistryStorage() internal pure returns (NameRegistryStorage storage ds) {
-        bytes32 position = STORAGE_POSITION;
-        assembly {
-            ds.slot := position
-        }
-    }
-}
-
-/**
- * NameRegistry stores the information about registered name node and their resolvers
- */
-contract NameRegistry is Controllable {
-    address public operations;
-
-    constructor(address _operations) {
-        operations = _operations;
+    constructor(string memory name, string memory symbol, string memory baseUri) ERC721(name, symbol) {
+        baseURI = baseUri;
     }
 
-    function performOperation(bytes calldata callData) external onlyController returns (bytes memory) {
-        (bool success, bytes memory returndata) = operations.delegatecall(callData);
-        if (success) {
-            return returndata;
-        } else {
-            if (returndata.length > 0) {
-                assembly {
-                    let returndata_size := mload(returndata)
-                    revert(add(32, returndata), returndata_size)
-                }
-            } else {
-                revert("Storage call failed");
-            }
-        }
+    function mint(address owner, uint256 tokenId, address resolver) external onlyController {
+        _mint(owner, tokenId);
+
+        tokenOwners[bytes32(tokenId)] = NodeRecord(owner, resolver);
     }
 
-    function getResolver(bytes32 node) external view returns (address) {
-        return NameRegistryLibrary.nameRegistryStorage().resolvers[node];
+    function burn(uint256 tokenId) external onlyController {
+        _burn(tokenId);
+
+        delete tokenOwners[bytes32(tokenId)];
     }
 
-    function getChildren(bytes32 node) external view returns (bytes32[] memory) {
-        return NameRegistryLibrary.nameRegistryStorage().nodeChildren[node];
-    }
-
-    function setOperations(address _operations) external onlyOwner {
-        operations = _operations;
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
     }
 }

@@ -10,9 +10,9 @@ import {PubkeyResolver} from "../resolver/profiles/PubkeyResolver.sol";
 import {NameResolver} from "../resolver/profiles/NameResolver.sol";
 import {ABIResolver} from "../resolver/profiles/ABIResolver.sol";
 import {ExtendedResolver} from "../resolver/profiles/ExtendedResolver.sol";
-import {NameRegistryOperations} from "./NameRegistryOperations.sol";
 import {NameListingManager} from "./NameListingManager.sol";
-import {EnsName} from "./EnsName.sol";
+import {NameRegistry} from "./NameRegistry.sol";
+import {NodeRecord} from "./Types.sol";
 
 /**
  * A simple resolver anyone can use; only allows the owner of a node to set its
@@ -29,7 +29,6 @@ contract NamePublicResolver is
     ExtendedResolver,
     Multicallable
 {
-    NameRegistryOperations public immutable registryOperations;
     NameListingManager public immutable manager;
 
     constructor(NameListingManager _manager) {
@@ -37,11 +36,11 @@ contract NamePublicResolver is
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        address ensName = manager.mintedSubnames(node);
-        address nodeOwner = EnsName(ensName).tokenOwners(uint256(node));
+        address registry = manager.mintedSubnames(node);
+        (address nodeOwner,) = NameRegistry(registry).tokenOwners(node);
 
         return nodeOwner != address(0)
-            && (nodeOwner == msg.sender || EnsName(ensName).isApprovedForAll(nodeOwner, msg.sender));
+            && (nodeOwner == msg.sender || NameRegistry(registry).isApprovedForAll(nodeOwner, msg.sender));
     }
 
     function supportsInterface(bytes4 interfaceID)
