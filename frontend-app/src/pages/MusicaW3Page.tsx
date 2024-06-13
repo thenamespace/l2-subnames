@@ -10,7 +10,7 @@ import namespaceLogo from "../assets/logo/namespace.png";
 import baseLogo from "../assets/logo/base.svg";
 import ensLogo from "../assets/logo/ens.png";
 import musicaw3logo from "../assets/logo/musicaw3logo.png";
-import musicaBg from "../assets/musica-bg.jpg";
+import musicaBg from "../assets/musica-bg.png";
 
 const defaultAvatarImg =
   "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/basedsummer.png";
