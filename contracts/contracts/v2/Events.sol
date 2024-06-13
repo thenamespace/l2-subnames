@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-event NodeCreated(bytes32 node, address owner, address resolver, uint64 expiry);
+event NodeCreated(bytes32 node, address owner, address resolver);
 
 event NameMinted(
     string label,
@@ -11,6 +11,5 @@ event NameMinted(
     address owner,
     uint256 price,
     uint256 fee,
-    address paymentReceiver,
-    uint64 expiry
+    address paymentReceiver
 );

@@ -15,7 +15,7 @@ import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
 
 bytes32 constant MINT_CONTEXT = keccak256(
-    "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,uint64 expiry,address paymentReceiver)"
+    "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,address paymentReceiver)"
 );
 
 /**
@@ -76,17 +76,16 @@ contract NameRegistryController is EIP712, Ownable {
             context.owner,
             context.price,
             context.fee,
-            context.paymentReceiver,
-            context.expiry
+            context.paymentReceiver
         );
     }
 
     function _mintSimple(MintContext memory context, bytes32 parentNode, address ensName) internal {
-        _mint(ensName, context.label, parentNode, address(this), context.resolver, context.expiry);
+        _mint(ensName, context.label, parentNode, context.owner, context.resolver);
     }
 
     function _mintWithRecords(MintContext memory context, bytes32 node, bytes32 parentNode, address ensName) internal {
-        _mint(ensName, context.label, parentNode, address(this), context.resolver, context.expiry);
+        _mint(ensName, context.label, parentNode, context.owner, context.resolver);
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
     }
@@ -109,7 +108,6 @@ contract NameRegistryController is EIP712, Ownable {
                     context.owner,
                     context.price,
                     context.fee,
-                    context.expiry,
                     context.paymentReceiver
                 )
             )
@@ -146,23 +144,12 @@ contract NameRegistryController is EIP712, Ownable {
         IMulticallable(resolver).multicallWithNodeCheck(node, data);
     }
 
-    function _mint(
-        address ensName,
-        string memory label,
-        bytes32 parentNode,
-        address owner,
-        address resolver,
-        uint64 expiry
-    ) internal {
+    function _mint(address ensName, string memory label, bytes32 parentNode, address owner, address resolver)
+        internal
+    {
         bytes memory result = registry.performOperation(
             abi.encodeWithSignature(
-                "mint(address,string,bytes32,address,address,uint64)",
-                ensName,
-                label,
-                parentNode,
-                owner,
-                resolver,
-                expiry
+                "mint(address,string,bytes32,address,address,uint64)", ensName, label, parentNode, owner, resolver
             )
         );
         bool isNewNode = abi.decode(result, (bool));
@@ -170,10 +157,10 @@ contract NameRegistryController is EIP712, Ownable {
         uint256 tokenId = uint256(_namehash(parentNode, label));
 
         if (!isNewNode) {
-            EnsName(ensName).burn(owner, tokenId);
+            EnsName(ensName).burn(tokenId);
         }
 
-        EnsName(ensName).mint(owner, tokenId, expiry);
+        EnsName(ensName).mint(owner, tokenId);
     }
 
     function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {

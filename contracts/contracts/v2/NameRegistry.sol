@@ -20,7 +20,7 @@ library NameRegistryLibrary {
 }
 
 /**
- * NameRegistry stores the information about registered name node, their expiry and resolvers
+ * NameRegistry stores the information about registered name node and their resolvers
  */
 contract NameRegistry is Controllable {
     address public operations;
