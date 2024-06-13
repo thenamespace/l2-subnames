@@ -12,6 +12,7 @@ bytes32 constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a
 
 contract NamespaceDeployer {
     address public registryAddress;
+    address public operationsAddress;
     address public controllerAddress;
     address public managerAddress;
     address public factoryAddress;
@@ -19,25 +20,31 @@ contract NamespaceDeployer {
 
     constructor(address verifier, address treasury, address owner) {
         NameListingManager manager = new NameListingManager(address(this));
+        managerAddress = address(manager);
+
         NameRegistryOperations operations = new NameRegistryOperations();
-        NameRegistry registry = new NameRegistry(operations);
+        operationsAddress = address(operations);
+
+        NameRegistry registry = new NameRegistry(operationsAddress);
+        registryAddress = address(registry);
+
         NameRegistryController controller =
             new NameRegistryController(treasury, verifier, registry, manager, ETH_NODE, owner);
-        NameRegistryFactory factory = new NameRegistryFactory(verifier, manager, controller, ETH_NODE, owner);
-        NamePublicResolver resolver = new NamePublicResolver(operations, manager);
-
-        registryAddress = address(registry);
         controllerAddress = address(controller);
-        managerAddress = address(manager);
+
+        NameRegistryFactory factory =
+            new NameRegistryFactory(verifier, managerAddress, controllerAddress, ETH_NODE, owner);
         factoryAddress = address(factory);
+
+        NamePublicResolver resolver = new NamePublicResolver(manager);
         resolverAddress = address(resolver);
 
-        registry.setOperations(operations);
+        registry.setOperations(operationsAddress);
         registry.setController(controllerAddress, true);
         registry.transferOwnership(owner);
 
-        manager.setFactory(factory);
-        manager.setController(controller);
+        manager.setFactory(factoryAddress);
+        manager.setController(controllerAddress);
         manager.transferOwnership(owner);
     }
 }

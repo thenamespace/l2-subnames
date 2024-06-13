@@ -5,6 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {NameRegistry} from "./NameRegistry.sol";
+import {NameRegistryOperations} from "./NameRegistryOperations.sol";
 import {NameListingManager} from "./NameListingManager.sol";
 import {EnsName} from "./EnsName.sol";
 import {MintContext} from "./Types.sol";
@@ -12,7 +13,6 @@ import {NameMinted} from "./Events.sol";
 import {NameAlreadyTaken, InsufficientFunds, InvalidSignature} from "./Errors.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
-import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 
 bytes32 constant MINT_CONTEXT = keccak256(
     "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,uint64 expiry,address paymentReceiver)"
@@ -23,7 +23,7 @@ bytes32 constant MINT_CONTEXT = keccak256(
  * The minter requires parameters signed by a verifier address
  * in order to be able to perform NameRegistry operations
  */
-contract NameRegistryController is EIP712, Ownable, ERC721Holder {
+contract NameRegistryController is EIP712, Ownable {
     address public treasury;
     address private verifier;
     bytes32 private immutable ETH_NODE;
@@ -56,14 +56,9 @@ contract NameRegistryController is EIP712, Ownable, ERC721Holder {
 
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
         bytes32 node = _namehash(parentNode, context.label);
-        uint256 nodeTokenId = uint256(node);
 
         address ensName = manager.listedNames(parentNode);
-        manager.setSubname(EnsName(ensName), node);
-
-        if (registry.operations().ownerOf(ensName, nodeTokenId) != address(0)) {
-            revert NameAlreadyTaken(node);
-        }
+        manager.setSubname(ensName, node);
 
         if (context.resolverData.length > 0) {
             _mintWithRecords(context, node, parentNode, ensName);
@@ -94,8 +89,6 @@ contract NameRegistryController is EIP712, Ownable, ERC721Holder {
         _mint(ensName, context.label, parentNode, address(this), context.resolver, context.expiry);
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
-
-        EnsName(ensName).safeTransferFrom(address(this), context.owner, uint256(node));
     }
 
     function verifySignature(MintContext memory context, bytes memory signature) internal view {
@@ -177,10 +170,10 @@ contract NameRegistryController is EIP712, Ownable, ERC721Holder {
         uint256 tokenId = uint256(_namehash(parentNode, label));
 
         if (!isNewNode) {
-            EnsName(ensName).burn(tokenId);
+            EnsName(ensName).burn(owner, tokenId);
         }
 
-        EnsName(ensName).mint(owner, tokenId);
+        EnsName(ensName).mint(owner, tokenId, expiry);
     }
 
     function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {

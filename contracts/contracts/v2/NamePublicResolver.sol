@@ -32,14 +32,13 @@ contract NamePublicResolver is
     NameRegistryOperations public immutable registryOperations;
     NameListingManager public immutable manager;
 
-    constructor(NameRegistryOperations _registryOperations, NameListingManager _manager) {
-        registryOperations = _registryOperations;
+    constructor(NameListingManager _manager) {
         manager = _manager;
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
         address ensName = manager.mintedSubnames(node);
-        address nodeOwner = registryOperations.ownerOf(ensName, uint256(node));
+        address nodeOwner = EnsName(ensName).tokenOwners(uint256(node));
 
         return nodeOwner != address(0)
             && (nodeOwner == msg.sender || EnsName(ensName).isApprovedForAll(nodeOwner, msg.sender));

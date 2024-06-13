@@ -19,8 +19,6 @@ struct NodeRecord {
 }
 
 struct RegistryContext {
-    string listingName;
-    string symbol;
     string ensName;
     string baseUri;
 }

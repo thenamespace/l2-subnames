@@ -55,44 +55,8 @@ contract NameRegistryOperations {
         return _register(ensName, node, owner, resolver, expiry);
     }
 
-    /**
-     * Returns an owner of subname node/nft.
-     * Returns zeroAddress if node is not owned or if node is expired
-     * @param ensName the address of the EnsName token
-     * @param tokenId The id of nft token.
-     * @return ownerAddress
-     */
-    function ownerOf(address ensName, uint256 tokenId) public view returns (address) {
-        bytes32 node = bytes32(tokenId);
-        return ownerOfWithExpiry(ensName, node);
-    }
-
-    /**
-     * Returns a total count of owned child nodes under single
-     * parent node. Example: Ownership of all subnames under example.eth name
-     * @param ensName the address of the EnsName token
-     * @param owner the address of an owner
-     * @param tokenId The id of nft token.
-     * @return uint64 Total owned child nodes under parent node
-     */
-    function balanceOf(address ensName, address owner, uint256 tokenId) external view returns (uint64) {
-        bytes32 parentNode = bytes32(tokenId);
-        bytes32[] memory children = NameRegistryLibrary.nameRegistryStorage().nodeChildren[parentNode];
-        uint64 ownedNames = 0;
-        for (uint256 i = 0; i < children.length; i++) {
-            if (ownerOfWithExpiry(ensName, children[i]) == owner) {
-                ownedNames++;
-            }
-        }
-        return ownedNames;
-    }
-
     function setResolver(bytes32 node, address resolver) public {
-        NameRegistryLibrary.nameRegistryStorage().records[node].resolver = resolver;
-    }
-
-    function setExpiry(bytes32 node, uint64 expiry) public {
-        NameRegistryLibrary.nameRegistryStorage().records[node].expiry += expiry;
+        NameRegistryLibrary.nameRegistryStorage().resolvers[node] = resolver;
     }
 
     function _register(address ensName, bytes32 node, address owner, address resolver, uint64 expiry)
@@ -107,36 +71,31 @@ contract NameRegistryOperations {
             revert ExpiryTooLow(expiry);
         }
 
-        uint256 token = uint256(node);
-
-        if (ownerOf(ensName, token) != address(0)) {
+        if (ownerOfWithExpiry(ensName, node) != address(0)) {
             revert NodeAlreadyTaken(node);
         }
 
+        uint256 token = uint256(node);
         isNewNode = _ownerOf(ensName, token) == address(0);
 
-        NameRegistryLibrary.nameRegistryStorage().records[node] = NodeRecord(resolver, expiry);
+        NameRegistryLibrary.nameRegistryStorage().resolvers[node] = resolver;
 
         emit NodeCreated(node, owner, resolver, expiry);
     }
 
-    function _isExpired(bytes32 node) internal view returns (bool) {
-        return NameRegistryLibrary.nameRegistryStorage().records[node].expiry < block.timestamp;
-    }
-
     function ownerOfWithExpiry(address ensName, bytes32 node) internal view returns (address) {
-        if (_isExpired(node)) {
+        if (_isExpired(ensName, node)) {
             return address(0);
         }
         return _ownerOf(ensName, uint256(node));
     }
 
+    function _isExpired(address ensName, bytes32 node) internal view returns (bool) {
+        return EnsName(ensName).nodeExpiries(node) < block.timestamp;
+    }
+
     function _ownerOf(address ensName, uint256 tokenId) internal view returns (address) {
-        try EnsName(ensName).ownerOf(tokenId) returns (address owner) {
-            return owner;
-        } catch {
-            return address(0);
-        }
+        return EnsName(ensName).tokenOwners(tokenId);
     }
 
     function namehash(bytes32 parent, string memory label) public pure returns (bytes32) {
