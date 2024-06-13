@@ -19,5 +19,12 @@
     "price": 0,
     "network": "base",
     "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name": "musicaw3.eth",
+    "namehash": "0x26c681a964af7d1835aa894003dbd90ab3e1d04500d705b7476997d3ef116bcd",
+    "price": 0,
+    "network": "base",
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
   }
 ]

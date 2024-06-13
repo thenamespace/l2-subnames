@@ -31,15 +31,44 @@ const enum MintProcess {
   MintSuccess = 4,
 }
 
+const labels: Record<FormVariation, Record<string, string>> = {
+  default: {
+    your_are_about_to_mint: "You are about to mint",
+    start_typing: "Start typing...",
+    your_name: "{yourName}",
+    congratulations: "Congratulations",
+    you_have_minted: "You have successfully minted"
+  },
+  basesummer: {
+    your_are_about_to_mint: "You are about to mint",
+    start_typing: "Start typing...",
+    your_name: "{yourName}",
+    congratulations: "Congratulations",
+    you_have_minted: "You have successfully minted"
+  },
+  musica: {
+    your_are_about_to_mint: "Vas a registrar",
+    start_typing: "Start typing...",
+    your_name: "{usario}",
+    congratulations: "Felicitaciones!",
+    you_have_minted: "Has registrado"
+  },
+};
+
+type FormVariation = "default" | "musica" | "basesummer";
+
 export const MintSubnameForm = ({
   listing,
-  basedSummer,
+  sponsoredMint,
   defaultAvatar,
+  formVariation,
 }: {
   listing: Listing;
-  basedSummer?: boolean;
+  sponsoredMint?: boolean;
   defaultAvatar?: string;
+  formVariation?: FormVariation;
 }) => {
+  const formType = formVariation || "default";
   const [subnameLabel, setSubnameLabel] = useState("");
 
   const [nameRecords, setNameRecords] = useState<NameRecords>({
@@ -73,7 +102,7 @@ export const MintSubnameForm = ({
 
   // const { networkName: currentNetwork } = useWeb3Network();
   const listingChainId = getChainId(listing.network);
-  const publicClient = usePublicClient({chainId: listingChainId})
+  const publicClient = usePublicClient({ chainId: listingChainId });
   const networkName = listing.network;
   const { isSubnameAvailable } = useNameRegistry(listingChainId);
   const { mint } = useNameController();
@@ -95,8 +124,15 @@ export const MintSubnameForm = ({
   const { openConnectModal } = useConnectModal();
   const [mode, setMode] = useState<MintProcess>(MintProcess.SelectSubname);
 
-  if (listing.name === "gotbased.eth" && !window.location.pathname.includes("based-summer")) {
-    return <Navigate to="/based-summer/gotbased.eth"></Navigate>
+  if (
+    listing.name === "gotbased.eth" &&
+    !window.location.pathname.includes("based-summer")
+  ) {
+    return <Navigate to="/based-summer/gotbased.eth"></Navigate>;
+  }
+
+  if (listing.name === "musicaw3.eth" && !window.location.pathname.includes("/events/musicaw3")) {
+    return <Navigate to="/events/musicaw3"></Navigate>
   }
 
   const handleLabelChange = (value: string) => {
@@ -220,9 +256,9 @@ export const MintSubnameForm = ({
         }
 
         let tx;
-        if (basedSummer) {
+        if (sponsoredMint) {
           setMintIndicators({ ...mintIndicators, waitingTx: true });
-            tx = await _mintSponsored(resolverData);
+          tx = await _mintSponsored(resolverData);
         } else {
           setMintIndicators({ ...mintIndicators, waitingWallet: true });
           tx = await mint(_params);
@@ -275,6 +311,8 @@ export const MintSubnameForm = ({
     setNameRecords(value);
   };
 
+  const formLabels = labels[formType];
+
   const isTaken =
     !indicators.isChecking &&
     !indicators.isAvailable &&
@@ -297,12 +335,13 @@ export const MintSubnameForm = ({
 
   const fullName = `${subnameLabel}.${listing.name}`;
   if (mode === MintProcess.MintSuccess) {
-    return <SuccessScreen fullName={fullName} />;
+    return <SuccessScreen formType={formType} fullName={fullName} />;
   }
 
   if (mode === MintProcess.SelectRecords) {
     return (
       <SetRecordsForm
+        isMusica={formType === "musica"}
         nameRecords={nameRecords}
         setNameRecords={(v) => {
           handleNameRecordsSaved(v);
@@ -318,9 +357,7 @@ export const MintSubnameForm = ({
       <div>
         <div className="mb-3 text-center">
           <img src={calmNinjaImg} width="100px" className="mb-3"></img>
-          <Typography>
-            You are about to mint
-          </Typography>
+          <Typography>{formLabels.your_are_about_to_mint}</Typography>
           <Typography fontVariant="extraLargeBold" className="mt-1">
             <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
               {subnameLabel}
@@ -352,7 +389,16 @@ export const MintSubnameForm = ({
 
   return (
     <div className="text-center mint-subname-form">
-      {!basedSummer && (
+      {formType === "musica" && (
+        <div>
+          <div className="d-flex justify-content-center flex-column align-items-center">
+            <Typography fontVariant="largeBold">
+              Únete a nuestra comunidad! ✨
+            </Typography>
+          </div>
+        </div>
+      )}
+      {formType === "default" && (
         <>
           <div className="back-icon">
             <Link to="/">
@@ -362,22 +408,39 @@ export const MintSubnameForm = ({
           <Typography fontVariant="large">Find perfect Subname</Typography>
         </>
       )}
-      {basedSummer && <>
-        <div className="d-flex justify-content-center flex-column align-items-center">
-             <Typography color="grey">☀️ Onchain Summer ☀️</Typography>
-             <Typography fontVariant="extraLargeBold" color="blue" className="title">GotBased.eth yet?</Typography>
-        </div>
-      </>}
+      {formType === "basesummer" && (
+        <>
+          <div className="d-flex justify-content-center flex-column align-items-center">
+            <Typography color="grey">☀️ Onchain Summer ☀️</Typography>
+            <Typography
+              fontVariant="extraLargeBold"
+              color="blue"
+              className="title"
+            >
+              GotBased.eth yet?
+            </Typography>
+          </div>
+        </>
+      )}
       <div className="mt-3 text-align-left" style={{ textAlign: "left" }}>
+        {formType === "musica" && (
+          <Typography fontVariant="small" className="mb-1">
+            👇 Únete a nuestra comunidad registrando tu nombre de usuario único
+            de MúsicaW3:
+          </Typography>
+        )}
         <Typography fontVariant="small" color="grey">
-          <Typography asProp="span" color="blue">{subnameLabel.length > 0 ? subnameLabel : "{yourName}"}</Typography>.{listing.name}
+          <Typography asProp="span" color="blue" fontVariant="small">
+            {subnameLabel.length > 0 ? subnameLabel : formLabels.your_name}
+          </Typography>
+          .{listing.name}
         </Typography>
         <Input
           error={isTaken && `Name ${fullName} is already taken`}
           size="large"
           value={subnameLabel}
           onChange={(e) => handleLabelChange(e.target.value)}
-          placeholder="Start typing..."
+          placeholder={formLabels.start_typing}
           label=""
           suffix={indicators.isChecking ? <Spinner /> : null}
         ></Input>
@@ -391,12 +454,18 @@ export const MintSubnameForm = ({
   );
 };
 
-const SuccessScreen = ({ fullName }: { fullName: string }) => {
+const SuccessScreen = ({ fullName, formType  }: { fullName: string, formType?: FormVariation }) => {
+
+  const type = formType || "default";
+  const formLabels = labels[type];
+
   return (
     <div className="d-flex flex-column justify-content-center align-items-center mt-4">
       <img src={happyNinjaImg} width="80px"></img>
-      <Typography className="mt-4 mb-2" fontVariant="extraLargeBold">Congratulations</Typography>
-      <Typography className="mb-2">You have successfully minted</Typography>
+      <Typography className="mt-4 mb-2" fontVariant="extraLargeBold">
+        {formLabels.congratulations}
+      </Typography>
+      <Typography className="mb-2">{formLabels.you_have_minted}</Typography>
       <Typography fontVariant="extraLargeBold" color="blue">
         {fullName}
       </Typography>
