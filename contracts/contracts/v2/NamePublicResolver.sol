@@ -12,7 +12,6 @@ import {ABIResolver} from "../resolver/profiles/ABIResolver.sol";
 import {ExtendedResolver} from "../resolver/profiles/ExtendedResolver.sol";
 import {NameListingManager} from "./NameListingManager.sol";
 import {NameRegistry} from "./NameRegistry.sol";
-import {NodeRecord} from "./Types.sol";
 
 /**
  * A simple resolver anyone can use; only allows the owner of a node to set its
@@ -36,7 +35,7 @@ contract NamePublicResolver is
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        address registry = manager.mintedSubnames(node);
+        address registry = manager.nodeRegistries(node);
         (address nodeOwner,) = NameRegistry(registry).tokenOwners(node);
 
         return nodeOwner != address(0)

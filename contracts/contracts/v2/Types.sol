@@ -22,4 +22,6 @@ struct RegistryContext {
     string symbol;
     string ensName;
     string baseUri;
+    address owner;
+    address resolver;
 }

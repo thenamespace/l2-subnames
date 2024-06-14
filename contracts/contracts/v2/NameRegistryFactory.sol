@@ -8,13 +8,10 @@ import {EnsUtils} from "../libs/EnsUtils.sol";
 import {RegistryContext} from "./Types.sol";
 import {InvalidSignature} from "./Errors.sol";
 import {NameRegistry} from "./NameRegistry.sol";
+import {INameListingManager} from "./NameListingManager.sol";
 
 bytes32 constant REGISTRY_CONTEXT =
-    keccak256("RegistryContext(string listingName,string symbol,string ensName,string baseUri)");
-
-interface NameListingManager {
-    function setName(NameRegistry name, bytes32 nameNode) external;
-}
+    keccak256("RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver)");
 
 contract NameRegistryFactory is EIP712, Ownable {
     address private verifier;
@@ -33,19 +30,26 @@ contract NameRegistryFactory is EIP712, Ownable {
     }
 
     function create(
-        string memory listingName,
-        string memory symbol,
-        string memory ensName,
-        string memory baseUri,
+        RegistryContext memory context,
         bytes memory verificationSignature
     ) external {
-        verifySignature(RegistryContext(listingName, symbol, ensName, baseUri), verificationSignature);
+        verifySignature(context, verificationSignature);
 
-        NameRegistry name = new NameRegistry(listingName, symbol, baseUri);
-        name.setController(controller, true);
+        NameRegistry nameRegistry = new NameRegistry(context.listingName, context.symbol, context.baseUri);
+        nameRegistry.setController(controller, true);
+        nameRegistry.setController(address(this), true);
 
-        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, ensName);
-        NameListingManager(manager).setName(name, nameNode);
+        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, context.ensName);
+        INameListingManager(manager).setNodeRegistry(nameNode, address(nameRegistry));
+        
+        claim2LDomain(context.owner, context.resolver, nameNode, address(nameRegistry));
+
+        nameRegistry.setController(address(this), false);
+        nameRegistry.transferOwnership(owner());
+    }
+
+    function claim2LDomain(address owner, address resolver, bytes32 nameNode, address nameTokenAddress) internal {
+        NameRegistry(nameTokenAddress).mint(owner, uint256(nameNode), resolver);
     }
 
     function verifySignature(RegistryContext memory context, bytes memory signature) internal view {
@@ -63,7 +67,9 @@ contract NameRegistryFactory is EIP712, Ownable {
                     keccak256(abi.encodePacked(context.listingName)),
                     keccak256(abi.encodePacked(context.symbol)),
                     keccak256(abi.encodePacked(context.ensName)),
-                    keccak256(abi.encodePacked(context.baseUri))
+                    keccak256(abi.encodePacked(context.baseUri)),
+                    context.owner,
+                    context.resolver
                 )
             )
         );
