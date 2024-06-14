@@ -20,7 +20,6 @@ const types = {
     { name: "owner", type: "address" },
     { name: "price", type: "uint256" },
     { name: "fee", type: "uint256" },
-    { name: "expiry", type: "uint64" },
     { name: "paymentReceiver", type: "address" },
   ],
 };
@@ -71,7 +70,6 @@ task("mintSubname")
       owner: args.owner,
       price: BigInt(10000),
       fee: BigInt(0),
-      expiry: BigInt(blockTime * 2),
       paymentReceiver: args.paymentReceiver,
     };
 

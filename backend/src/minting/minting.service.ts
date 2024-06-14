@@ -47,7 +47,6 @@ export class MintingService {
       owner,
       price,
       fee: '0',
-      expiry: Number.MAX_SAFE_INTEGER,
       paymentReceiver: listing.owner,
       resolverData: [],
     };

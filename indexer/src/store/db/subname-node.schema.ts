@@ -17,9 +17,6 @@ export class SubnameNode {
   @Prop({ required: true, type: String })
   owner: Address;
 
-  @Prop({ required: true, type: BigInt })
-  expiry: bigint;
-
   @Prop({ required: false, type: Object })
   addresses: Record<string, Address>;
 

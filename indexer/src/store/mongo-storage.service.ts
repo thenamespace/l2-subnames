@@ -75,7 +75,6 @@ export class MongoStorageService
       texts: node.texts || {},
       addresses: node.addresses || {},
       contentHash: node.contentHash,
-      expiry: node.expiry,
       createdAt: new Date().getTime(),
     });
   }
@@ -90,7 +89,6 @@ export class MongoStorageService
 
   private toResponse(doc: SubnameNode): ISubnameNode {
     return {
-      expiry: doc.expiry,
       label: doc.label,
       owner: doc.owner,
       parentNode: doc.parentNode,

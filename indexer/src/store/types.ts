@@ -19,6 +19,5 @@ export interface ISubnameNode {
   owner: Address;
   texts?: Record<string, string>;
   contentHash?: Hash;
-  expiry: bigint;
   addresses?: Record<string, Address>;
 }

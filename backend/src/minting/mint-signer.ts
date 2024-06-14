@@ -16,7 +16,6 @@ export class MintSigner {
       { name: 'owner', type: 'address' },
       { name: 'price', type: 'uint256' },
       { name: 'fee', type: 'uint256' },
-      { name: 'expiry', type: 'uint64' },
       { name: 'paymentReceiver', type: 'address' },
     ],
   };
@@ -44,7 +43,6 @@ export class MintSigner {
       owner: params.owner,
       price: params.price,
       fee: params.fee,
-      expiry: params.expiry,
       paymentReceiver: params.paymentReceiver,
     };
 
