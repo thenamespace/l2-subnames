@@ -13,7 +13,7 @@ import musicaw3logo from "../assets/logo/musicaw3logo.png";
 import musicaBg from "../assets/musica-bg.png";
 
 const defaultAvatarImg =
-  "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/basedsummer.png";
+  "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/musicaw3logo.png";
 const ensName = "musicaw3.eth";
 
 export const MusicaW3Page = () => {
