@@ -4,9 +4,8 @@ pragma solidity ^0.8.24;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import {NameRegistry} from "./NameRegistry.sol";
+import {EnsNameToken} from "./EnsNameToken.sol";
 import {NameListingManager} from "./NameListingManager.sol";
-import {NameRegistry} from "./NameRegistry.sol";
 import {MintContext} from "./Types.sol";
 import {NameMinted, NodeCreated} from "./Events.sol";
 import {ZeroAddressNotAllowed, NodeAlreadyTaken} from "./Errors.sol";
@@ -19,9 +18,9 @@ bytes32 constant MINT_CONTEXT = keccak256(
 );
 
 /**
- * NameRegistryController controlls the NFT minting under NameRegistry contract
+ * NameRegistryController controls the NFT minting under EnsNameToken contract
  * The minter requires parameters signed by a verifier address
- * in order to be able to perform NameRegistry operations
+ * in order to be able to perform EnsNameToken operations
  */
 contract NameRegistryController is EIP712, Ownable {
     address public treasury;
@@ -76,13 +75,13 @@ contract NameRegistryController is EIP712, Ownable {
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
         bytes32 node = _namehash(parentNode, context.label);
 
-        address registry = manager.listedNames(parentNode);
-        manager.setSubname(registry, node);
+        address nameToken = manager.listedNames(parentNode);
+        manager.setSubname(nameToken, node);
 
         if (context.resolverData.length > 0) {
-            _mintWithRecords(context, node, parentNode, registry);
+            _mintWithRecords(context, node, nameToken);
         } else {
-            _mintSimple(context, parentNode, registry);
+            _mintSimple(context, node, nameToken);
         }
 
         _transferFunds(context);
@@ -99,45 +98,39 @@ contract NameRegistryController is EIP712, Ownable {
         );
     }
 
-    function _mintSimple(MintContext memory context, bytes32 parentNode, address registry) internal {
-        _mint(registry, context.label, parentNode, context.owner, context.resolver);
+    function _mintSimple(MintContext memory context, bytes32 node, address nameToken) internal {
+        _mint(nameToken, node, context.owner, context.resolver);
     }
 
-    function _mintWithRecords(MintContext memory context, bytes32 node, bytes32 parentNode, address registry)
-        internal
-    {
-        _mint(registry, context.label, parentNode, context.owner, context.resolver);
+    function _mintWithRecords(MintContext memory context, bytes32 node, address nameToken) internal {
+        _mint(nameToken, node, context.owner, context.resolver);
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
     }
 
-    function _mint(address registry, string memory label, bytes32 parentNode, address owner, address resolver)
-        internal
-    {
-        bytes32 node = _namehash(parentNode, label);
-
+    function _mint(address nameToken, bytes32 node, address owner, address resolver) internal {
         if (owner == address(0) || resolver == address(0)) {
             revert ZeroAddressNotAllowed();
         }
 
         uint256 tokenId = uint256(node);
 
-        if (_ownerOf(registry, tokenId) != address(0)) {
+        if (_ownerOf(nameToken, tokenId) != address(0)) {
             revert NodeAlreadyTaken(node);
         }
 
-        bool isNewNode = _ownerOf(registry, tokenId) == address(0);
+        bool isNewNode = _ownerOf(nameToken, tokenId) == address(0);
         if (!isNewNode) {
-            NameRegistry(registry).burn(tokenId);
+            EnsNameToken(nameToken).burn(tokenId);
         }
 
-        NameRegistry(registry).mint(owner, tokenId, resolver);
+        EnsNameToken(nameToken).mint(owner, tokenId, resolver);
 
         emit NodeCreated(node, owner, resolver);
     }
 
-    function _ownerOf(address registry, uint256 tokenId) internal view returns (address) {
-        try NameRegistry(registry).ownerOf(tokenId) returns (address owner) {
+    function _ownerOf(address nameToken, uint256 tokenId) internal view returns (address) {
+        try EnsNameToken(nameToken).ownerOf(tokenId) returns (address owner) {
             return owner;
         } catch {
             return address(0);

@@ -11,7 +11,7 @@ import {NameResolver} from "../resolver/profiles/NameResolver.sol";
 import {ABIResolver} from "../resolver/profiles/ABIResolver.sol";
 import {ExtendedResolver} from "../resolver/profiles/ExtendedResolver.sol";
 import {NameListingManager} from "./NameListingManager.sol";
-import {NameRegistry} from "./NameRegistry.sol";
+import {EnsNameToken} from "./EnsNameToken.sol";
 import {NodeRecord} from "./Types.sol";
 
 /**
@@ -36,11 +36,11 @@ contract NamePublicResolver is
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        address registry = manager.mintedSubnames(node);
-        (address nodeOwner,) = NameRegistry(registry).tokenOwners(node);
+        address nameToken = manager.mintedSubnames(node);
+        address tokenOwner = EnsNameToken(nameToken).ownerOf(uint256(node));
 
-        return nodeOwner != address(0)
-            && (nodeOwner == msg.sender || NameRegistry(registry).isApprovedForAll(nodeOwner, msg.sender));
+        return tokenOwner != address(0)
+            && (tokenOwner == msg.sender || EnsNameToken(nameToken).isApprovedForAll(tokenOwner, msg.sender));
     }
 
     function supportsInterface(bytes4 interfaceID)

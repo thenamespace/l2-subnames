@@ -7,13 +7,13 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {RegistryContext} from "./Types.sol";
 import {InvalidSignature} from "./Errors.sol";
-import {NameRegistry} from "./NameRegistry.sol";
+import {EnsNameToken} from "./EnsNameToken.sol";
 
 bytes32 constant REGISTRY_CONTEXT =
     keccak256("RegistryContext(string listingName,string symbol,string ensName,string baseUri)");
 
 interface NameListingManager {
-    function setName(NameRegistry name, bytes32 nameNode) external;
+    function setName(EnsNameToken nameToken, bytes32 nameNode) external;
 }
 
 contract NameRegistryFactory is EIP712, Ownable {
@@ -41,11 +41,11 @@ contract NameRegistryFactory is EIP712, Ownable {
     ) external {
         verifySignature(RegistryContext(listingName, symbol, ensName, baseUri), verificationSignature);
 
-        NameRegistry name = new NameRegistry(listingName, symbol, baseUri);
-        name.setController(controller, true);
+        EnsNameToken nameToken = new EnsNameToken(listingName, symbol, baseUri);
+        nameToken.setController(controller, true);
 
         bytes32 nameNode = EnsUtils.namehash(ETH_NODE, ensName);
-        NameListingManager(manager).setName(name, nameNode);
+        NameListingManager(manager).setName(nameToken, nameNode);
     }
 
     function verifySignature(RegistryContext memory context, bytes memory signature) internal view {

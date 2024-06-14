@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 import {NameListingManager} from "./NameListingManager.sol";
-import {NameRegistry} from "./NameRegistry.sol";
 import {NameRegistryController} from "./NameRegistryController.sol";
 import {NameRegistryFactory} from "./NameRegistryFactory.sol";
 import {NamePublicResolver} from "./NamePublicResolver.sol";
