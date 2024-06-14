@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {NameListingManager} from "./NameListingManager.sol";
+import {NameListingManager, INameListingManager} from "./NameListingManager.sol";
+import {EnsNameToken} from "./EnsNameToken.sol";
 import {NameRegistryController} from "./NameRegistryController.sol";
 import {NameRegistryFactory} from "./NameRegistryFactory.sol";
 import {NamePublicResolver} from "./NamePublicResolver.sol";
@@ -15,10 +16,11 @@ contract NamespaceDeployer {
     address public resolverAddress;
 
     constructor(address verifier, address treasury, address owner) {
-        NameListingManager manager = new NameListingManager(address(this));
+        NameListingManager manager = new NameListingManager();
         managerAddress = address(manager);
 
-        NameRegistryController controller = new NameRegistryController(treasury, verifier, manager, ETH_NODE, owner);
+        NameRegistryController controller =
+            new NameRegistryController(treasury, verifier, INameListingManager(managerAddress), ETH_NODE, owner);
         controllerAddress = address(controller);
 
         NameRegistryFactory factory =
@@ -28,8 +30,8 @@ contract NamespaceDeployer {
         NamePublicResolver resolver = new NamePublicResolver(manager);
         resolverAddress = address(resolver);
 
-        manager.setFactory(factoryAddress);
-        manager.setController(controllerAddress);
+        manager.setController(factoryAddress, true);
+        manager.setController(controllerAddress, true);
         manager.transferOwnership(owner);
     }
 }

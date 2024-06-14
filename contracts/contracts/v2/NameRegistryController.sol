@@ -5,11 +5,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsNameToken} from "./EnsNameToken.sol";
-import {NameListingManager} from "./NameListingManager.sol";
+import {INameListingManager} from "./NameListingManager.sol";
 import {MintContext} from "./Types.sol";
 import {NameMinted, NodeCreated} from "./Events.sol";
 import {ZeroAddressNotAllowed, NodeAlreadyTaken} from "./Errors.sol";
-import {NameAlreadyTaken, InsufficientFunds, InvalidSignature} from "./Errors.sol";
+import {NameAlreadyTaken, InsufficientFunds, InvalidSignature, NameRegistryNotFound} from "./Errors.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
 
@@ -27,9 +27,9 @@ contract NameRegistryController is EIP712, Ownable {
     address private verifier;
     bytes32 private immutable ETH_NODE;
 
-    NameListingManager public immutable manager;
+    INameListingManager public immutable manager;
 
-    constructor(address _treasury, address _verifier, NameListingManager _manager, bytes32 ethNode, address owner)
+    constructor(address _treasury, address _verifier, INameListingManager _manager, bytes32 ethNode, address owner)
         EIP712("Namespace", "1")
         Ownable(owner)
     {
@@ -75,8 +75,13 @@ contract NameRegistryController is EIP712, Ownable {
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
         bytes32 node = _namehash(parentNode, context.label);
 
-        address nameToken = manager.listedNames(parentNode);
-        manager.setSubname(nameToken, node);
+        address nameToken = manager.nodeRegistries(parentNode);
+
+        if (nameToken == address(0)) {
+            revert NameRegistryNotFound();
+        }
+
+        manager.setNodeRegistry(node, nameToken);
 
         if (context.resolverData.length > 0) {
             _mintWithRecords(context, node, nameToken);
