@@ -18,7 +18,13 @@ export class NameListingRepository {
     await this.repository.create({ network });
   }
 
-  async setListing(network: Network, listing: NameListingDto) {
+  async setListing(
+    network: Network,
+    listing: NameListingDto,
+    syncBlock?: bigint,
+  ) {
+    const setSyncBlock = syncBlock ? { syncBlock } : {};
+
     await this.repository.updateOne(
       {
         network,
@@ -27,12 +33,16 @@ export class NameListingRepository {
         },
       },
       {
+        $set: setSyncBlock,
         $addToSet: {
           listings: {
             owner: listing.owner,
-            priceEth: listing.price,
+            priceEth: listing.priceEth,
             paymentReceiver: listing.owner,
             ensName: listing.name,
+            label: listing.label,
+            listingName: listing.listingName,
+            symbol: listing.symbol,
           },
         },
       },

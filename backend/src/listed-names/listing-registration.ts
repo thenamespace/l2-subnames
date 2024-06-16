@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { AppConfig } from 'src/config/app-config.service';
 import { Network } from 'src/dto/types';
 import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { RpcClient } from 'src/web3/rpc-client';
@@ -23,10 +22,7 @@ export class ListingRegistration {
     ],
   };
 
-  constructor(
-    private rpcClient: RpcClient,
-    private appConfig: AppConfig,
-  ) {}
+  constructor(private rpcClient: RpcClient) {}
 
   async generateContext(
     context: RegistryContext,
@@ -54,7 +50,7 @@ export class ListingRegistration {
       listingName: context.listingName,
       symbol: context.symbol,
       ensName: context.ensName,
-      baseUri: this.appConfig.metadataUrl,
+      baseUri: context.baseUri,
     };
 
     return await this.rpcClient.getSigner().signTypedData({

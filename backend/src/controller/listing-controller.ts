@@ -8,6 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { NameListing } from 'src/dto/name-listing.dto';
+import { Network } from 'src/dto/types';
 import { ListedNamesService } from 'src/listed-names/listed-names.service';
 import { RegistryContext } from 'src/listed-names/listing-registration';
 import { Address, Hash } from 'viem';
@@ -16,14 +17,17 @@ import { Address, Hash } from 'viem';
 export class ListingController {
   constructor(private listing: ListedNamesService) {}
 
-  @Get()
-  public async getListings() {
-    return this.listing.getListings();
+  @Get('/:network')
+  public async getListings(@Param('network') network: Network) {
+    return this.listing.getListings(network);
   }
 
-  @Get('/:name')
-  public async getListing(@Param('name') name: string) {
-    return this.listing.getNameListing(name);
+  @Get('/:network/:name')
+  public async getListing(
+    @Param('network') network: Network,
+    @Param('name') name: string,
+  ) {
+    return this.listing.getNameListing(network, name);
   }
 
   @Get('/validate/:name')

@@ -7,8 +7,9 @@ export class NameListing {
   symbol: string;
   listingName: string;
   namehash: Hash;
-  price: number;
+  priceEth: bigint;
   network: Network;
   owner: Address;
   paymentReceiver: Address;
+  token: Address;
 }

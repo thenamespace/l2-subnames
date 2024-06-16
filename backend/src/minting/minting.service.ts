@@ -26,13 +26,13 @@ export class MintingService {
       throw new BadRequestException(`Subname '${subname}' is already minted.`);
     }
 
-    const listing = await this.listings.getNameListing(ensName);
+    const listing = await this.listings.getNameListing(network, ensName);
 
     if (!listing) {
       throw new BadRequestException(`Listing for '${ensName}' does not exist.`);
     }
 
-    const price = BigInt(parseEther(listing.price.toString())).toString();
+    const price = BigInt(parseEther(listing.priceEth.toString())).toString();
 
     const parentLabel = listing.name.endsWith('.eth')
       ? listing.name.split('.')[0]
