@@ -13,3 +13,14 @@ event NameMinted(
     uint256 fee,
     address paymentReceiver
 );
+
+event EnsTokenCreated(
+    address tokenAddress,
+    address listerAddress,
+    string listingName,
+    string symbol,
+    string ensName,
+    string baseUri,
+    address owner,
+    address resolver
+);

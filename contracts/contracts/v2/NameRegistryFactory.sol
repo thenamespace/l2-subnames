@@ -6,7 +6,8 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {RegistryContext} from "./Types.sol";
-import {InvalidSignature} from "./Errors.sol";
+import {EnsTokenCreated} from "./Events.sol";
+import {InvalidSignature, NodeAlreadyTaken} from "./Errors.sol";
 import {EnsNameToken} from "./EnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
 
@@ -31,19 +32,36 @@ contract NameRegistryFactory is EIP712, Ownable {
     }
 
     function create(RegistryContext memory context, bytes memory verificationSignature) external {
+        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, context.ensName);
+
+        address token = INameListingManager(manager).nameTokenNodes(nameNode);
+        if (token != address(0)) {
+            revert NodeAlreadyTaken(nameNode);
+        }
+
         verifySignature(context, verificationSignature);
 
         EnsNameToken nameToken = new EnsNameToken(context.listingName, context.symbol, context.baseUri);
         nameToken.setController(controller, true);
         nameToken.setController(address(this), true);
 
-        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, context.ensName);
-        INameListingManager(manager).setNameNode(nameNode, address(nameToken));
+        INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken));
 
         claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken));
 
         nameToken.setController(address(this), false);
         nameToken.transferOwnership(owner());
+
+        emit EnsTokenCreated(
+            address(nameToken),
+            msg.sender,
+            context.listingName,
+            context.symbol,
+            context.ensName,
+            context.baseUri,
+            context.owner,
+            context.resolver
+        );
     }
 
     function claim2LDomain(address owner, address resolver, bytes32 nameNode, address nameTokenAddress) internal {
