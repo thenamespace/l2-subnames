@@ -18,13 +18,7 @@ export class NameListingRepository {
     await this.repository.create({ network });
   }
 
-  async setListing(
-    network: Network,
-    listing: NameListingDto,
-    syncBlock?: bigint,
-  ) {
-    const setSyncBlock = syncBlock ? { syncBlock } : {};
-
+  async addListing(network: Network, listing: NameListingDto) {
     await this.repository.updateOne(
       {
         network,
@@ -33,7 +27,6 @@ export class NameListingRepository {
         },
       },
       {
-        $set: setSyncBlock,
         $addToSet: {
           listings: {
             owner: listing.owner,
@@ -49,9 +42,35 @@ export class NameListingRepository {
     );
   }
 
-  async getListings(network: Network): Promise<NameListing[]> {
+  async updateListing(
+    network: Network,
+    listing: Partial<NameListingDto>,
+    syncBlock?: bigint,
+  ) {
+    await this.repository.updateOne(
+      {
+        network,
+      },
+      {
+        $set: {
+          syncBlock,
+          'listings.$[elem].priceEth': listing.priceEth,
+          'listings.$[elem].paymentReceiver': listing.paymentReceiver,
+          'listings.$[elem].label': listing.label,
+          'listings.$[elem].listingName': listing.listingName,
+          'listings.$[elem].symbol': listing.symbol,
+          'listings.$[elem].tokenAddress': listing.token,
+        },
+      },
+      { arrayFilters: [{ 'elem.ensName': { $eq: listing.name } }] },
+    );
+  }
+
+  async getListings(
+    network: Network,
+  ): Promise<{ listings: NameListing[]; block: bigint }> {
     const result = await this.repository.findOne({ network });
 
-    return result?.listings;
+    return { listings: result?.listings, block: result?.syncBlock };
   }
 }

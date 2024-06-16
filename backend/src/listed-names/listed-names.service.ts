@@ -78,7 +78,7 @@ export class ListedNamesService implements OnApplicationBootstrap {
       throw new Error('Not allowed to list.');
     }
 
-    await this.nameListingRepo.setListing(listing.network, listing);
+    await this.nameListingRepo.addListing(listing.network, listing);
 
     const context: RegistryContext = {
       ensName: listing.label,
@@ -96,10 +96,26 @@ export class ListedNamesService implements OnApplicationBootstrap {
     return { context, signature };
   }
 
-  public async getListings(network: Network): Promise<Partial<NameListing>[]> {
-    const listings = await this.nameListingRepo.getListings(network);
+  public async updateListing(
+    listing: Partial<NameListing>,
+    syncBlock?: bigint,
+  ) {
+    await this.nameListingRepo.updateListing(
+      listing.network,
+      listing,
+      syncBlock,
+    );
+  }
 
-    return listings as Partial<NameListing>[];
+  public async getListings(
+    network: Network,
+  ): Promise<{ listings: Partial<NameListing>[]; block: bigint }> {
+    const listingResult = await this.nameListingRepo.getListings(network);
+
+    return {
+      listings: listingResult.listings,
+      block: listingResult.block,
+    };
   }
 
   public async getNameListing(
@@ -108,7 +124,7 @@ export class ListedNamesService implements OnApplicationBootstrap {
   ): Promise<Partial<NameListing>> {
     const listings = await this.nameListingRepo.getListings(network);
 
-    const listing = listings.find((l) => l.ensName === ensName);
+    const listing = listings.listings.find((l) => l.ensName === ensName);
     if (!listing) {
       throw new NotFoundException('Listing not found');
     }
