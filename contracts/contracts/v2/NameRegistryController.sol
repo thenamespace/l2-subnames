@@ -9,7 +9,7 @@ import {INameListingManager} from "./NameListingManager.sol";
 import {MintContext} from "./Types.sol";
 import {NameMinted, NodeCreated} from "./Events.sol";
 import {ZeroAddressNotAllowed, NodeAlreadyTaken} from "./Errors.sol";
-import {NameAlreadyTaken, InsufficientFunds, InvalidSignature, NameRegistryNotFound} from "./Errors.sol";
+import {NameAlreadyTaken, InsufficientFunds, InvalidSignature, NameRegistrationNotFound} from "./Errors.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
 
@@ -75,13 +75,13 @@ contract NameRegistryController is EIP712, Ownable {
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
         bytes32 node = _namehash(parentNode, context.label);
 
-        address nameToken = manager.nodeRegistries(parentNode);
+        address nameToken = manager.nameNodes(parentNode);
 
         if (nameToken == address(0)) {
-            revert NameRegistryNotFound();
+            revert NameRegistrationNotFound();
         }
 
-        manager.setNodeRegistry(node, nameToken);
+        manager.setNameNode(node, nameToken);
 
         if (context.resolverData.length > 0) {
             _mintWithRecords(context, node, nameToken);

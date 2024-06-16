@@ -35,7 +35,7 @@ contract NamePublicResolver is
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        address nameToken = manager.nodeRegistries(node);
+        address nameToken = manager.nameNodes(node);
         address tokenOwner = EnsNameToken(nameToken).ownerOf(uint256(node));
 
         return tokenOwner != address(0)

@@ -38,7 +38,7 @@ contract NameRegistryFactory is EIP712, Ownable {
         nameToken.setController(address(this), true);
 
         bytes32 nameNode = EnsUtils.namehash(ETH_NODE, context.ensName);
-        INameListingManager(manager).setNodeRegistry(nameNode, address(nameToken));
+        INameListingManager(manager).setNameNode(nameNode, address(nameToken));
 
         claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken));
 
