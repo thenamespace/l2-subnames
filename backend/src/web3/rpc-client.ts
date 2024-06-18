@@ -10,7 +10,7 @@ import { AppConfig } from '../config/app-config.service';
 import { base as baseChain, localhost, mainnet, sepolia } from 'viem/chains';
 import { Network } from 'src/dto/types';
 
-const supportedChains = {
+export const supportedChains = {
   base: baseChain,
   sepolia,
   localhost,
@@ -73,4 +73,8 @@ export class RpcClient {
     }
     return supportedChains[network];
   };
+
+  public getNetwork(chain: keyof typeof supportedChains) {
+    return supportedChains[chain]?.name.toLowerCase();
+  }
 }
