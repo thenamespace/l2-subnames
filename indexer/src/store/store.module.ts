@@ -6,6 +6,7 @@ import {
 } from "./db/subname-node.schema";
 import { SubnameNodeRepository } from "./db/subname-node.repository";
 import { MongoStorageService } from "./mongo-storage.service";
+import { AppConfigurationModule } from "src/configuration/app-configuration.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MongoStorageService } from "./mongo-storage.service";
         name: SUBNAME_NODES_DOMAIN,
       },
     ]),
+    AppConfigurationModule,
   ],
   providers: [SubnameNodeRepository, MongoStorageService],
   exports: [MongoStorageService],

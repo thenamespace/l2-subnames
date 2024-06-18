@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 import { AppConfiguration } from "src/configuration/app-configuration";
 import { Network } from "src/web3/types";
-import { Address } from "viem";
+import { Address, Hash } from "viem";
 import { SubnameNodeRepository } from "./db/subname-node.repository";
 import { SubnameNode } from "./db/subname-node.schema";
 import { IStorageService, ISubnameNode } from "./types";
@@ -37,7 +37,7 @@ export class MongoStorageService
     }
   }
 
-  async setText(network: Network, node: string, key: string, record: string) {
+  async setText(network: Network, node: Hash, key: string, record: string) {
     const subname = await this.getSubnameNode(network, node);
     const texts = subname.texts || {};
     texts[key] = record;
@@ -46,7 +46,7 @@ export class MongoStorageService
   }
   async setAddr(
     network: Network,
-    node: string,
+    node: Hash,
     coinType: string,
     address: Address,
   ) {

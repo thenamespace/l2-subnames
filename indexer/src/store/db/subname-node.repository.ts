@@ -8,6 +8,7 @@ import {
   SubnameNodeDocument,
   SubnameNodes,
 } from "./subname-node.schema";
+import { Hash } from "viem";
 
 @Injectable()
 export class SubnameNodeRepository {
@@ -55,44 +56,60 @@ export class SubnameNodeRepository {
 
   public async updateTexts(
     network: Network,
-    node: string,
+    node: Hash,
     texts: Record<string, string>,
   ) {
     const textRecords: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(texts)) {
-      textRecords[`textRecords.${key}`] = value;
+      textRecords[`subnames.$[elem].texts.${key}`] = value;
     }
 
     await this.dao.findOneAndUpdate(
       {
         network,
-        "subnames.node": node,
       },
       {
         $set: textRecords,
+      },
+      {
+        arrayFilters: [
+          {
+            "elem.node": {
+              $eq: node,
+            },
+          },
+        ],
       },
     );
   }
 
   public async updateAddresses(
     network: Network,
-    node: string,
+    node: Hash,
     addresses: Record<string, string>,
   ) {
     const addressRecords: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(addresses)) {
-      addressRecords[`addresses.${key}`] = value;
+      addressRecords[`subnames.$[elem].addresses.${key}`] = value;
     }
 
     await this.dao.findOneAndUpdate(
       {
         network,
-        "subnames.node": node,
       },
       {
         $set: addressRecords,
+      },
+      {
+        arrayFilters: [
+          {
+            "elem.node": {
+              $eq: node,
+            },
+          },
+        ],
       },
     );
   }
