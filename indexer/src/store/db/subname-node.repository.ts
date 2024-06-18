@@ -38,28 +38,73 @@ export class SubnameNodeRepository {
     network: Network,
     node: string,
   ): Promise<SubnameNodes> {
-    return await this.dao.findOne({
-      network,
-      "network.subnames": { $in: [node] },
-    });
+    return await this.dao.findOne(
+      {
+        network,
+        "subnames.node": node,
+      },
+      {
+        "subnames.$": 1,
+      },
+    );
   }
 
   public async getByNetwork(network: Network) {
     return await this.dao.findOne({ network });
   }
 
-  public async updateTexts(node: string, texts: Record<string, string>) {
-    await this.dao.findOneAndUpdate({ node }, { texts });
+  public async updateTexts(
+    network: Network,
+    node: string,
+    texts: Record<string, string>,
+  ) {
+    const textRecords: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(texts)) {
+      textRecords[`textRecords.${key}`] = value;
+    }
+
+    await this.dao.findOneAndUpdate(
+      {
+        network,
+        "subnames.node": node,
+      },
+      {
+        $set: textRecords,
+      },
+    );
   }
 
   public async updateAddresses(
+    network: Network,
     node: string,
     addresses: Record<string, string>,
   ) {
-    await this.dao.findOneAndUpdate({ node }, { addresses });
+    const addressRecords: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(addresses)) {
+      addressRecords[`addresses.${key}`] = value;
+    }
+
+    await this.dao.findOneAndUpdate(
+      {
+        network,
+        "subnames.node": node,
+      },
+      {
+        $set: addressRecords,
+      },
+    );
   }
 
-  public async updateContentHash(node: string, contentHash: string) {
-    await this.dao.findOneAndUpdate({ node }, { contentHash });
+  public async updateContentHash(
+    network: Network,
+    node: string,
+    contentHash: string,
+  ) {
+    await this.dao.findOneAndUpdate(
+      { network, "subnames.node": node },
+      { contentHash },
+    );
   }
 }

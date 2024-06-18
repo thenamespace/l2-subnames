@@ -4,6 +4,7 @@ import {
   OnApplicationBootstrap,
 } from "@nestjs/common";
 import { Network } from "src/web3/types";
+import { Address } from "viem";
 import { SubnameNodeRepository } from "./db/subname-node.repository";
 import { SubnameNode } from "./db/subname-node.schema";
 import { IStorageService, ISubnameNode } from "./types";
@@ -31,23 +32,28 @@ export class MongoStorageService
     }
   }
 
-  // async setText(node: string, key: string, record: string) {
-  //   const subname = await this._getSubnameNode(node);
-  //   const texts = subname.texts || {};
-  //   texts[key] = record;
+  async setText(network: Network, node: string, key: string, record: string) {
+    const subname = await this.getSubnameNode(network, node);
+    const texts = subname.texts || {};
+    texts[key] = record;
 
-  //   await this.repository.updateTexts(node, texts);
-  // }
-  // async setAddr(node: string, coinType: string, address: string) {
-  //   const subname = await this._getSubnameNode(node);
-  //   const texts = subname.addresses || {};
-  //   texts[coinType] = address;
+    await this.repository.updateTexts(network, node, texts);
+  }
+  async setAddr(
+    network: Network,
+    node: string,
+    coinType: string,
+    address: Address,
+  ) {
+    const nodes = await this.getSubnameNode(network, node);
+    const addresses = nodes.addresses || {};
+    addresses[coinType] = address;
 
-  //   await this.repository.updateAddresses(node, texts);
-  // }
-  // async setContentHash(node: string, contentHash: string) {
-  //   await this.repository.updateContentHash(node, contentHash);
-  // }
+    await this.repository.updateAddresses(network, node, addresses);
+  }
+  async setContentHash(network: Network, node: string, contentHash: string) {
+    await this.repository.updateContentHash(network, node, contentHash);
+  }
 
   async getSubnameNode(network: Network, node: string): Promise<ISubnameNode> {
     const doc = await this._getSubnameNode(network, node);
@@ -81,9 +87,11 @@ export class MongoStorageService
 
   private async _getSubnameNode(network: Network, node: string) {
     const doc = await this.repository.getByNode(network, node);
+
     if (!doc) {
       throw new NotFoundException("Subname with node " + node + ", not found.");
     }
+
     return doc;
   }
 
