@@ -20,9 +20,9 @@ const addresses: Record<Network, IContractAddresses> = {
     controller: "0x0",
   },
   localhost: {
-    registry: "0x03986BCa608e2c7b638A7E68C7108C5c5Ae2Cd3E",
-    resolver: "0xFa47f74919Fe432B7e4dB77D4ff05637729D7632",
-    controller: "0xD4CDFC67d30320F0d063E388Fab204c6692d797f",
+    registry: "0x",
+    resolver: "0x23D1d9Bb060B45289D66C3E259f8Cd2e14931E5a",
+    controller: "0xc2F5D5B979A1AEAde58A9E6b5498753FE2f4829c",
   },
 };
 

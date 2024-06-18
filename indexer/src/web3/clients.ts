@@ -35,7 +35,7 @@ export class Web3Clients {
     };
   };
 
-  public getClient(network: Network) {
+  public getClient(network: Network): PublicClient {
     return this.clients[network];
   }
 }

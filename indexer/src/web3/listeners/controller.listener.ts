@@ -4,6 +4,7 @@ import { parseAbiItem } from "viem";
 import { Web3Clients } from "../clients";
 import { getContractAddresses } from "../contract-addresses";
 import { Network } from "../types";
+import abi from "../abi/nameregistry-controller.json";
 
 @Injectable()
 export class ControllerListener implements OnApplicationBootstrap {
@@ -57,12 +58,11 @@ export class ControllerListener implements OnApplicationBootstrap {
 
     const fromBlock = await publicClient.getBlockNumber();
 
-    publicClient.watchEvent({
+    publicClient.watchContractEvent({
       fromBlock,
       address,
-      event: parseAbiItem(
-        "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver)",
-      ),
+      eventName: "NameMinted",
+      abi,
       onLogs: (logs) => {
         logs.map(async (log: any) => {
           await this.storageService.setSubnameNode(
