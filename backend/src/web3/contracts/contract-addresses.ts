@@ -23,8 +23,8 @@ const contracts: Record<Network, NamespaceContracts> = {
   },
   localhost: {
     registry: '0x4fEfb2D4c6483777290F6e7e1957e36297F1124A',
-    resolver: '0xF3d81Ced4346e5c101f9e1eB1614B7b64386E5d1',
-    controller: '0xB3f2eA0fA4Ec33A2fDC0854780BBe2696Dd388E0',
+    resolver: '0x23D1d9Bb060B45289D66C3E259f8Cd2e14931E5a',
+    controller: '0xc2F5D5B979A1AEAde58A9E6b5498753FE2f4829c',
     factory: '0xB5BB2Ed7893F868D8c2b72154d06b32deC52c21d',
   },
   arbitrum: {

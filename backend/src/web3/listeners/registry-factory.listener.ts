@@ -5,6 +5,7 @@ import { ListedNamesService } from 'src/listed-names/listed-names.service';
 import { parseAbiItem } from 'viem';
 import { getContracts } from '../contracts/contract-addresses';
 import { RpcClient } from '../rpc-client';
+import abi from '../abi/nameregistry-factory.json';
 
 type EnsTokenCreated = {
   tokenAddress: `0x${string}`;
@@ -27,7 +28,7 @@ export class FactoryListener implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     try {
       await this.initialize('localhost');
-      // await this.listen('localhost');
+      await this.listen('localhost');
     } catch (error) {
       console.log(error);
     }
@@ -61,30 +62,27 @@ export class FactoryListener implements OnApplicationBootstrap {
     });
   }
 
-  // private async listen(network: Network) {
-  //   const publicClient = this.clients.getClient(network);
+  private async listen(network: Network) {
+    const publicClient = this.rpcClient.getPublicClient(network);
 
-  //   const address = getContractAddresses(network).controller;
+    const address = getContracts(network).factory;
 
-  //   const fromBlock = await publicClient.getBlockNumber();
+    const fromBlock = await publicClient.getBlockNumber();
 
-  //   publicClient.watchEvent({
-  //     fromBlock,
-  //     address,
-  //     event: parseAbiItem(
-  //       'event EnsTokenCreated(address tokenAddress, address listerAddress, string listingName, string symbol, string ensName, string baseUri, address owner, address resolver)',
-  //     ),
-  //     onLogs: (logs) => {
-  //       logs.map(async (log: any) => {
-  //         await this.storageService.setSubnameNode(
-  //           network,
-  //           fromBlock,
-  //           this.createListing(log.args),
-  //         );
-  //       });
-  //     },
-  //   });
-  // }
+    publicClient.watchContractEvent({
+      fromBlock,
+      address,
+      eventName: 'EnsTokenCreated',
+      abi,
+      onLogs: (logs) => {
+        logs.map(async (log: any) => {
+          await this.listedNameService.updateListing(
+            this.createListing(log.args, network),
+          );
+        });
+      },
+    });
+  }
 
   private createListing(
     tokenLog: EnsTokenCreated,

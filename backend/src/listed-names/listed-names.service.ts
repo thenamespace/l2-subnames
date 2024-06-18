@@ -7,6 +7,7 @@ import { AppConfig } from 'src/config/app-config.service';
 import { NameListingRepository } from 'src/db/listings/name-listing.repository';
 import { NameListing } from 'src/dto/name-listing.dto';
 import { Network } from 'src/dto/types';
+import { getContracts } from 'src/web3/contracts/contract-addresses';
 import { PermissionValidator } from 'src/web3/permission.validator';
 import { RpcClient } from 'src/web3/rpc-client';
 import { Address, Hash } from 'viem';
@@ -34,9 +35,9 @@ export class ListedNamesService implements OnApplicationBootstrap {
   }
 
   private async initListingRepo(network: Network) {
-    const listings = await this.nameListingRepo.getListings(network);
+    const listingResult = await this.nameListingRepo.getListings(network);
 
-    if (!listings) {
+    if (!listingResult?.listings) {
       await this.nameListingRepo.initListing(network);
     }
   }
@@ -80,11 +81,15 @@ export class ListedNamesService implements OnApplicationBootstrap {
 
     await this.nameListingRepo.addListing(listing.network, listing);
 
+    const resolver = getContracts(listing.network).resolver;
+
     const context: RegistryContext = {
       ensName: listing.label,
       listingName: listing.listingName,
       symbol: listing.symbol,
       baseUri: this.appConfig.metadataUrl.concat(`/${chainId.id}/`),
+      owner: listing.owner,
+      resolver,
     };
 
     const signature = await this.listingRegistration.generateContext(
