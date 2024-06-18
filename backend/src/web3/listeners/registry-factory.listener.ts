@@ -6,6 +6,7 @@ import { parseAbiItem } from 'viem';
 import { getContracts } from '../contracts/contract-addresses';
 import { RpcClient } from '../rpc-client';
 import abi from '../abi/nameregistry-factory.json';
+import { AppConfig } from 'src/config/app-config.service';
 
 type EnsTokenCreated = {
   tokenAddress: `0x${string}`;
@@ -22,13 +23,15 @@ type EnsTokenCreated = {
 export class FactoryListener implements OnApplicationBootstrap {
   constructor(
     private readonly rpcClient: RpcClient,
-    private listedNameService: ListedNamesService,
+    private readonly listedNameService: ListedNamesService,
+    private readonly config: AppConfig,
   ) {}
 
   async onApplicationBootstrap() {
     try {
-      await this.initialize('localhost');
-      await this.listen('localhost');
+      for (const chain of this.config.supportedChains) {
+        await this.initialize(chain as Network);
+      }
     } catch (error) {
       console.log(error);
     }

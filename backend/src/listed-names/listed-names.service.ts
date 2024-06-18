@@ -27,8 +27,9 @@ export class ListedNamesService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     try {
-      this.initListingRepo('localhost');
-      this.initListingRepo('sepolia');
+      for (const chain of this.appConfig.supportedChains) {
+        await this.initListingRepo(chain as Network);
+      }
     } catch (error) {
       console.log('Error initializing ListedNameService', error);
     }

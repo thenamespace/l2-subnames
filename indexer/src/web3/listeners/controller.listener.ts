@@ -1,4 +1,5 @@
 import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
+import { AppConfiguration } from "src/configuration/app-configuration";
 import { MongoStorageService } from "src/store/mongo-storage.service";
 import { parseAbiItem } from "viem";
 import { Web3Clients } from "../clients";
@@ -11,12 +12,14 @@ export class ControllerListener implements OnApplicationBootstrap {
   constructor(
     private readonly clients: Web3Clients,
     private readonly storageService: MongoStorageService,
+    private readonly config: AppConfiguration,
   ) {}
 
   async onApplicationBootstrap() {
     try {
-      await this.initialize("localhost");
-      await this.listen("localhost");
+      for (const chain of this.config.supportedChains) {
+        await this.initialize(chain as Network);
+      }
     } catch (error) {
       console.log(error);
     }

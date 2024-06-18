@@ -3,6 +3,7 @@ import {
   NotFoundException,
   OnApplicationBootstrap,
 } from "@nestjs/common";
+import { AppConfiguration } from "src/configuration/app-configuration";
 import { Network } from "src/web3/types";
 import { Address } from "viem";
 import { SubnameNodeRepository } from "./db/subname-node.repository";
@@ -13,12 +14,16 @@ import { IStorageService, ISubnameNode } from "./types";
 export class MongoStorageService
   implements IStorageService, OnApplicationBootstrap
 {
-  constructor(private readonly repository: SubnameNodeRepository) {}
+  constructor(
+    private readonly repository: SubnameNodeRepository,
+    private readonly config: AppConfiguration,
+  ) {}
 
   async onApplicationBootstrap() {
     try {
-      await this.initNode("localhost");
-      await this.initNode("base");
+      for (const chain of this.config.supportedChains) {
+        await this.initNode(chain as Network);
+      }
     } catch (error) {
       console.log(error);
     }
