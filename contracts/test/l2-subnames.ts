@@ -1,7 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { ContractName } from "@nomicfoundation/hardhat-viem/types";
 import { expect } from "chai";
-import exp from "constants";
 import hre from "hardhat";
 import { Address, Hash, namehash, parseEther, zeroAddress } from "viem";
 
