@@ -26,5 +26,12 @@
     "price": 0,
     "network": "base",
     "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name":"enskeychain.eth",
+    "namehash": "0x4c12d7307560341b65ee4ecaa619e4d76119789ece27099889a1faeafd173f76",
+    "price": 0.0099,
+    "network": "base",
+    "owner": "0xC480C3FD10d8965EB74B9B53ee65Bea24B2a6A73"
   }
 ]

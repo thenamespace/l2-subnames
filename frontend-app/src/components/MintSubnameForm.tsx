@@ -62,7 +62,11 @@ export const MintSubnameForm = ({
   sponsoredMint,
   defaultAvatar,
   formVariation,
+  onMintSuccess,
+  onComplete
 }: {
+  onMintSuccess?: (tx: Hash) => void
+  onComplete?: () => void
   listing: Listing;
   sponsoredMint?: boolean;
   defaultAvatar?: string;
@@ -265,6 +269,7 @@ export const MintSubnameForm = ({
         }
 
         setMintIndicators({ waitingTx: true, waitingWallet: false });
+        onMintSuccess?.(tx)
         await publicClient?.waitForTransactionReceipt({
           hash: tx,
           confirmations: 2,
