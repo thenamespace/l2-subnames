@@ -6,6 +6,9 @@ import { Web3Clients } from "../clients";
 import { getContractAddresses } from "../contract-addresses";
 import { Network } from "../types";
 
+const NameMintedEvent =
+  "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver)";
+
 @Injectable()
 export class ControllerListener implements OnApplicationBootstrap {
   constructor(
@@ -40,9 +43,7 @@ export class ControllerListener implements OnApplicationBootstrap {
       address,
       fromBlock,
       toBlock,
-      event: parseAbiItem(
-        "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver)",
-      ),
+      event: parseAbiItem(NameMintedEvent),
     });
 
     logs.map(async (log) => {
@@ -64,9 +65,7 @@ export class ControllerListener implements OnApplicationBootstrap {
     publicClient.watchEvent({
       fromBlock,
       address,
-      event: parseAbiItem(
-        "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver)",
-      ),
+      event: parseAbiItem(NameMintedEvent),
       onLogs: (logs) => {
         logs.map(async (log: any) => {
           await this.storageService.setSubnameNode(
