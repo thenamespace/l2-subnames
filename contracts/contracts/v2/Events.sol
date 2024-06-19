@@ -25,3 +25,15 @@ event EnsTokenCreated(
     address resolver,
     uint8 fuse
 );
+
+event NodeTransfer (
+    address from,
+    address to,
+    bytes32 node,
+    bytes32 parentNode
+);
+
+event NodeBurned (
+    bytes32 node,
+    bytes32 parentNode
+);
