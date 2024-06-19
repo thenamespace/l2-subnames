@@ -41,7 +41,7 @@ contract NameRegistryFactory is EIP712, Ownable {
 
         verifySignature(context, verificationSignature);
 
-        EnsNameToken nameToken = new EnsNameToken(context.listingName, context.symbol, context.baseUri);
+        EnsNameToken nameToken = new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse);
         nameToken.setController(controller, true);
         nameToken.setController(address(this), true);
 
@@ -60,7 +60,8 @@ contract NameRegistryFactory is EIP712, Ownable {
             context.ensName,
             context.baseUri,
             context.owner,
-            context.resolver
+            context.resolver,
+            context.fuse
         );
     }
 

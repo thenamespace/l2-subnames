@@ -7,3 +7,4 @@ error NameRegistrationNotFound();
 
 error ZeroAddressNotAllowed();
 error NodeAlreadyTaken(bytes32);
+error NotAuthorized();

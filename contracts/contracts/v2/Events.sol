@@ -22,5 +22,6 @@ event EnsTokenCreated(
     string ensName,
     string baseUri,
     address owner,
-    address resolver
+    address resolver,
+    uint8 fuse
 );
