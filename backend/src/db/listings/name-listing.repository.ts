@@ -22,9 +22,7 @@ export class NameListingRepository {
     await this.repository.updateOne(
       {
         network,
-        'listings.ensName': {
-          $ne: listing.name,
-        },
+        'listings.ensName': { $ne: listing.name },
       },
       {
         $addToSet: {
@@ -48,9 +46,7 @@ export class NameListingRepository {
     syncBlock?: bigint,
   ) {
     await this.repository.updateOne(
-      {
-        network,
-      },
+      { network },
       {
         $set: {
           syncBlock,

@@ -27,9 +27,7 @@ export class SubnameNodeRepository {
     await this.dao.updateOne(
       {
         network,
-        "subnames.node": {
-          $ne: subname.node,
-        },
+        "subnames.node": { $ne: subname.node },
       },
       { $set: { syncBlock }, $addToSet: { subnames: subname } },
     );
