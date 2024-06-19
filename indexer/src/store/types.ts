@@ -15,7 +15,7 @@ export interface ISubnameNode {
   node: Hash;
   parentNode: Hash;
   owner: Address;
-  texts?: Record<string, string>;
+  textRecords?: Record<string, string>;
   contentHash?: Hash;
   addresses?: Record<string, Address>;
 }

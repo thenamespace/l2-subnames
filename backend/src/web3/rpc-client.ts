@@ -16,6 +16,12 @@ export const supportedChains = {
   localhost,
 };
 
+export const chainIds = {
+  [supportedChains.base.id]: 'base',
+  [supportedChains.sepolia.id]: 'sepolia',
+  [supportedChains.localhost.id]: 'localhost',
+};
+
 @Injectable()
 export class RpcClient {
   private readonly signer: PrivateKeyAccount;
@@ -74,7 +80,7 @@ export class RpcClient {
     return supportedChains[network];
   };
 
-  public getNetwork(chain: keyof typeof supportedChains) {
-    return supportedChains[chain]?.name.toLowerCase();
+  public getNetwork(chain: keyof typeof chainIds) {
+    return chainIds[chain];
   }
 }

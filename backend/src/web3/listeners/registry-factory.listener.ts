@@ -31,6 +31,7 @@ export class FactoryListener implements OnApplicationBootstrap {
     try {
       for (const chain of this.config.supportedChains) {
         await this.initialize(chain as Network);
+        await this.listen(chain as Network);
       }
     } catch (error) {
       console.log(error);

@@ -8,7 +8,7 @@ export class MetadataController {
 
   @Get('/:chain/:tokenId')
   async getTokenMetadata(
-    @Param('chain') chain: string,
+    @Param('chain') chain: number,
     @Param('tokenId') tokenId: string,
   ): Promise<Metadata> {
     return this.metadataService.getTokenMetadata(chain, tokenId);
@@ -16,7 +16,7 @@ export class MetadataController {
 
   @Get('/:chain/:label/:parentName')
   async getLabelMetadata(
-    @Param('chain') chain: string,
+    @Param('chain') chain: number,
     @Param('label') label: string,
     @Param('parentName') parentName: string,
   ): Promise<Metadata> {

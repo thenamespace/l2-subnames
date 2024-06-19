@@ -44,9 +44,7 @@ export class SubnameNodeRepository {
         network,
         "subnames.node": node,
       },
-      {
-        "subnames.$": 1,
-      },
+      { "subnames.$": 1 },
     );
   }
 
@@ -66,21 +64,9 @@ export class SubnameNodeRepository {
     }
 
     await this.dao.findOneAndUpdate(
-      {
-        network,
-      },
-      {
-        $set: textRecords,
-      },
-      {
-        arrayFilters: [
-          {
-            "elem.node": {
-              $eq: node,
-            },
-          },
-        ],
-      },
+      { network },
+      { $set: textRecords },
+      { arrayFilters: [{ "elem.node": { $eq: node } }] },
     );
   }
 
@@ -96,32 +82,21 @@ export class SubnameNodeRepository {
     }
 
     await this.dao.findOneAndUpdate(
-      {
-        network,
-      },
-      {
-        $set: addressRecords,
-      },
-      {
-        arrayFilters: [
-          {
-            "elem.node": {
-              $eq: node,
-            },
-          },
-        ],
-      },
+      { network },
+      { $set: addressRecords },
+      { arrayFilters: [{ "elem.node": { $eq: node } }] },
     );
   }
 
   public async updateContentHash(
     network: Network,
-    node: string,
-    contentHash: string,
+    node: Hash,
+    contentHash: Hash,
   ) {
     await this.dao.findOneAndUpdate(
-      { network, "subnames.node": node },
-      { contentHash },
+      { network },
+      { $set: { "subnames.$[elem].contentHash": contentHash } },
+      { arrayFilters: [{ "elem.node": { $eq: node } }] },
     );
   }
 }

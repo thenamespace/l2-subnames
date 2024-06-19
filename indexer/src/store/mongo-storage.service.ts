@@ -38,8 +38,7 @@ export class MongoStorageService
   }
 
   async setText(network: Network, node: Hash, key: string, record: string) {
-    const subname = await this.getSubnameNode(network, node);
-    const texts = subname.texts || {};
+    const texts = {};
     texts[key] = record;
 
     await this.repository.updateTexts(network, node, texts);
@@ -50,13 +49,12 @@ export class MongoStorageService
     coinType: string,
     address: Address,
   ) {
-    const nodes = await this.getSubnameNode(network, node);
-    const addresses = nodes.addresses || {};
+    const addresses = {};
     addresses[coinType] = address;
 
     await this.repository.updateAddresses(network, node, addresses);
   }
-  async setContentHash(network: Network, node: string, contentHash: string) {
+  async setContentHash(network: Network, node: Hash, contentHash: Hash) {
     await this.repository.updateContentHash(network, node, contentHash);
   }
 
@@ -83,7 +81,7 @@ export class MongoStorageService
       label: node.label,
       parentNode: node.parentNode,
       node: node.node,
-      texts: node.texts || {},
+      texts: node.textRecords || {},
       addresses: node.addresses || {},
       contentHash: node.contentHash,
       createdAt: new Date().getTime(),
@@ -106,7 +104,7 @@ export class MongoStorageService
       owner: doc.owner,
       parentNode: doc.parentNode,
       node: doc.node,
-      texts: doc.texts,
+      textRecords: doc.texts,
       addresses: doc.addresses,
       contentHash: doc.contentHash,
     };
