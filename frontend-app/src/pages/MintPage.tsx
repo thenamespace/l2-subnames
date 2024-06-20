@@ -38,7 +38,7 @@ export const MintPage = () => {
   }, []);
 
   if (location.pathname.includes("/mint/enskeychain")) {
-    return <Navigate to="/enskeychains"></Navigate>
+    return <Navigate to="/enskeychain"></Navigate>
   }
 
   if (listing.isFetching || !listing.item) {

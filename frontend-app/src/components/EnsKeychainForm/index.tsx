@@ -26,6 +26,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import baseLogo from "../../assets/logo/base.svg";
 import happyNinja from "../../assets/logo/happy-ninja.png";
 import { Link } from "react-router-dom";
+import { fetchGraphNames } from "./subgraph";
 
 const BASE_CHAIN_ID = 8453;
 const KEYCHAIN_ENS_NAME = "enskeychain.eth";
@@ -40,6 +41,7 @@ interface ShippingInfo {
   city: string;
   postalCode: string;
   country: string;
+  name: string
 }
 
 enum RegStep {
@@ -60,6 +62,7 @@ export const EnsKeychainForm = () => {
     city: "",
     country: "",
     postalCode: "",
+    name: ""
   });
   const [regStep, setRegStep] = useState<RegStep>(RegStep.SelectName);
   const [selectedName, setSelectedName] = useState<string>("");
@@ -99,15 +102,10 @@ export const EnsKeychainForm = () => {
 
   useEffect(() => {
     if (address) {
-      ensClient.getNamesForAddress({ address }).then((result) => {
-        let namesStr: string[] = [];
-        if (result && result.length > 0) {
-          //@ts-ignore
-          namesStr = result.map((name) => name.name);
-        }
+      fetchGraphNames(address).then((result) => {
         setAllNames({
           fetching: false,
-          items: namesStr,
+          items: result,
         });
       }).catch(err => {
         console.error(err);
@@ -292,10 +290,10 @@ export const ShippingInformation = ({
     setShippingInfo(_info);
   };
 
-  const { address, city, country, postalCode } = shippingInfo;
+  const { address, city, country, postalCode, name } = shippingInfo;
 
   const buttonDisabled =
-    [address, city, country, postalCode].find((i) => i.length === 0) !==
+    [address, city, country, postalCode, name].find((i) => i.length === 0) !==
     undefined;
 
   return (
@@ -307,6 +305,16 @@ export const ShippingInformation = ({
         Everything necessary for an international shipment. Your privacy is
         valued, after shipping all info is deleted
       </Typography>
+      <div className="mb-2">
+        <Input
+          className="mb-2"
+          placeholder="ex. John Doe"
+          label=""
+          labelSecondary="Your name"
+          value={shippingInfo.name}
+          onChange={(e) => handleInput("name", e.target.value)}
+        ></Input>
+      </div>
       <div className="mb-2">
         <Input
           className="mb-2"
@@ -524,9 +532,7 @@ export const FaQ = ({ back }: { back: () => void }) => {
           2. How long until I receive my order?
         </Typography>
         <Typography fontVariant="small" className="mt-1">
-          It depends on where you are located, the package is sent within two
-          days after ordering but international shipments can take up to two
-          weeks.
+        'It depends on where you are located, the package is sent from the EU within two days after ordering. International shipments can take up to two weeks, but usually are faster
         </Typography>
       </div>
       <div className="mt-2">
