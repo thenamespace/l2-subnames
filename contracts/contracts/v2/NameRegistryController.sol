@@ -14,7 +14,7 @@ import {EnsUtils} from "../libs/EnsUtils.sol";
 import {IMulticallable} from "../resolver/IMulticallable.sol";
 
 bytes32 constant MINT_CONTEXT = keccak256(
-    "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,address paymentReceiver)"
+    "MintContext(string label,string parentLabel,address resolver,address owner,uint256 price,uint256 fee,address paymentReceiver,uint256 expiry)"
 );
 
 /**
@@ -111,10 +111,10 @@ contract NameRegistryController is EIP712, Ownable {
             context.owner,
             context.price,
             context.fee,
-            context.paymentReceiver
+            context.paymentReceiver,
+            context.expiry
         );
     }
-
 
     /**
      * Burns a name node.
@@ -127,7 +127,7 @@ contract NameRegistryController is EIP712, Ownable {
         }
     }
 
-     /**
+    /**
      * Burns a name node.
      * Callable by a 2LDomain node owner
      * @param node Subname node namehash
@@ -155,20 +155,12 @@ contract NameRegistryController is EIP712, Ownable {
         }
     }
 
-    function _mintSimple(
-        MintContext memory context,
-        bytes32 node,
-        address nameToken
-    ) internal {
-        _mint(nameToken, node, context.owner, context.resolver);
+    function _mintSimple(MintContext memory context, bytes32 node, address nameToken) internal {
+        _mint(nameToken, node, context.owner, context.resolver, context.expiry);
     }
 
-    function _mintWithRecords(
-        MintContext memory context,
-        bytes32 node,
-        address nameToken
-    ) internal {
-        _mint(nameToken, node, address(this), context.resolver);
+    function _mintWithRecords(MintContext memory context, bytes32 node, address nameToken) internal {
+        _mint(nameToken, node, address(this), context.resolver, context.expiry);
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
 
@@ -179,12 +171,7 @@ contract NameRegistryController is EIP712, Ownable {
         );
     }
 
-    function _mint(
-        address nameToken,
-        bytes32 node,
-        address owner,
-        address resolver
-    ) internal {
+    function _mint(address nameToken, bytes32 node, address owner, address resolver, uint256 expiry) internal {
         if (owner == address(0) || resolver == address(0)) {
             revert ZeroAddressNotAllowed();
         }
@@ -200,7 +187,11 @@ contract NameRegistryController is EIP712, Ownable {
             IEnsNameToken(nameToken).burn(tokenId);
         }
 
-        IEnsNameToken(nameToken).mint(owner, tokenId, resolver);
+        if (expiry > 0) {
+            IEnsNameToken(nameToken).mint(owner, tokenId, resolver, expiry);
+        } else {
+            IEnsNameToken(nameToken).mint(owner, tokenId, resolver);
+        }
     }
 
     function _ownerOf(

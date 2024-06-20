@@ -10,6 +10,7 @@ struct MintContext {
     uint256 fee;
     address paymentReceiver;
     bytes[] resolverData;
+    uint256 expiry;
 }
 
 struct NodeRecord {
@@ -25,8 +26,13 @@ struct RegistryContext {
     address owner;
     address resolver;
     uint8 fuse;
+    ListingType listingType;
+}
+
+enum ListingType {
+    BASIC,
+    EXPIRABLE
 }
 
 uint8 constant PARENT_NO_CONTROL_FUSE = 1;
 uint8 constant PARENT_CAN_CONTROL = 2;
-

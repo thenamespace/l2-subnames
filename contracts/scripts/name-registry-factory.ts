@@ -68,6 +68,7 @@ task("createName")
         { name: "baseUri", type: "string" },
         { name: "owner", type: "address" },
         { name: "resolver", type: "address" },
+        { name: "listingType", type: "uint256" },
       ],
     };
 

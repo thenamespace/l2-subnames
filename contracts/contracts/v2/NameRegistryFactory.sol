@@ -5,14 +5,15 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EnsUtils} from "../libs/EnsUtils.sol";
-import {RegistryContext} from "./Types.sol";
+import {RegistryContext, ListingType} from "./Types.sol";
 import {EnsTokenCreated} from "./Events.sol";
 import {InvalidSignature, NodeAlreadyTaken} from "./Errors.sol";
 import {EnsNameToken} from "./EnsNameToken.sol";
+import {ExpirableEnsNameToken} from "./ExpirableEnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
 
 bytes32 constant REGISTRY_CONTEXT = keccak256(
-    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver)"
+    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint256 listingType)"
 );
 
 contract NameRegistryFactory is EIP712, Ownable {
@@ -41,7 +42,7 @@ contract NameRegistryFactory is EIP712, Ownable {
 
         verifySignature(context, verificationSignature);
 
-        EnsNameToken nameToken = new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse);
+        EnsNameToken nameToken = createToken(context, nameNode);
         nameToken.setController(controller, true);
         nameToken.setController(address(this), true);
 
@@ -61,7 +62,8 @@ contract NameRegistryFactory is EIP712, Ownable {
             context.baseUri,
             context.owner,
             context.resolver,
-            context.fuse
+            context.fuse,
+            context.listingType
         );
     }
 
@@ -91,6 +93,15 @@ contract NameRegistryFactory is EIP712, Ownable {
             )
         );
         return ECDSA.recover(digest, signature);
+    }
+
+    function createToken(RegistryContext memory context, bytes32 nameNode) internal returns (EnsNameToken) {
+        if (context.listingType == ListingType.EXPIRABLE) {
+            return
+                new ExpirableEnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse);
+        }
+
+        return new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse);
     }
 
     function setVerifier(address _verifier) public onlyOwner {

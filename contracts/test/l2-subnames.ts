@@ -13,6 +13,7 @@ describe("L2 Subnames", function () {
       { name: "baseUri", type: "string" },
       { name: "owner", type: "address" },
       { name: "resolver", type: "address" },
+      { name: "listingType", type: "uint256" },
     ],
   };
 
@@ -25,6 +26,7 @@ describe("L2 Subnames", function () {
       { name: "price", type: "uint256" },
       { name: "fee", type: "uint256" },
       { name: "paymentReceiver", type: "address" },
+      { name: "expiry", type: "uint256" },
     ],
   };
 

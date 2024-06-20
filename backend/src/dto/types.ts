@@ -21,6 +21,7 @@ export interface MintRequest {
   ensName: string;
   owner: Address;
   network: Network;
+  expiry: number;
 }
 
 export interface MintResponse {
@@ -34,4 +35,9 @@ export interface MintResponse {
     fee: string;
     paymentReceiver: Address;
   };
+}
+
+export enum ListingType {
+  BASIC,
+  EXPIRABLE,
 }

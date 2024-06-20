@@ -17,6 +17,7 @@ export class MintSigner {
       { name: 'price', type: 'uint256' },
       { name: 'fee', type: 'uint256' },
       { name: 'paymentReceiver', type: 'address' },
+      { name: 'expiry', type: 'uint256' },
     ],
   };
 

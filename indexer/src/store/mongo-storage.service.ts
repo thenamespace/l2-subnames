@@ -85,6 +85,7 @@ export class MongoStorageService
       addresses: node.addresses || {},
       contentHash: node.contentHash,
       createdAt: new Date().getTime(),
+      expiry: node.expiry,
     });
   }
 
@@ -107,6 +108,7 @@ export class MongoStorageService
       textRecords: doc.texts,
       addresses: doc.addresses,
       contentHash: doc.contentHash,
+      expiry: doc.expiry,
     };
   }
 }

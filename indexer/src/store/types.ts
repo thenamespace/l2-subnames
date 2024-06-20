@@ -18,4 +18,5 @@ export interface ISubnameNode {
   textRecords?: Record<string, string>;
   contentHash?: Hash;
   addresses?: Record<string, Address>;
+  expiry: number;
 }
