@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ChangeMintNetwork,
   MintSubnameForm,
@@ -22,6 +22,7 @@ export const MintPage = () => {
   });
   const { networkName } = useWeb3Network();
   const navigate = useNavigate()
+  const location = useLocation();
 
   useEffect(() => {
     getSingleListing(parentName as string).then((res) => {
@@ -35,6 +36,10 @@ export const MintPage = () => {
       navigate("/")
     });
   }, []);
+
+  if (location.pathname.includes("/mint/enskeychain")) {
+    return <Navigate to="/enskeychains"></Navigate>
+  }
 
   if (listing.isFetching || !listing.item) {
     return <ScreenContainer isLoading={true} />;

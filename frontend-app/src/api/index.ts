@@ -51,3 +51,19 @@ export const mintSponsored = (
     })
     .then((res) => res.data);
 };
+
+type KeychainEmail = {
+  ensName: string
+  transaction: string
+  email: string
+  shippingInfo: {
+    postalCode: string
+    address: string
+    city: string
+    country: string
+  }
+}
+
+export const sendEmail = (data: KeychainEmail) => {
+  return axios.post(`${api}/api/v0.1.0/mint/enskeychains`, data).then(res => res.data);
+}

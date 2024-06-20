@@ -12,7 +12,7 @@ export const AppRouter = () => {
             <Route path="/based-summer/:parentName" element={<MintPageSponsored/>}></Route>
             <Route path="/events/musicaw3" element={<MusicaW3Page/>}></Route>
             <Route path="/enskeychains" element={<EnsKeychainPage/>}></Route>
-            <Route index element={<NameSelectorPage/>}></Route>
+            <Route index path="*" element={<NameSelectorPage/>}></Route>
         </Routes>
     </BrowserRouter>
 }

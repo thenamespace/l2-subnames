@@ -63,7 +63,6 @@ export const MintSubnameForm = ({
   defaultAvatar,
   formVariation,
   onMintSuccess,
-  onComplete
 }: {
   onMintSuccess?: (tx: Hash) => void
   onComplete?: () => void

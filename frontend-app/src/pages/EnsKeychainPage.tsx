@@ -1,6 +1,5 @@
 import { Card } from "@ensdomains/thorin";
 import { ScreenContainer } from "../components";
-import { useEffect } from "react";
 import "./EnsKeychainPage.css";
 import { EnsKeychainForm } from "../components/EnsKeychainForm";
 
