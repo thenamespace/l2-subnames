@@ -1,4 +1,4 @@
-import { Network } from 'src/dto/types';
+import { ListingType, Network } from 'src/dto/types';
 import { Address, Hash } from 'viem';
 
 export class NameListing {
@@ -12,4 +12,5 @@ export class NameListing {
   owner: Address;
   paymentReceiver: Address;
   token: Address;
+  listingType: ListingType;
 }

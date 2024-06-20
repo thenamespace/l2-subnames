@@ -7,7 +7,7 @@ import { getContractAddresses } from "../contract-addresses";
 import { Network } from "../types";
 
 const NameMintedEvent =
-  "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver)";
+  "event NameMinted(string label, string parentLabel, bytes32 subnameNode, bytes32 parentNode, address owner, uint256 price, uint256 fee, address paymentReceiver,uint256 expiry)";
 
 @Injectable()
 export class ControllerListener implements OnApplicationBootstrap {
@@ -83,12 +83,14 @@ export class ControllerListener implements OnApplicationBootstrap {
     subnameNode: any;
     parentNode: any;
     owner: any;
+    expiry: any;
   }) {
     return {
       label: nodeLog.label,
       node: nodeLog.subnameNode,
       parentNode: nodeLog.parentNode,
       owner: nodeLog.owner,
+      expiry: nodeLog.expiry,
     };
   }
 }

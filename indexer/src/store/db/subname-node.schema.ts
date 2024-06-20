@@ -28,6 +28,9 @@ export class SubnameNode {
 
   @Prop({ required: true, type: Number })
   createdAt: number;
+
+  @Prop({ required: true, type: Number })
+  expiry: number;
 }
 
 @Schema({ collection: "subname-nodes" })

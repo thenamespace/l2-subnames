@@ -18,7 +18,7 @@ export class MintingService {
   public async verifySubnameMint(
     request: MintRequest,
   ): Promise<{ signature: Hash; parameters: MintContext }> {
-    const { label, ensName, network, owner } = request;
+    const { label, ensName, network, owner, expiry } = request;
     const subname = `${label}.${ensName}`;
     const taken = await this.registry.isSubnameTaken(network, subname);
 
@@ -49,6 +49,7 @@ export class MintingService {
       fee: '0',
       paymentReceiver: listing.owner,
       resolverData: [],
+      expiry,
     };
 
     const signature = await this.signer.sign(network, parameters);

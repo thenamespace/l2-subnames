@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {ListingType} from "./Types.sol";
+
 event NodeCreated(bytes32 node, address owner, address resolver);
 
 event NameMinted(
@@ -11,7 +13,8 @@ event NameMinted(
     address owner,
     uint256 price,
     uint256 fee,
-    address paymentReceiver
+    address paymentReceiver,
+    uint256 expiry
 );
 
 event EnsTokenCreated(
@@ -23,5 +26,6 @@ event EnsTokenCreated(
     string baseUri,
     address owner,
     address resolver,
-    uint8 fuse
+    uint8 fuse,
+    ListingType listingType
 );

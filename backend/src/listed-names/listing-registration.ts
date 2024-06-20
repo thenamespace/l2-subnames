@@ -11,6 +11,7 @@ export type RegistryContext = {
   baseUri: string;
   owner: Address;
   resolver: Address;
+  listingType: number;
 };
 
 @Injectable()
@@ -23,6 +24,7 @@ export class ListingRegistration {
       { name: 'baseUri', type: 'string' },
       { name: 'owner', type: 'address' },
       { name: 'resolver', type: 'address' },
+      { name: 'listingType', type: 'uint256' },
     ],
   };
 
