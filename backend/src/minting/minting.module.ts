@@ -5,10 +5,11 @@ import { Web3Module } from 'src/web3/web3.module';
 import { MintSigner } from './mint-signer';
 import { MintingService } from './minting.service';
 import { SponsoredBaseMinter } from './sponsored-minter';
+import { MailSender } from './mail-sender';
 
 @Module({
-  providers: [MintingService, MintSigner, SponsoredBaseMinter],
+  providers: [MintingService, MintSigner, SponsoredBaseMinter, MailSender],
   imports: [Web3Module, ListedNamesModule, AppConfigModule],
-  exports: [SponsoredBaseMinter, MintingService]
+  exports: [SponsoredBaseMinter, MintingService, MailSender]
 })
 export class MintingModule {}
