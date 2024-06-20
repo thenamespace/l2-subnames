@@ -8,9 +8,10 @@ import {EnsUtils} from "../libs/EnsUtils.sol";
 import {RegistryContext, ListingType} from "./Types.sol";
 import {EnsTokenCreated} from "./Events.sol";
 import {InvalidSignature, NodeAlreadyTaken} from "./Errors.sol";
-import {EnsNameToken} from "./EnsNameToken.sol";
-import {ExpirableEnsNameToken} from "./ExpirableEnsNameToken.sol";
+import {EnsNameToken} from "./tokens/EnsNameToken.sol";
+import {ExpirableEnsNameToken} from "./tokens/ExpirableEnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
+import {EnsTokenEmitter} from "./EnsTokenEmitter.sol";
 
 bytes32 constant REGISTRY_CONTEXT = keccak256(
     "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint256 listingType)"
@@ -21,8 +22,9 @@ contract NameRegistryFactory is EIP712, Ownable {
     address manager;
     address controller;
     bytes32 private immutable ETH_NODE;
+    address emitter;
 
-    constructor(address _verifier, address _manager, address _controller, bytes32 ethNode, address owner)
+    constructor(address _verifier, address _manager, address _controller, bytes32 ethNode, address owner, address _emitter)
         EIP712("Namespace", "1")
         Ownable(owner)
     {
@@ -30,6 +32,7 @@ contract NameRegistryFactory is EIP712, Ownable {
         manager = _manager;
         controller = _controller;
         ETH_NODE = ethNode;
+        emitter = _emitter;
     }
 
     function create(RegistryContext memory context, bytes memory verificationSignature) external {
@@ -47,6 +50,7 @@ contract NameRegistryFactory is EIP712, Ownable {
         nameToken.setController(address(this), true);
 
         INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken));
+        EnsTokenEmitter(emitter).setEmitter(address(nameToken), true);
 
         claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken));
 
@@ -98,10 +102,10 @@ contract NameRegistryFactory is EIP712, Ownable {
     function createToken(RegistryContext memory context, bytes32 nameNode) internal returns (EnsNameToken) {
         if (context.listingType == ListingType.EXPIRABLE) {
             return
-                new ExpirableEnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse);
+                new ExpirableEnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse, emitter);
         }
 
-        return new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse);
+        return new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse, emitter);
     }
 
     function setVerifier(address _verifier) public onlyOwner {
