@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import {IEnsNameToken} from "./EnsNameToken.sol";
+import {IEnsNameToken} from "./tokens/IEnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
 import {MintContext, PARENT_CAN_CONTROL} from "./Types.sol";
 import {NameMinted} from "./Events.sol";

@@ -2,8 +2,10 @@
 pragma solidity ^0.8.24;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {Controllable} from "../access/Controllable.sol";
-import {NodeRecord} from "./Types.sol";
+import {Controllable} from "../../access/Controllable.sol";
+import {NodeRecord} from "../Types.sol";
+import {IEnsTokenEmitter} from "../EnsTokenEmitter.sol";
+
 
 interface IEnsNameToken {
     function mint(address, uint256, address) external;
@@ -20,13 +22,17 @@ contract EnsNameToken is ERC721, Controllable {
     mapping(bytes32 tokenNode => address resolver) public resolvers;
     uint8 public immutable fuse;
     bytes32 immutable NAME_NODE;
+    IEnsTokenEmitter emitter;
 
-    constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, uint8 _fuse)
+
+
+    constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, uint8 _fuse, address _emitter)
         ERC721(name, symbol)
     {
         baseURI = baseUri;
         NAME_NODE = nameNode;
         fuse = _fuse;
+        emitter = IEnsTokenEmitter(_emitter);
     }
 
     function mint(address owner, uint256 tokenId, address resolver) public onlyController {
@@ -39,11 +45,21 @@ contract EnsNameToken is ERC721, Controllable {
         _burn(tokenId);
 
         delete resolvers[bytes32(tokenId)];
+        emitter.emitNodeBurned(bytes32(tokenId), NAME_NODE);
     }
 
     function nameTokenOwner() external view returns (address) {
         uint256 nameTokenId = uint256(NAME_NODE);
-        return ownerOf(nameTokenId);
+        return _ownerOf(nameTokenId);
+    }
+
+    function ownerOf(uint256 tokenId) public virtual view override returns (address) {
+        return _ownerOf(tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
+        super.transferFrom(from, to, tokenId);
+        emitter.emitNodeTransfer(from, to, bytes32(tokenId), NAME_NODE);
     }
 
     function _baseURI() internal view override returns (string memory) {

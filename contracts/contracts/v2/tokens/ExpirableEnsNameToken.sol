@@ -6,8 +6,8 @@ import "./EnsNameToken.sol";
 contract ExpirableEnsNameToken is EnsNameToken {
     mapping(bytes32 tokenNode => uint256 expiry) public expiries;
 
-    constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, uint8 _fuse)
-        EnsNameToken(name, symbol, baseUri, nameNode, _fuse)
+    constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, uint8 _fuse, address _emitter)
+        EnsNameToken(name, symbol, baseUri, nameNode, _fuse, _emitter)
     {}
 
     function mint(address owner, uint256 tokenId, address resolver, uint256 expiry) external {
@@ -24,5 +24,9 @@ contract ExpirableEnsNameToken is EnsNameToken {
         }
 
         return address(0);
+    }
+
+    function setExpiry(bytes32 node, uint64 expiry) external onlyController {
+        expiries[node] += expiry;
     }
 }
