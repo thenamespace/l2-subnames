@@ -236,10 +236,10 @@ const SelectName = ({
     <div>
       <div className="mb-3">
         <Typography fontVariant="largeBold">
-          Which ENS name do you want to use?
+        ENS Name for the Keychain
         </Typography>
         <Typography fontVariant="small" color="grey">
-          Pick any name you own :)
+          Pick any ENS Name you own for the Keychain. :)
         </Typography>
       </div>
       {options.length === 0 && <Helper className="mt-2 mb-2">
@@ -765,7 +765,7 @@ export const MintSubname = ({
   return (
     <div>
       <Typography fontVariant="largeBold">Mint subname</Typography>
-
+      <Typography fontVariant="small" color="grey" className="mt-1">Minting this subname will be used as proof of ownership of your Keychain.</Typography>
       <div className="mt-2">
         <Typography color="grey" fontVariant="extraSmall">{`${
           label.length === 0 ? "{yourName}" : label
@@ -840,7 +840,7 @@ const SuccessScreen = ({ fullName, keychainName}: { fullName: string, keychainNa
       </Typography>
        <div className="text-center">
        <Typography className="mb-1" color="grey" fontVariant="small">You have succesfully minted {fullName}</Typography>
-       <Typography className="mb-1" color="grey" fontVariant="small">and ordered a keychain for {}</Typography>
+       <Typography className="mb-1" color="grey" fontVariant="small">and ordered a keychain for</Typography>
        </div>
       <Typography fontVariant="extraLargeBold" color="blue">
         {keychainName}
