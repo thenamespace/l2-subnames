@@ -11,6 +11,7 @@ export type RegistryContext = {
   baseUri: string;
   owner: Address;
   resolver: Address;
+  fuse: number;
   listingType: number;
 };
 
@@ -24,7 +25,8 @@ export class ListingRegistration {
       { name: 'baseUri', type: 'string' },
       { name: 'owner', type: 'address' },
       { name: 'resolver', type: 'address' },
-      { name: 'listingType', type: 'uint256' },
+      { name: 'fuse', type: 'uint8' },
+      { name: 'listingType', type: 'uint8' },
     ],
   };
 
@@ -50,6 +52,8 @@ export class ListingRegistration {
       baseUri: context.baseUri,
       owner: context.owner,
       resolver: context.resolver,
+      fuse: context.fuse,
+      listingType: context.listingType,
     };
 
     return await this.rpcClient.getSigner().signTypedData({

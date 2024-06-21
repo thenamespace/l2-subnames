@@ -14,7 +14,7 @@ import {INameListingManager} from "./NameListingManager.sol";
 import {EnsTokenEmitter} from "./EnsTokenEmitter.sol";
 
 bytes32 constant REGISTRY_CONTEXT = keccak256(
-    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint256 listingType)"
+    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint8 fuse,uint8 listingType)"
 );
 
 contract NameRegistryFactory is EIP712, Ownable {
@@ -24,10 +24,14 @@ contract NameRegistryFactory is EIP712, Ownable {
     bytes32 private immutable ETH_NODE;
     address emitter;
 
-    constructor(address _verifier, address _manager, address _controller, bytes32 ethNode, address owner, address _emitter)
-        EIP712("Namespace", "1")
-        Ownable(owner)
-    {
+    constructor(
+        address _verifier,
+        address _manager,
+        address _controller,
+        bytes32 ethNode,
+        address owner,
+        address _emitter
+    ) EIP712("Namespace", "1") Ownable(owner) {
         verifier = _verifier;
         manager = _manager;
         controller = _controller;
@@ -49,13 +53,13 @@ contract NameRegistryFactory is EIP712, Ownable {
         nameToken.setController(controller, true);
         nameToken.setController(address(this), true);
 
-        INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken));
+        INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken), msg.sender);
         EnsTokenEmitter(emitter).setEmitter(address(nameToken), true);
 
         claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken));
 
         nameToken.setController(address(this), false);
-        nameToken.transferOwnership(owner());
+        nameToken.transferOwnership(manager);
 
         emit EnsTokenCreated(
             address(nameToken),
@@ -92,7 +96,9 @@ contract NameRegistryFactory is EIP712, Ownable {
                     keccak256(abi.encodePacked(context.ensName)),
                     keccak256(abi.encodePacked(context.baseUri)),
                     context.owner,
-                    context.resolver
+                    context.resolver,
+                    context.fuse,
+                    context.listingType
                 )
             )
         );
@@ -101,8 +107,9 @@ contract NameRegistryFactory is EIP712, Ownable {
 
     function createToken(RegistryContext memory context, bytes32 nameNode) internal returns (EnsNameToken) {
         if (context.listingType == ListingType.EXPIRABLE) {
-            return
-                new ExpirableEnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse, emitter);
+            return new ExpirableEnsNameToken(
+                context.listingName, context.symbol, context.baseUri, nameNode, context.fuse, emitter
+            );
         }
 
         return new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.fuse, emitter);

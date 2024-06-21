@@ -12,5 +12,6 @@ export class NameListing {
   owner: Address;
   paymentReceiver: Address;
   token: Address;
+  fuse: number;
   listingType: ListingType;
 }

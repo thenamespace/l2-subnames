@@ -91,6 +91,7 @@ export class ListedNamesService implements OnApplicationBootstrap {
       baseUri: this.appConfig.metadataUrl.concat(`/${chainId.id}/`),
       owner: listing.owner,
       resolver,
+      fuse: listing.fuse,
       listingType: listing.listingType,
     };
 

@@ -29,33 +29,24 @@ contract NameRegistryController is EIP712, Ownable {
 
     INameListingManager public immutable manager;
 
-    constructor(
-        address _treasury,
-        address _verifier,
-        INameListingManager _manager,
-        bytes32 ethNode,
-        address owner
-    ) EIP712("Namespace", "1") Ownable(owner) {
+    constructor(address _treasury, address _verifier, INameListingManager _manager, bytes32 ethNode, address owner)
+        EIP712("Namespace", "1")
+        Ownable(owner)
+    {
         treasury = _treasury;
         verifier = _verifier;
         manager = _manager;
         ETH_NODE = ethNode;
     }
 
-    function verifySignature(
-        MintContext memory context,
-        bytes memory signature
-    ) internal view {
+    function verifySignature(MintContext memory context, bytes memory signature) internal view {
         address extractedAddr = extractSigner(context, signature);
         if (extractedAddr != verifier) {
             revert InvalidSignature(extractedAddr);
         }
     }
 
-    function extractSigner(
-        MintContext memory context,
-        bytes memory signature
-    ) internal view returns (address) {
+    function extractSigner(MintContext memory context, bytes memory signature) internal view returns (address) {
         bytes32 digest = _hashTypedDataV4(
             keccak256(
                 abi.encode(
@@ -66,7 +57,8 @@ contract NameRegistryController is EIP712, Ownable {
                     context.owner,
                     context.price,
                     context.fee,
-                    context.paymentReceiver
+                    context.paymentReceiver,
+                    context.expiry
                 )
             )
         );
@@ -78,10 +70,7 @@ contract NameRegistryController is EIP712, Ownable {
      * @param context The information about minting a new subname.
      * @param signature The address which owns the node, can update resolver and records
      */
-    function mint(
-        MintContext memory context,
-        bytes memory signature
-    ) public payable {
+    function mint(MintContext memory context, bytes memory signature) public payable {
         verifySignature(context, signature);
 
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
@@ -122,7 +111,7 @@ contract NameRegistryController is EIP712, Ownable {
      * @param nodes An array on subname namehashes
      */
     function burnBulk(bytes32[] memory nodes) external {
-        for (uint i = 0; i < nodes.length; i++) {
+        for (uint256 i = 0; i < nodes.length; i++) {
             _burn(nodes[i]);
         }
     }
@@ -145,10 +134,7 @@ contract NameRegistryController is EIP712, Ownable {
 
         IEnsNameToken token = IEnsNameToken(nameRegistry);
 
-        if (
-            token.fuse() == PARENT_CAN_CONTROL &&
-            token.nameTokenOwner() == _msgSender()
-        ) {
+        if (token.fuse() == PARENT_CAN_CONTROL && token.nameTokenOwner() == _msgSender()) {
             token.burn(uint256(node));
         } else {
             revert NotAuthorized();
@@ -164,11 +150,7 @@ contract NameRegistryController is EIP712, Ownable {
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
 
-        IEnsNameToken(nameToken).transferFrom(
-            address(this),
-            context.owner,
-            uint256(node)
-        );
+        IEnsNameToken(nameToken).transferFrom(address(this), context.owner, uint256(node));
     }
 
     function _mint(address nameToken, bytes32 node, address owner, address resolver, uint256 expiry) internal {
@@ -194,10 +176,7 @@ contract NameRegistryController is EIP712, Ownable {
         }
     }
 
-    function _ownerOf(
-        address nameToken,
-        uint256 tokenId
-    ) internal view returns (address) {
+    function _ownerOf(address nameToken, uint256 tokenId) internal view returns (address) {
         try IEnsNameToken(nameToken).ownerOf(tokenId) returns (address owner) {
             return owner;
         } catch {
@@ -205,18 +184,11 @@ contract NameRegistryController is EIP712, Ownable {
         }
     }
 
-    function _namehash(
-        bytes32 parent,
-        string memory label
-    ) internal pure returns (bytes32) {
+    function _namehash(bytes32 parent, string memory label) internal pure returns (bytes32) {
         return EnsUtils.namehash(parent, label);
     }
 
-    function _setRecordsMulticall(
-        bytes32 node,
-        address resolver,
-        bytes[] memory data
-    ) internal {
+    function _setRecordsMulticall(bytes32 node, address resolver, bytes[] memory data) internal {
         IMulticallable(resolver).multicallWithNodeCheck(node, data);
     }
 
@@ -227,16 +199,12 @@ contract NameRegistryController is EIP712, Ownable {
         }
 
         if (context.price > 0) {
-            (bool sentToOwner, ) = payable(context.paymentReceiver).call{
-                value: context.price
-            }("");
+            (bool sentToOwner,) = payable(context.paymentReceiver).call{value: context.price}("");
             require(sentToOwner, "Could not transfer ETH to payment receiver");
         }
 
         if (context.fee > 0) {
-            (bool sentToTreasury, ) = payable(treasury).call{
-                value: context.fee
-            }("");
+            (bool sentToTreasury,) = payable(treasury).call{value: context.fee}("");
             require(sentToTreasury, "Could not transfer ETH to treasury");
         }
     }

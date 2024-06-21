@@ -36,7 +36,7 @@ contract NamespaceDeployer {
         resolverAddress = address(resolver);
 
         manager.setController(factoryAddress, true);
-        manager.setController(controllerAddress, true);
+        manager.addController(controllerAddress);
         manager.transferOwnership(owner);
 
         emitter.setController(factoryAddress, true);
