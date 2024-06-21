@@ -68,7 +68,8 @@ task("createName")
         { name: "baseUri", type: "string" },
         { name: "owner", type: "address" },
         { name: "resolver", type: "address" },
-        { name: "listingType", type: "uint256" },
+        { name: "fuse", type: "uint8" },
+        { name: "listingType", type: "uint8" },
       ],
     };
 
@@ -81,6 +82,8 @@ task("createName")
       baseUri: args.uri as string,
       owner: owner.account.address,
       resolver: resolverAddress,
+      fuse: 1,
+      listingType: 0,
     };
 
     const signature = await owner.signTypedData({

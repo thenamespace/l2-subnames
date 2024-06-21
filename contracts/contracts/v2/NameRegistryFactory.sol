@@ -13,7 +13,7 @@ import {ExpirableEnsNameToken} from "./ExpirableEnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
 
 bytes32 constant REGISTRY_CONTEXT = keccak256(
-    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint256 listingType)"
+    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint8 fuse,uint8 listingType)"
 );
 
 contract NameRegistryFactory is EIP712, Ownable {
@@ -88,7 +88,9 @@ contract NameRegistryFactory is EIP712, Ownable {
                     keccak256(abi.encodePacked(context.ensName)),
                     keccak256(abi.encodePacked(context.baseUri)),
                     context.owner,
-                    context.resolver
+                    context.resolver,
+                    context.fuse,
+                    context.listingType
                 )
             )
         );

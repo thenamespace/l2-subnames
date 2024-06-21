@@ -13,7 +13,8 @@ describe("L2 Subnames", function () {
       { name: "baseUri", type: "string" },
       { name: "owner", type: "address" },
       { name: "resolver", type: "address" },
-      { name: "listingType", type: "uint256" },
+      { name: "fuse", type: "uint8" },
+      { name: "listingType", type: "uint8" },
     ],
   };
 
@@ -165,6 +166,8 @@ describe("L2 Subnames", function () {
         baseUri: "namespace.tech",
         owner: lister1.account.address,
         resolver: resolverAddress as string,
+        fuse: 1,
+        listingType: 0,
       };
 
       const loadListing = () => createToken(listing, lister1);
@@ -245,6 +248,8 @@ describe("L2 Subnames", function () {
         baseUri: "namespace2.tech",
         owner: lister1.account.address,
         resolver: resolverAddress as string,
+        fuse: 1,
+        listingType: 0,
       };
 
       const mintContext = {
@@ -255,6 +260,7 @@ describe("L2 Subnames", function () {
         price: parseEther("0.3"),
         fee: parseEther("0.02"),
         paymentReceiver: lister1.account.address,
+        expiry: BigInt(0),
       };
 
       const loadMint = () => mintName(mintContext, listing, minter1);
@@ -295,22 +301,36 @@ describe("L2 Subnames", function () {
         controllerAddress
       );
 
-      const createdNode = await controller.getEvents.NodeCreated();
+      const createdNode = await controller.getEvents.NameMinted();
       const nodeArgs = createdNode[0].args as {
-        node: string;
+        label: string;
+        parentLabel: string;
+        subnameNode: string;
         owner: string;
-        resolver: string;
+        price: bigint;
+        fee: bigint;
+        paymentReceiver: string;
+        expiry: bigint;
       };
 
-      expect(nodeArgs.node).to.be.eq(
+      expect(nodeArgs.subnameNode).to.be.eq(
         namehash(`${mintContext.label}.${listing.listingName}.eth`)
       );
       expect(nodeArgs.owner.toLowerCase()).to.be.eq(
         minter1.account.address.toLowerCase()
       );
-      expect(nodeArgs.resolver.toLowerCase()).to.be.eq(
-        mintContext.resolver.toLowerCase()
+      expect(nodeArgs.label.toLowerCase()).to.be.eq(
+        mintContext.label.toLowerCase()
       );
+      expect(nodeArgs.parentLabel.toLowerCase()).to.be.eq(
+        mintContext.parentLabel.toLowerCase()
+      );
+      expect(nodeArgs.price).to.be.eq(mintContext.price);
+      expect(nodeArgs.fee).to.be.eq(mintContext.fee);
+      expect(nodeArgs.paymentReceiver.toLowerCase()).to.be.eq(
+        mintContext.paymentReceiver.toLowerCase()
+      );
+      expect(nodeArgs.expiry).to.be.eq(mintContext.expiry);
     });
   });
 });
