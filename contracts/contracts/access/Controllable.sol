@@ -18,7 +18,7 @@ contract Controllable is Ownable {
     function setController(
         address controller,
         bool access
-    ) external virtual onlyOwner {
+    ) public virtual onlyOwner {
         controllers[controller] = access;
         emit ControllerChanged(controller, access);
     }
