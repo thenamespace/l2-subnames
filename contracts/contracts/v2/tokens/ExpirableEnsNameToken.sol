@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "./EnsNameToken.sol";
+import {ListingType} from "../Types.sol";
 
 contract ExpirableEnsNameToken is EnsNameToken {
     mapping(bytes32 tokenNode => uint256 expiry) public expiries;
@@ -30,6 +31,10 @@ contract ExpirableEnsNameToken is EnsNameToken {
         }
 
         return address(0);
+    }
+
+    function listingType() public override pure returns(ListingType) {
+        return ListingType.EXPIRABLE;
     }
 
     function setExpiry(bytes32 node, uint64 expiry) external onlyController {

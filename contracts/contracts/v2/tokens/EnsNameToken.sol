@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Controllable} from "../../access/Controllable.sol";
-import {NodeRecord} from "../Types.sol";
+import {ListingType} from "../Types.sol";
 import {IEnsTokenEmitter} from "../EnsTokenEmitter.sol";
 import {EnsUtils} from "../../libs/EnsUtils.sol";
 
@@ -24,8 +24,6 @@ contract EnsNameToken is ERC721, Controllable {
     uint8 public immutable fuse;
     bytes32 immutable NAME_NODE;
     IEnsTokenEmitter emitter;
-
-
 
     constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, uint8 _fuse, address _emitter)
         ERC721(name, symbol)
@@ -56,6 +54,10 @@ contract EnsNameToken is ERC721, Controllable {
     function nameTokenOwner() external view returns (address) {
         uint256 nameTokenId = uint256(NAME_NODE);
         return _ownerOf(nameTokenId);
+    }
+
+    function listingType() public virtual pure returns(ListingType) {
+        return ListingType.BASIC;
     }
 
     function ownerOf(uint256 tokenId) public virtual view override returns (address) {

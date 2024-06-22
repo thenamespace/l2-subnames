@@ -6,7 +6,7 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IEnsNameToken} from "./tokens/IEnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
-import {MintContext, PARENT_CAN_CONTROL} from "./Types.sol";
+import {MintContext, PARENT_CAN_CONTROL, ListingType} from "./Types.sol";
 import {NameMinted} from "./Events.sol";
 import {ZeroAddressNotAllowed, NodeAlreadyTaken, NotAuthorized} from "./Errors.sol";
 import {InsufficientFunds, InvalidSignature, NameRegistrationNotFound} from "./Errors.sol";
@@ -68,13 +68,12 @@ contract NameRegistryController is EIP712, Ownable {
     /**
      * Mints a new name node.
      * @param context The information about minting a new subname.
-     * @param signature The address which owns the node, can update resolver and records
+     * @param signature Signed parameters
      */
     function mint(MintContext memory context, bytes memory signature) public payable {
         verifySignature(context, signature);
 
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
-        bytes32 node = _namehash(parentNode, context.label);
 
         address nameToken = manager.nameTokenNodes(parentNode);
 
@@ -82,14 +81,15 @@ contract NameRegistryController is EIP712, Ownable {
             revert NameRegistrationNotFound();
         }
 
-        manager.setNameTokenNode(node, nameToken);
+        bytes32 node;
 
         if (context.resolverData.length > 0) {
-            _mintWithRecords(context, node, nameToken);
+            node = _mintWithRecords(context, nameToken);
         } else {
-            _mintSimple(context, node, nameToken);
+            node = _mintSimple(context, nameToken);
         }
-
+        
+        manager.setNameTokenNode(node, nameToken);
         _transferFunds(context);
 
         emit NameMinted(
@@ -141,33 +141,31 @@ contract NameRegistryController is EIP712, Ownable {
         }
     }
 
-    function _mintSimple(MintContext memory context, bytes32 node, address nameToken) internal {
-        _mint(nameToken, node, context.owner, context.resolver, context.expiry);
+    function _mintSimple(MintContext memory context, address nameToken) internal returns (bytes32){
+        return _mint(nameToken, context.label, context.owner, context.resolver, context.expiry);
     }
 
-    function _mintWithRecords(MintContext memory context, bytes32 node, address nameToken) internal {
-        _mint(nameToken, node, address(this), context.resolver, context.expiry);
+    function _mintWithRecords(MintContext memory context, address nameToken) internal returns (bytes32) {
+        bytes32 node = _mint(nameToken, context.label, address(this), context.resolver, context.expiry);
 
         _setRecordsMulticall(node, context.resolver, context.resolverData);
 
         IEnsNameToken(nameToken).transferFrom(address(this), context.owner, uint256(node));
+
+        return node;
     }
 
-    function _mint(address nameToken, bytes32 node, address owner, address resolver, uint256 expiry) internal {
+    function _mint(address nameToken, string memory label, address owner, address resolver, uint256 expiry) internal returns (bytes32) {
         if (owner == address(0) || resolver == address(0)) {
             revert ZeroAddressNotAllowed();
         }
 
-        uint256 tokenId = uint256(node);
+        IEnsNameToken token = IEnsNameToken(nameToken);
 
-        if (_ownerOf(nameToken, tokenId) != address(0)) {
-            revert NodeAlreadyTaken(node);
-        }
-
-        if (expiry > 0) {
-            IEnsNameToken(nameToken).mint(owner, tokenId, resolver, expiry);
+        if (token.listingType() == ListingType.EXPIRABLE) {
+            return IEnsNameToken(nameToken).mint(owner, label, resolver, expiry);
         } else {
-            IEnsNameToken(nameToken).mint(owner, tokenId, resolver);
+            return IEnsNameToken(nameToken).mint(owner, label, resolver);
         }
     }
 
