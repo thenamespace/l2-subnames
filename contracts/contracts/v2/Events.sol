@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ListingType} from "./Types.sol";
+import {ListingType, ParentControl} from "./Types.sol";
 
 event NodeCreated(bytes32 node, address owner, address resolver);
 
@@ -26,7 +26,7 @@ event EnsTokenCreated(
     string baseUri,
     address owner,
     address resolver,
-    uint8 fuse,
+    ParentControl parentControl,
     ListingType listingType
 );
 

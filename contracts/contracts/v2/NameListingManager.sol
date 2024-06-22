@@ -6,7 +6,7 @@ import {Controllable} from "../access/Controllable.sol";
 interface INameListingManager {
     function setNameTokenNode(bytes32 node, address nameToken) external;
     function setNameTokenNode(bytes32 node, address nameToken, address lister) external;
-    function nameTokenNodes(bytes32 node) external returns (address);
+    function nameTokenNodes(bytes32 node) external view returns (address);
 }
 
 contract NameListingManager is Controllable {

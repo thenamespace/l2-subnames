@@ -41,3 +41,8 @@ export enum ListingType {
   BASIC,
   EXPIRABLE,
 }
+
+export enum ParentControl {
+  NO_CONTROL,
+  CONTROLLABLE
+}
