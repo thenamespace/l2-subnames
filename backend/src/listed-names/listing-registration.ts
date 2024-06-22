@@ -11,7 +11,7 @@ export type RegistryContext = {
   baseUri: string;
   owner: Address;
   resolver: Address;
-  fuse: number;
+  parentControl: number;
   listingType: number;
 };
 
@@ -25,7 +25,7 @@ export class ListingRegistration {
       { name: 'baseUri', type: 'string' },
       { name: 'owner', type: 'address' },
       { name: 'resolver', type: 'address' },
-      { name: 'fuse', type: 'uint8' },
+      { name: 'parentControl', type: 'uint8' },
       { name: 'listingType', type: 'uint8' },
     ],
   };
@@ -52,7 +52,7 @@ export class ListingRegistration {
       baseUri: context.baseUri,
       owner: context.owner,
       resolver: context.resolver,
-      fuse: context.fuse,
+      parentControl: context.parentControl,
       listingType: context.listingType,
     };
 

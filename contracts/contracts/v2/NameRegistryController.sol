@@ -6,7 +6,7 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IEnsNameToken} from "./tokens/IEnsNameToken.sol";
 import {INameListingManager} from "./NameListingManager.sol";
-import {MintContext, PARENT_CAN_CONTROL} from "./Types.sol";
+import {MintContext, ParentControl, ListingType} from "./Types.sol";
 import {NameMinted} from "./Events.sol";
 import {ZeroAddressNotAllowed, NodeAlreadyTaken, NotAuthorized} from "./Errors.sol";
 import {InsufficientFunds, InvalidSignature, NameRegistrationNotFound} from "./Errors.sol";
@@ -125,6 +125,17 @@ contract NameRegistryController is EIP712, Ownable {
         _burn(node);
     }
 
+    function isNodeAvailable(string memory label, bytes32 parentNode) public view returns(bool) {
+        address nameToken = manager.nameTokenNodes(parentNode);
+
+        if (nameToken == address(0)) {
+            revert NameRegistrationNotFound();
+        }
+
+        bytes32 node = _namehash(parentNode, label);
+        return IEnsNameToken(nameToken).ownerOf(uint256(node)) == address(0);
+    }
+
     function _burn(bytes32 node) internal {
         address nameRegistry = manager.nameTokenNodes(node);
 
@@ -134,7 +145,8 @@ contract NameRegistryController is EIP712, Ownable {
 
         IEnsNameToken token = IEnsNameToken(nameRegistry);
 
-        if (token.fuse() == PARENT_CAN_CONTROL && token.nameTokenOwner() == _msgSender()) {
+        if (token.parentControl() == ParentControl.CONTROLLABLE && 
+            token.nameTokenOwner() == _msgSender()) {
             token.burn(uint256(node));
         } else {
             revert NotAuthorized();
@@ -158,29 +170,17 @@ contract NameRegistryController is EIP712, Ownable {
             revert ZeroAddressNotAllowed();
         }
 
-        uint256 tokenId = uint256(node);
+        IEnsNameToken token = IEnsNameToken(nameToken);
 
-        if (_ownerOf(nameToken, tokenId) != address(0)) {
+        uint256 tokenId = uint256(node);
+        if (token.ownerOf(tokenId) != address(0)) {
             revert NodeAlreadyTaken(node);
         }
 
-        bool isNewNode = _ownerOf(nameToken, tokenId) == address(0);
-        if (!isNewNode) {
-            IEnsNameToken(nameToken).burn(tokenId);
-        }
-
-        if (expiry > 0) {
+        if (token.listingType() == ListingType.EXPIRABLE) {
             IEnsNameToken(nameToken).mint(owner, tokenId, resolver, expiry);
         } else {
             IEnsNameToken(nameToken).mint(owner, tokenId, resolver);
-        }
-    }
-
-    function _ownerOf(address nameToken, uint256 tokenId) internal view returns (address) {
-        try IEnsNameToken(nameToken).ownerOf(tokenId) returns (address owner) {
-            return owner;
-        } catch {
-            return address(0);
         }
     }
 

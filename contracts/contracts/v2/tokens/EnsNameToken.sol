@@ -5,34 +5,26 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Controllable} from "../../access/Controllable.sol";
 import {NodeRecord} from "../Types.sol";
 import {IEnsTokenEmitter} from "../EnsTokenEmitter.sol";
+import {ListingType, ParentControl} from "../Types.sol";
 
-
-interface IEnsNameToken {
-    function mint(address, uint256, address) external;
-    function mint(address, uint256, address, uint256) external;
-    function burn(uint256) external;
-    function fuse() external returns (uint8);
-    function ownerOf(uint256) external view returns (address);
-    function nameTokenOwner() external view returns (address);
-    function transferFrom(address, address, uint256) external;
-}
 
 contract EnsNameToken is ERC721, Controllable {
     string private baseURI;
     mapping(bytes32 tokenNode => address resolver) public resolvers;
-    uint8 public immutable fuse;
+    ParentControl public immutable parentControl;
     bytes32 immutable NAME_NODE;
     IEnsTokenEmitter emitter;
 
 
 
-    constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, uint8 _fuse, address _emitter)
+    constructor(string memory name, string memory symbol, string memory baseUri, bytes32 nameNode, ParentControl _parentControl, address _emitter)
         ERC721(name, symbol)
     {
         baseURI = baseUri;
         NAME_NODE = nameNode;
-        fuse = _fuse;
         emitter = IEnsTokenEmitter(_emitter);
+        parentControl = _parentControl;
+
     }
 
     function mint(address owner, uint256 tokenId, address resolver) public onlyController {
@@ -64,5 +56,9 @@ contract EnsNameToken is ERC721, Controllable {
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
+    }
+
+    function listingType() public virtual pure returns(ListingType) {
+        return ListingType.BASIC;
     }
 }

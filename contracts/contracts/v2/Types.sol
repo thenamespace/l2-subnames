@@ -25,7 +25,7 @@ struct RegistryContext {
     string baseUri;
     address owner;
     address resolver;
-    uint8 fuse;
+    ParentControl parentControl;
     ListingType listingType;
 }
 
@@ -34,5 +34,7 @@ enum ListingType {
     EXPIRABLE
 }
 
-uint8 constant PARENT_NO_CONTROL_FUSE = 1;
-uint8 constant PARENT_CAN_CONTROL = 2;
+enum ParentControl {
+    NO_CONTROL,
+    CONTROLLABLE
+}
