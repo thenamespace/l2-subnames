@@ -5,6 +5,7 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Controllable} from "../../access/Controllable.sol";
 import {NodeRecord} from "../Types.sol";
 import {IEnsTokenEmitter} from "../EnsTokenEmitter.sol";
+import {EnsUtils} from "../../libs/EnsUtils.sol";
 
 
 interface IEnsNameToken {
@@ -35,13 +36,17 @@ contract EnsNameToken is ERC721, Controllable {
         emitter = IEnsTokenEmitter(_emitter);
     }
 
-    function mint(address owner, uint256 tokenId, address resolver) public onlyController {
+    function mint(address owner, string memory label, address resolver) public onlyController returns(bytes32) {
+        bytes32 node = _namehash(label);
+        uint256 tokenId = uint256(node);
         _mint(owner, tokenId);
 
-        resolvers[bytes32(tokenId)] = resolver;
+        resolvers[node] = resolver;
+
+        return node;
     }
 
-    function burn(uint256 tokenId) external onlyController {
+    function burn(uint256 tokenId) public onlyController {
         _burn(tokenId);
 
         delete resolvers[bytes32(tokenId)];
@@ -64,5 +69,9 @@ contract EnsNameToken is ERC721, Controllable {
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
+    }
+
+    function _namehash(string memory label) internal view returns (bytes32) {
+        return EnsUtils.namehash(NAME_NODE, label);
     }
 }

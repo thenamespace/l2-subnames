@@ -10,10 +10,16 @@ contract ExpirableEnsNameToken is EnsNameToken {
         EnsNameToken(name, symbol, baseUri, nameNode, _fuse, _emitter)
     {}
 
-    function mint(address owner, uint256 tokenId, address resolver, uint256 expiry) external {
-        super.mint(owner, tokenId, resolver);
+    function mint(address owner, string memory label, address resolver, uint256 expiry) external {
+        bytes32 node = _namehash(label);
 
-        expiries[bytes32(tokenId)] = expiry;
+        if (isExpired(node)) {
+            burnExpiredNode(node);
+        }
+
+        super.mint(owner, label, resolver);
+
+        expiries[node] = expiry;
     }
 
     function ownerOf(uint256 tokenId) public view override returns (address) {
@@ -28,5 +34,17 @@ contract ExpirableEnsNameToken is EnsNameToken {
 
     function setExpiry(bytes32 node, uint64 expiry) external onlyController {
         expiries[node] += expiry;
+    }
+
+    function isExpired(bytes32 node) internal view returns (bool) {
+        return expiries[node] < block.timestamp;
+    }
+
+    function burnExpiredNode(bytes32 node) internal {
+        uint256 tokenId = uint256(node);
+        address previousOwner = _ownerOf(tokenId);
+        if (previousOwner != address(0)) {
+            super.burn(tokenId);
+        }
     }
 }

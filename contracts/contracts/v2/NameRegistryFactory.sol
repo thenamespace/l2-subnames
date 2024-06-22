@@ -56,7 +56,7 @@ contract NameRegistryFactory is EIP712, Ownable {
         INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken), msg.sender);
         EnsTokenEmitter(emitter).setEmitter(address(nameToken), true);
 
-        claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken));
+        claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken), context.listingType);
 
         nameToken.setController(address(this), false);
         nameToken.transferOwnership(manager);
@@ -75,8 +75,12 @@ contract NameRegistryFactory is EIP712, Ownable {
         );
     }
 
-    function claim2LDomain(address owner, address resolver, bytes32 nameNode, address nameTokenAddress) internal {
-        EnsNameToken(nameTokenAddress).mint(owner, uint256(nameNode), resolver);
+    function claim2LDomain(address owner, address resolver, bytes32 nameNode, address nameTokenAddress, ListingType listingType) internal {
+        if (listingType == ListingType.EXPIRABLE) {
+            ExpirableEnsNameToken(nameTokenAddress).mint(owner, uint256(nameNode), resolver, 10000000000000);
+        } else {
+            EnsNameToken(nameTokenAddress).mint(owner, uint256(nameNode), resolver);
+        }
     }
 
     function verifySignature(RegistryContext memory context, bytes memory signature) internal view {

@@ -164,11 +164,6 @@ contract NameRegistryController is EIP712, Ownable {
             revert NodeAlreadyTaken(node);
         }
 
-        bool isNewNode = _ownerOf(nameToken, tokenId) == address(0);
-        if (!isNewNode) {
-            IEnsNameToken(nameToken).burn(tokenId);
-        }
-
         if (expiry > 0) {
             IEnsNameToken(nameToken).mint(owner, tokenId, resolver, expiry);
         } else {
