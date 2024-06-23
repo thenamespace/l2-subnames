@@ -15,7 +15,7 @@ import {INameListingManager} from "./NameListingManager.sol";
 import {EnsTokenEmitter} from "./EnsTokenEmitter.sol";
 
 bytes32 constant REGISTRY_CONTEXT = keccak256(
-    "RegistryContext(string listingName,string symbol,string ensName,string baseUri,address owner,address resolver,uint8 parentControl,uint8 listingType)"
+    "RegistryContext(string listingName,string symbol,string parentLabel,string baseUri,address owner,address resolver,uint8 parentControl,uint8 listingType)"
 );
 
 contract NameRegistryFactory is EIP712, Ownable {
@@ -24,7 +24,7 @@ contract NameRegistryFactory is EIP712, Ownable {
     address controller;
     bytes32 private immutable ETH_NODE;
     address emitter;
-    uint256 immutable MAX_INT = 2**256 - 1;
+    uint256 immutable MAX_INT = 2 ** 256 - 1;
 
     constructor(
         address _verifier,
@@ -42,7 +42,7 @@ contract NameRegistryFactory is EIP712, Ownable {
     }
 
     function create(RegistryContext memory context, bytes memory verificationSignature) external {
-        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, context.ensName);
+        bytes32 nameNode = EnsUtils.namehash(ETH_NODE, context.parentLabel);
 
         address token = INameListingManager(manager).nameTokenNodes(nameNode);
         if (token != address(0)) {
@@ -68,7 +68,7 @@ contract NameRegistryFactory is EIP712, Ownable {
             msg.sender,
             context.listingName,
             context.symbol,
-            context.ensName,
+            context.parentLabel,
             context.baseUri,
             context.owner,
             context.resolver,
@@ -100,7 +100,7 @@ contract NameRegistryFactory is EIP712, Ownable {
                     REGISTRY_CONTEXT,
                     keccak256(abi.encodePacked(context.listingName)),
                     keccak256(abi.encodePacked(context.symbol)),
-                    keccak256(abi.encodePacked(context.ensName)),
+                    keccak256(abi.encodePacked(context.parentLabel)),
                     keccak256(abi.encodePacked(context.baseUri)),
                     context.owner,
                     context.resolver,
@@ -119,7 +119,9 @@ contract NameRegistryFactory is EIP712, Ownable {
             );
         }
 
-        return new EnsNameToken(context.listingName, context.symbol, context.baseUri, nameNode, context.parentControl, emitter);
+        return new EnsNameToken(
+            context.listingName, context.symbol, context.baseUri, nameNode, context.parentControl, emitter
+        );
     }
 
     function setVerifier(address _verifier) public onlyOwner {

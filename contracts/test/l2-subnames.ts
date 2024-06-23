@@ -9,7 +9,7 @@ describe("L2 Subnames", function () {
     RegistryContext: [
       { name: "listingName", type: "string" },
       { name: "symbol", type: "string" },
-      { name: "ensName", type: "string" },
+      { name: "parentLabel", type: "string" },
       { name: "baseUri", type: "string" },
       { name: "owner", type: "address" },
       { name: "resolver", type: "address" },
@@ -162,7 +162,7 @@ describe("L2 Subnames", function () {
       const listing = {
         listingName: "namespace",
         symbol: "namespace",
-        ensName: "namespace",
+        parentLabel: "namespace",
         baseUri: "namespace.tech",
         owner: lister1.account.address,
         resolver: resolverAddress as string,
@@ -203,7 +203,7 @@ describe("L2 Subnames", function () {
         listerAddress: string;
         listingName: string;
         symbol: string;
-        ensName: string;
+        parentLabel: string;
         baseUri: string;
         owner: string;
         resolver: string;
@@ -215,7 +215,7 @@ describe("L2 Subnames", function () {
       );
       expect(args.listingName).to.eq(listing.listingName);
       expect(args.symbol).to.eq(listing.symbol);
-      expect(args.ensName).to.eq(listing.ensName);
+      expect(args.parentLabel).to.eq(listing.parentLabel);
       expect(args.baseUri).to.eq(listing.baseUri);
       expect(args.owner.toLowerCase()).to.eq(listing.owner.toLowerCase());
       expect(args.resolver.toLowerCase()).to.eq(listing.resolver.toLowerCase());
@@ -244,7 +244,7 @@ describe("L2 Subnames", function () {
       const listing = {
         listingName: "namespace2",
         symbol: "namespace2",
-        ensName: "namespace2",
+        parentLabel: "namespace2",
         baseUri: "namespace2.tech",
         owner: lister1.account.address,
         resolver: resolverAddress as string,

@@ -21,7 +21,7 @@ struct NodeRecord {
 struct RegistryContext {
     string listingName;
     string symbol;
-    string ensName;
+    string parentLabel;
     string baseUri;
     address owner;
     address resolver;

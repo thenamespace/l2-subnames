@@ -22,7 +22,7 @@ event EnsTokenCreated(
     address listerAddress,
     string listingName,
     string symbol,
-    string ensName,
+    string parentLabel,
     string baseUri,
     address owner,
     address resolver,
@@ -31,4 +31,5 @@ event EnsTokenCreated(
 );
 
 event NodeTransfer(address from, address to, bytes32 node, bytes32 parentNode);
+
 event NodeBurned(bytes32 node, bytes32 parentNode);
