@@ -11,14 +11,18 @@ type Domain = {
   verifyingContract: Hash;
 };
 
-// const types = {
-//   RegistryContext: [
-//     { name: "listingName", type: "string" },
-//     { name: "symbol", type: "string" },
-//     { name: "ensName", type: "string" },
-//     { name: "baseUri", type: "string" },
-//   ],
-// };
+const types = {
+  RegistryContext: [
+    { name: "listingName", type: "string" },
+    { name: "symbol", type: "string" },
+    { name: "ensName", type: "string" },
+    { name: "baseUri", type: "string" },
+    { name: "owner", type: "address" },
+    { name: "resolver", type: "address" },
+    { name: "parentControl", type: "uint8" },
+    { name: "listingType", type: "uint8" },
+  ],
+};
 
 /**
 yarn hardhat createName \
@@ -60,19 +64,6 @@ task("createName")
       verifyingContract: factory.address,
     };
 
-    const types = {
-      RegistryContext: [
-        { name: "listingName", type: "string" },
-        { name: "symbol", type: "string" },
-        { name: "ensName", type: "string" },
-        { name: "baseUri", type: "string" },
-        { name: "owner", type: "address" },
-        { name: "resolver", type: "address" },
-        { name: "fuse", type: "uint8" },
-        { name: "listingType", type: "uint8" },
-      ],
-    };
-
     const resolverAddress = await deployer.read.resolverAddress();
 
     const message = {
@@ -82,7 +73,7 @@ task("createName")
       baseUri: args.uri as string,
       owner: owner.account.address,
       resolver: resolverAddress,
-      fuse: 1,
+      parentControl: 1,
       listingType: 0,
     };
 
