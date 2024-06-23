@@ -35,7 +35,7 @@ contract NameListingManager is Controllable {
         tokenControllers[nameToken] = msg.sender;
     }
 
-    function addController(address controller) external onlyController {
+    function addController(address controller) external {
         versionedControllers[++controllerVersion] = controller;
 
         super.setController(controller, true);

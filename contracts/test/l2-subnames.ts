@@ -13,7 +13,7 @@ describe("L2 Subnames", function () {
       { name: "baseUri", type: "string" },
       { name: "owner", type: "address" },
       { name: "resolver", type: "address" },
-      { name: "fuse", type: "uint8" },
+      { name: "parentControl", type: "uint8" },
       { name: "listingType", type: "uint8" },
     ],
   };
@@ -166,7 +166,7 @@ describe("L2 Subnames", function () {
         baseUri: "namespace.tech",
         owner: lister1.account.address,
         resolver: resolverAddress as string,
-        fuse: 1,
+        parentControl: 1,
         listingType: 0,
       };
 
@@ -248,7 +248,7 @@ describe("L2 Subnames", function () {
         baseUri: "namespace2.tech",
         owner: lister1.account.address,
         resolver: resolverAddress as string,
-        fuse: 1,
+        parentControl: 1,
         listingType: 0,
       };
 
