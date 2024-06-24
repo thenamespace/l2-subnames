@@ -14,7 +14,8 @@ event NameMinted(
     uint256 price,
     uint256 fee,
     address paymentReceiver,
-    uint256 expiry
+    uint256 expiry,
+    bytes extraData
 );
 
 event EnsTokenCreated(
