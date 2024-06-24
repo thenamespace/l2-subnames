@@ -39,38 +39,12 @@ contract NameRegistryController is EIP712, Ownable {
         ETH_NODE = ethNode;
     }
 
-    function verifySignature(MintContext memory context, bytes memory signature) internal view {
-        address extractedAddr = extractSigner(context, signature);
-        if (extractedAddr != verifier) {
-            revert InvalidSignature(extractedAddr);
-        }
-    }
-
-    function extractSigner(MintContext memory context, bytes memory signature) internal view returns (address) {
-        bytes32 digest = _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    MINT_CONTEXT,
-                    keccak256(abi.encodePacked(context.label)),
-                    keccak256(abi.encodePacked(context.parentLabel)),
-                    context.resolver,
-                    context.owner,
-                    context.price,
-                    context.fee,
-                    context.paymentReceiver,
-                    context.expiry
-                )
-            )
-        );
-        return ECDSA.recover(digest, signature);
-    }
-
     /**
      * Mints a new name node.
      * @param context The information about minting a new subname.
-     * @param signature The address which owns the node, can update resolver and records
+     * @param signature Signature used to verify minting parameters
      */
-    function mint(MintContext memory context, bytes memory signature) public payable {
+    function mint(MintContext memory context, bytes memory signature, bytes memory extraData) public payable {
         verifySignature(context, signature);
 
         bytes32 parentNode = _namehash(ETH_NODE, context.parentLabel);
@@ -101,7 +75,8 @@ contract NameRegistryController is EIP712, Ownable {
             context.price,
             context.fee,
             context.paymentReceiver,
-            context.expiry
+            context.expiry,
+            extraData
         );
     }
 
@@ -163,6 +138,32 @@ contract NameRegistryController is EIP712, Ownable {
         _setRecordsMulticall(node, context.resolver, context.resolverData);
 
         IEnsNameToken(nameToken).transferFrom(address(this), context.owner, uint256(node));
+    }
+
+      function verifySignature(MintContext memory context, bytes memory signature) internal view {
+        address extractedAddr = extractSigner(context, signature);
+        if (extractedAddr != verifier) {
+            revert InvalidSignature(extractedAddr);
+        }
+    }
+
+    function extractSigner(MintContext memory context, bytes memory signature) internal view returns (address) {
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    MINT_CONTEXT,
+                    keccak256(abi.encodePacked(context.label)),
+                    keccak256(abi.encodePacked(context.parentLabel)),
+                    context.resolver,
+                    context.owner,
+                    context.price,
+                    context.fee,
+                    context.paymentReceiver,
+                    context.expiry
+                )
+            )
+        );
+        return ECDSA.recover(digest, signature);
     }
 
     function _mint(address nameToken, bytes32 node, address owner, address resolver, uint256 expiry) internal {
