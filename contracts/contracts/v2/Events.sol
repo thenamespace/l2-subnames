@@ -22,7 +22,7 @@ event EnsTokenCreated(
     address listerAddress,
     string listingName,
     string symbol,
-    string parentLabel,
+    string indexed parentLabel,
     string baseUri,
     address owner,
     address resolver,
