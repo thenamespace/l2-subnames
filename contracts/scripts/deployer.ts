@@ -18,6 +18,11 @@ task("getAddresses")
     console.log("Resolver", resolver);
   });
 
+// base-sepolia
+// Factory 0xeDC0Cfc71890845f0A5d2cf8CFF9F9064242A40B
+// Controller 0x782A5e454C36E6a79cbd96a54Ae6F82d522a498c
+// Resolver 0xc57FbFf8C2E5d285f1cF8E62e3fAD2da2ac69B4b
+
 // sepolia
 // Factory 0x06ab6E2888698863429984e73068bc36975FCC65
 // Controller 0xF43a2BcF22E60c7c2c2CB9C0722eFd5bda25C65a

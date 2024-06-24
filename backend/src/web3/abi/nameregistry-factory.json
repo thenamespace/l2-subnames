@@ -25,6 +25,11 @@
         "internalType": "address",
         "name": "owner",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_emitter",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -153,7 +158,7 @@
       {
         "indexed": false,
         "internalType": "string",
-        "name": "ensName",
+        "name": "parentLabel",
         "type": "string"
       },
       {
@@ -173,6 +178,18 @@
         "internalType": "address",
         "name": "resolver",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ParentControl",
+        "name": "parentControl",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ListingType",
+        "name": "listingType",
+        "type": "uint8"
       }
     ],
     "name": "EnsTokenCreated",
@@ -213,7 +230,7 @@
           },
           {
             "internalType": "string",
-            "name": "ensName",
+            "name": "parentLabel",
             "type": "string"
           },
           {
@@ -230,6 +247,16 @@
             "internalType": "address",
             "name": "resolver",
             "type": "address"
+          },
+          {
+            "internalType": "enum ParentControl",
+            "name": "parentControl",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ListingType",
+            "name": "listingType",
+            "type": "uint8"
           }
         ],
         "internalType": "struct RegistryContext",

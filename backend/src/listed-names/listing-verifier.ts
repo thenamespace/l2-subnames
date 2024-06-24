@@ -4,7 +4,7 @@ import { Address, Hash, verifyTypedData } from 'viem';
 
 type ListingContext = {
   name: string;
-  price: bigint;
+  priceEth: bigint;
   paymentReceiver: Address;
 };
 
@@ -13,7 +13,7 @@ export class ListingVerifier {
   readonly types = {
     ListContext: [
       { name: 'name', type: 'string' },
-      { name: 'price', type: 'uint256' },
+      { name: 'priceEth', type: 'uint256' },
       { name: 'paymentReceiver', type: 'address' },
     ],
   };
@@ -33,7 +33,7 @@ export class ListingVerifier {
     const message: ListingContext = {
       name: listing.name,
       paymentReceiver: listing.paymentReceiver,
-      price: listing.priceEth,
+      priceEth: listing.priceEth as bigint,
     };
 
     return await verifyTypedData({

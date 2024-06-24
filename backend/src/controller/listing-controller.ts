@@ -30,7 +30,7 @@ export class ListingController {
     return this.listing.getNameListing(network, name);
   }
 
-  @Get('/validate/:network/:name')
+  @Get('/validate/:name')
   public async validateNameListing(
     @Param('name') name: string,
     @Query('lister') lister: Address,

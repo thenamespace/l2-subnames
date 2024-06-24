@@ -7,17 +7,25 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { AppConfig } from '../config/app-config.service';
-import { base as baseChain, localhost, mainnet, sepolia } from 'viem/chains';
+import {
+  base as baseChain,
+  baseSepolia,
+  localhost,
+  mainnet,
+  sepolia,
+} from 'viem/chains';
 import { Network } from 'src/dto/types';
 
 export const supportedChains = {
   base: baseChain,
   sepolia,
   localhost,
+  baseSepolia,
 };
 
 export const chainIds = {
   [supportedChains.base.id]: 'base',
+  [supportedChains.baseSepolia.id]: 'baseSepolia',
   [supportedChains.sepolia.id]: 'sepolia',
   [supportedChains.localhost.id]: 'localhost',
 };
@@ -28,6 +36,7 @@ export class RpcClient {
   private readonly clients: Record<Network, PublicClient> = {
     sepolia: undefined,
     base: undefined,
+    baseSepolia: undefined,
     optimism: undefined,
     arbitrum: undefined,
     localhost: undefined,
@@ -45,6 +54,11 @@ export class RpcClient {
       transport: this.config.baseRpc ? http(this.config.baseRpc) : http(),
     });
 
+    const baseSepoliaClient = createPublicClient({
+      chain: baseSepolia as any,
+      transport: this.config.baseRpc ? http(this.config.baseRpc) : http(),
+    });
+
     const mainnetClient = createPublicClient({
       chain: mainnet,
       transport: this.config.mainnetRpc ? http(this.config.mainnetRpc) : http(),
@@ -58,6 +72,7 @@ export class RpcClient {
     });
 
     this.clients['base'] = baseClient as PublicClient;
+    this.clients['baseSepolia'] = baseSepoliaClient as PublicClient;
     this.clients['sepolia'] = sepoliaClient as PublicClient;
     this.clients['mainnet'] = mainnetClient as PublicClient;
     this.clients['localhost'] = localhostClient as PublicClient;

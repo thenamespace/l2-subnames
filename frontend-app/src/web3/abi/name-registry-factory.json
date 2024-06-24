@@ -7,12 +7,12 @@
         "type": "address"
       },
       {
-        "internalType": "contract NameListingManager",
+        "internalType": "address",
         "name": "_manager",
         "type": "address"
       },
       {
-        "internalType": "contract NameRegistryController",
+        "internalType": "address",
         "name": "_controller",
         "type": "address"
       },
@@ -24,6 +24,11 @@
       {
         "internalType": "address",
         "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_emitter",
         "type": "address"
       }
     ],
@@ -76,6 +81,17 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "NodeAlreadyTaken",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "owner",
         "type": "address"
@@ -116,6 +132,73 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "listerAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "listingName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "parentLabel",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "baseUri",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ParentControl",
+        "name": "parentControl",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ListingType",
+        "name": "listingType",
+        "type": "uint8"
+      }
+    ],
+    "name": "EnsTokenCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -134,24 +217,51 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "listingName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "symbol",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "ensName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "baseUri",
-        "type": "string"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "listingName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "parentLabel",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "baseUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "resolver",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ParentControl",
+            "name": "parentControl",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ListingType",
+            "name": "listingType",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct RegistryContext",
+        "name": "context",
+        "type": "tuple"
       },
       {
         "internalType": "bytes",

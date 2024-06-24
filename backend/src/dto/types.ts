@@ -3,6 +3,7 @@ import { Address } from 'viem';
 export type Network =
   | 'sepolia'
   | 'base'
+  | 'baseSepolia'
   | 'optimism'
   | 'arbitrum'
   | 'localhost'
@@ -44,5 +45,5 @@ export enum ListingType {
 
 export enum ParentControl {
   NO_CONTROL,
-  CONTROLLABLE
+  CONTROLLABLE,
 }

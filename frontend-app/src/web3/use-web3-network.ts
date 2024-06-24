@@ -6,6 +6,7 @@ export const BASE_ID = 8453;
 
 const networkIdNameMapping: Record<string, Web3Network> = {
   "8453": "base",
+  "84532": "baseSepolia",
   "11155111": "sepolia",
   "20": "optimism",
   "1337": "localhost",
@@ -13,6 +14,7 @@ const networkIdNameMapping: Record<string, Web3Network> = {
 
 const networkNamesMap: Record<Web3Network, number> = {
   base: 8453,
+  baseSepolia: 84532,
   sepolia: 11155111,
   arbitrum: 10,
   optimism: 20,

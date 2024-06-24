@@ -5,7 +5,7 @@ import { RpcClient } from 'src/web3/rpc-client';
 import { Address, Hash } from 'viem';
 
 export type RegistryContext = {
-  ensName: string;
+  parentLabel: string;
   listingName: string;
   symbol: string;
   baseUri: string;
@@ -21,7 +21,7 @@ export class ListingRegistration {
     RegistryContext: [
       { name: 'listingName', type: 'string' },
       { name: 'symbol', type: 'string' },
-      { name: 'ensName', type: 'string' },
+      { name: 'parentLabel', type: 'string' },
       { name: 'baseUri', type: 'string' },
       { name: 'owner', type: 'address' },
       { name: 'resolver', type: 'address' },
@@ -48,7 +48,7 @@ export class ListingRegistration {
     const message = {
       listingName: context.listingName,
       symbol: context.symbol,
-      ensName: context.ensName,
+      parentLabel: context.parentLabel,
       baseUri: context.baseUri,
       owner: context.owner,
       resolver: context.resolver,

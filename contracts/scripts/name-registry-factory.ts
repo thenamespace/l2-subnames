@@ -15,7 +15,7 @@ const types = {
   RegistryContext: [
     { name: "listingName", type: "string" },
     { name: "symbol", type: "string" },
-    { name: "ensName", type: "string" },
+    { name: "parentLabel", type: "string" },
     { name: "baseUri", type: "string" },
     { name: "owner", type: "address" },
     { name: "resolver", type: "address" },
@@ -26,18 +26,18 @@ const types = {
 
 /**
 yarn hardhat createName \
---listing-name 101010 \
---ens-name 101010 \
---symbol 101010 \
+--listing-name basesubs \
+--parent-label basesubs \
+--symbol basesubs \
 --uri http://localhost:3000/api/v0.1.0/metadata/11155111/ \
---chain-id 1337 \
---deployer 0x4343db796b79cfee8b461db06c48169e94fd3ee3 \
---network localhost
+--chain-id 84532 \
+--deployer 0x42DFD80711BcBcC9A18ac9fcFed5a575Ad5Be9D1 \
+--network base-sepolia
  */
 task("createName")
   .addParam("listingName")
   .addParam("symbol")
-  .addParam("ensName")
+  .addParam("parentLabel")
   .addParam("uri")
   .addParam("chainId")
   .addParam("deployer")
@@ -69,7 +69,7 @@ task("createName")
     const message = {
       listingName: args.listingName as string,
       symbol: args.symbol as string,
-      ensName: args.ensName as string,
+      parentLabel: args.parentLabel as string,
       baseUri: args.uri as string,
       owner: owner.account.address,
       resolver: resolverAddress,

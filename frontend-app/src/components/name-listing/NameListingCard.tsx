@@ -18,7 +18,7 @@ import "./NameListingCard.css";
 
 type ListingContext = {
   name: string;
-  price: bigint;
+  priceEth: bigint;
   paymentReceiver: Address;
 };
 
@@ -31,7 +31,7 @@ type Domain = {
 const types = {
   ListContext: [
     { name: "name", type: "string" },
-    { name: "price", type: "uint256" },
+    { name: "priceEth", type: "uint256" },
     { name: "paymentReceiver", type: "address" },
   ],
 };
@@ -40,7 +40,7 @@ export const NameListingCard = () => {
   const { address, chainId } = useAccount();
   const [selectedName, setSelectedName] = useState("");
   const [label, setLabel] = useState("");
-  const [price, setPrice] = useState(BigInt(0));
+  const [priceEth, setPriceEth] = useState(BigInt(0));
   const [isError, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isListing, setListing] = useState(false);
@@ -93,7 +93,7 @@ export const NameListingCard = () => {
         setMessage({
           name,
           paymentReceiver: address as Address,
-          price,
+          priceEth,
         });
       }
     } else {
@@ -102,11 +102,11 @@ export const NameListingCard = () => {
   }
 
   function onPriceChange(evt: any) {
-    const price = evt.target.value;
-    setPrice(BigInt(price));
+    const priceEth = evt.target.value;
+    setPriceEth(BigInt(priceEth));
 
     if (message) {
-      setMessage({ ...message, price });
+      setMessage({ ...message, priceEth });
     }
   }
 
@@ -134,11 +134,15 @@ export const NameListingCard = () => {
 
     const context = resp?.data?.context;
 
-    await launchNewName(
+    launchNewName(
       context.listingName,
       context.symbol,
       context.listingName,
       context.baseUri,
+      context.owner,
+      context.resolver,
+      BigInt(0),
+      BigInt(0),
       signature
     );
   }
@@ -166,7 +170,7 @@ export const NameListingCard = () => {
           label,
           symbol: label,
           listingName: label,
-          price: price.toString(),
+          priceEth: priceEth.toString(),
           network: networkName,
           owner: address,
           paymentReceiver: address,
@@ -199,9 +203,9 @@ export const NameListingCard = () => {
           <div className="listing-input">
             <Input
               label=""
-              placeholder="Set the price.."
+              placeholder="Set the priceEth.."
               onChange={onPriceChange}
-              value={price?.toString()}
+              value={priceEth?.toString()}
               disabled={isListing}
             />
           </div>

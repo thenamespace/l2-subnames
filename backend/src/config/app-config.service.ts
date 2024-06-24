@@ -6,6 +6,7 @@ import { Address, Hash } from 'viem';
 export class AppConfig {
   public mongoConnectionString: string;
   public baseRpc: string;
+  public baseSepoliaRpc: string;
   public sepoliaRpc: string;
   public mainnetRpc: string;
   public localhostRpc: string;
@@ -23,6 +24,7 @@ export class AppConfig {
       'MONGO_CONNECTION_STRING',
     );
     this.baseRpc = this.configService.get('BASE_RPC');
+    this.baseSepoliaRpc = this.configService.get('BASE_SEPOLIA_RPC');
     this.sepoliaRpc = this.configService.get('SEPOLIA_RPC');
     this.mainnetRpc = this.configService.get('MAINNET_RPC');
     this.localhostRpc = this.configService.get('LOCALHOST_RPC');

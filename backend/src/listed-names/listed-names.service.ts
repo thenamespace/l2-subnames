@@ -85,14 +85,14 @@ export class ListedNamesService implements OnApplicationBootstrap {
     const resolver = getContracts(listing.network).resolver;
 
     const context: RegistryContext = {
-      ensName: listing.label,
+      parentLabel: listing.label,
       listingName: listing.listingName,
       symbol: listing.symbol,
       baseUri: this.appConfig.metadataUrl.concat(`/${chainId.id}/`),
       owner: listing.owner,
       resolver,
-      parentControl: listing.parentControl,
-      listingType: listing.listingType,
+      parentControl: listing.parentControl || 0,
+      listingType: listing.listingType || 0,
     };
 
     const signature = await this.listingRegistration.generateContext(
