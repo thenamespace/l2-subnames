@@ -14,6 +14,7 @@ import "./MintPageSponsored.css";
 const defaultAvatarImg =
   "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/basedsummer.png";
 const ensNames = "gotbased.eth";
+const bgImage = "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/gotbased-bg.png"
 
 export const MintPageSponsored = () => {
   const [listing, setListing] = useState<{
@@ -44,7 +45,7 @@ export const MintPageSponsored = () => {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer bg={bgImage}>
       <div className="mint-page d-flex flex-column">
         <Card className="mint-page-container">
           <MintSubnameForm

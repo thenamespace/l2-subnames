@@ -423,6 +423,7 @@ export const MintSubnameForm = ({
             >
               GotBased.eth yet?
             </Typography>
+            <Typography>Mint free ENS subname and get yourself BASED!</Typography>
           </div>
         </>
       )}
