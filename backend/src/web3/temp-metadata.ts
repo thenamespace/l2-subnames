@@ -5,9 +5,8 @@ import {
   OnModuleInit,
   Param,
 } from '@nestjs/common';
-import { Address, namehash, parseAbiItem } from 'viem';
+import {namehash, parseAbiItem,toHex } from 'viem';
 import { RpcClient } from './rpc-client';
-import { Network } from 'src/dto/types';
 import { getContracts } from './contracts/contract-addresses';
 
 const DEFAULT_IMAGE = "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/basedsummer.png";
@@ -51,13 +50,14 @@ export class MetadataService implements OnModuleInit {
         description: "Based subname!",
         image: avatar || DEFAULT_IMAGE,
       }
-
     }
+    this.cache = _tempCache;
   }
 
   public async resolve(token: string, network: string) {
+    const namehash = toHex(BigInt(token))
     if (network === "base") {
-        return this.cache[token]
+        return this.cache[namehash]
     }
     return {
         name: "Based subname",
