@@ -1,1 +1,4 @@
 .vscode
+.DS_Store
+backend/.DS_Store
+contracts/.DS_Store

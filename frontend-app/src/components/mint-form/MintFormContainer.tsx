@@ -12,12 +12,12 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
 import { Address, Hash, encodeFunctionData, namehash } from "viem";
 import { useAccount } from "wagmi";
-import abi from "../../web3/abi/name-registry-controller.json";
-import { useWeb3Clients } from "../../web3/use-web3-clients";
-import { Listing, ListingOption, MintContext} from "../../api/types";
 import { getListings, getMintingParameters } from "../../api";
+import { Listing, ListingOption, MintContext } from "../../api/types";
 import { useGetAddresses } from "../../web3";
+import abi from "../../web3/abi/name-registry-controller.json";
 import NAME_RESOLVER_ABI from "../../web3/abi/name-resolver-abi.json";
+import { useWeb3Clients } from "../../web3/use-web3-clients";
 
 export const MintFormContainer = () => {
   const { address } = useAccount();
@@ -45,7 +45,7 @@ export const MintFormContainer = () => {
       return;
     }
 
-   getListings(name)
+    getListings(name)
       .then((resp) => updateListings(resp))
       .catch((err) => {
         console.log(err.response.data.error[0].message);
@@ -76,7 +76,12 @@ export const MintFormContainer = () => {
   function verifyMint() {
     setMinting(true);
 
-    getMintingParameters(label as string, selectedName as string, address as Address, "sepolia")
+    getMintingParameters(
+      label as string,
+      selectedName as string,
+      address as Address,
+      "sepolia"
+    )
       .then((resp) => mint(resp.signature, resp.parameters))
       .catch(handleError)
       .finally(handleMintDone);
@@ -107,10 +112,10 @@ export const MintFormContainer = () => {
     const setAddrFunc = encodeFunctionData({
       abi: NAME_RESOLVER_ABI,
       args: [nameNode, address],
-      functionName: "setAddr"
-    })
+      functionName: "setAddr",
+    });
 
-    mintContext.resolverData = [setAddrFunc]
+    mintContext.resolverData = [setAddrFunc];
 
     const { request } = (await publicClient?.simulateContract({
       address: nameRegistryController,
@@ -119,7 +124,6 @@ export const MintFormContainer = () => {
       abi,
       account: address,
     })) as any;
-
 
     const tx = (await walletClient?.writeContract(request)) as Hash;
     return await publicClient?.waitForTransactionReceipt({ hash: tx });

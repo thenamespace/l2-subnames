@@ -20,20 +20,20 @@ const types = {
     { name: "owner", type: "address" },
     { name: "price", type: "uint256" },
     { name: "fee", type: "uint256" },
-    { name: "expiry", type: "uint64" },
     { name: "paymentReceiver", type: "address" },
+    { name: "expiry", type: "uint256" },
   ],
 };
 
 /**
 yarn hardhat mintSubname \
 --label 123 \
---parent-label namespace.eth \
---resolver 0x8FADE66B79cC9f707aB26799354482EB93a5B7dD \
+--parent-label 101010 \
+--resolver 0x7426090CDC024e99a10aC5754ca72f360306E007 \
 --owner 0xEf2c32797724C2572D83Dd69E71c1A821e07FECa \
 --payment-receiver 0xEf2c32797724C2572D83Dd69E71c1A821e07FECa \
---deployer 0x4fefb2d4c6483777290f6e7e1957e36297f1124a \
 --chain-id 1337 \
+--deployer 0x4343db796b79cfee8b461db06c48169e94fd3ee3 \
 --network localhost
  */
 task("mintSubname")
@@ -56,26 +56,28 @@ task("mintSubname")
 
     const controllerAddress = await deployer.read.controllerAddress();
     const controller = await hre.viem.getContractAt(
-      "NameRegistryController",
+      "contracts/v2/NameRegistryController.sol:NameRegistryController",
       controllerAddress
     );
 
-    const blockTime = await time.latest();
+    console.log("controllerAddress", controllerAddress);
+
+    // const blockTime = await time.latest();
 
     const message = {
       label: args.label,
       parentLabel: args.parentLabel,
       resolver: args.resolver,
       owner: args.owner,
-      price: BigInt(10000),
+      price: BigInt(0),
       fee: BigInt(0),
-      expiry: BigInt(blockTime * 2),
       paymentReceiver: args.paymentReceiver,
+      expiry: 0,
     };
 
     const domain: Domain = {
       name: "Namespace",
-      version: "0.1.0",
+      version: "1",
       chainId: args.chainId,
       verifyingContract: controller.address,
     };
@@ -91,6 +93,8 @@ task("mintSubname")
       ...message,
       resolverData: [] as Hash[],
     };
+
+    console.log(mintContext);
 
     const minted = await controller.write.mint([mintContext, signature], {
       value: message.price,

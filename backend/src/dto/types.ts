@@ -1,11 +1,13 @@
-import { Address, Hash } from 'viem';
+import { Address } from 'viem';
 
 export type Network =
   | 'sepolia'
   | 'base'
+  | 'baseSepolia'
   | 'optimism'
   | 'arbitrum'
-  | 'localhost';
+  | 'localhost'
+  | 'mainnet';
 
 export interface ListedName {
   label: string;
@@ -19,7 +21,8 @@ export interface MintRequest {
   label: string;
   ensName: string;
   owner: Address;
-  network: Network
+  network: Network;
+  expiry: number;
 }
 
 export interface MintResponse {
@@ -33,4 +36,14 @@ export interface MintResponse {
     fee: string;
     paymentReceiver: Address;
   };
+}
+
+export enum ListingType {
+  BASIC,
+  EXPIRABLE,
+}
+
+export enum ParentControl {
+  NO_CONTROL,
+  CONTROLLABLE,
 }

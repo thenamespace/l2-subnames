@@ -1,21 +1,22 @@
+import { Network } from "src/web3/types";
+import { Address, Hash } from "viem";
+
 export interface IStorageService {
+  setText(network: Network, node: string, key: string, record: string);
+  setAddr(network: Network, node: string, coinType: string, address: string);
+  setContentHash(network: Network, node: string, contentHash: string);
 
-    setText(node: string, key: string, record: string)
-    setAddr(node: string, coinType: string, address: string)
-    setContentHash(node: string, contentHash: string)
-    getSubnameNode(node: string)
-
-    getSubnameNode(node: string):  Promise<ISubnameNode>
-    createSubnameNode(node: ISubnameNode)
+  getSubnameNodes(network: Network);
+  setSubnameNode(network: Network, syncBlock: bigint, node: ISubnameNode);
 }
 
 export interface ISubnameNode {
-    label: string
-    subnameNode: string
-    parentNode: string
-    owner: string
-    texts?: Record<string, string>
-    contentHash?: string
-    expiry: number
-    addresses?: Record<string, string>
+  label: string;
+  node: Hash;
+  parentNode: Hash;
+  owner: Address;
+  textRecords?: Record<string, string>;
+  contentHash?: Hash;
+  addresses?: Record<string, Address>;
+  expiry: number;
 }

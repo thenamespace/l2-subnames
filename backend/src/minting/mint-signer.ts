@@ -8,13 +8,6 @@ import { Hash } from 'viem';
 
 @Injectable()
 export class MintSigner {
-  readonly domain: {
-    name: string;
-    version: string;
-    chainId: number;
-    verifyingContract: Hash;
-  };
-
   readonly types = {
     MintContext: [
       { name: 'label', type: 'string' },
@@ -23,8 +16,8 @@ export class MintSigner {
       { name: 'owner', type: 'address' },
       { name: 'price', type: 'uint256' },
       { name: 'fee', type: 'uint256' },
-      { name: 'expiry', type: 'uint64' },
       { name: 'paymentReceiver', type: 'address' },
+      { name: 'expiry', type: 'uint256' },
     ],
   };
 
@@ -34,7 +27,6 @@ export class MintSigner {
   ) {}
 
   public async sign(network: Network, params: MintContext): Promise<Hash> {
-
     const chain = this.rpc.getChain(network);
     const verifyingContract = getContracts(network).controller;
 
@@ -42,8 +34,8 @@ export class MintSigner {
       name: this.appConfig.appSignerName,
       version: this.appConfig.appSignerVersion,
       chainId: chain.id,
-      verifyingContract
-    }
+      verifyingContract,
+    };
 
     const message = {
       label: params.label,
@@ -52,13 +44,11 @@ export class MintSigner {
       owner: params.owner,
       price: params.price,
       fee: params.fee,
-      expiry: params.expiry,
-      paymentReceiver: params.paymentReceiver
+      paymentReceiver: params.paymentReceiver,
     };
 
-
     const signer = this.rpc.getSigner();
-  
+
     const signature = await signer.signTypedData({
       domain: domain,
       types: this.types,

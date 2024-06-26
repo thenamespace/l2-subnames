@@ -7,7 +7,7 @@ export class MintContext {
   owner: Address;
   price: string;
   fee: string;
-  expiry: number;
   paymentReceiver: Address;
   resolverData: Hash[];
+  expiry: number;
 }
