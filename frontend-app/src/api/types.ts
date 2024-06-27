@@ -26,3 +26,17 @@ export interface MintContextResponse {
   parameters: MintContext;
   signature: string;
 }
+
+
+export interface NameListing {
+   label: string
+   fullName: string
+   tokenNetwork: Web3Network
+}
+
+export interface EnsNameToken {
+  isDeployed: boolean
+  deployment?: {
+    tokenAddress: string
+  }
+}

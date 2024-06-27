@@ -4,6 +4,7 @@ import optimismIcon from "../assets/networks/optimism.png";
 import arbitrumIcon from "../assets/networks/arbitrum.png";
 import sepoliaIcon from "../assets/networks/sepolia.png";
 
+//@ts-ignore
 const chainIcons: Record<Web3Network, string> = {
     arbitrum: arbitrumIcon,
     base: baseIcon,

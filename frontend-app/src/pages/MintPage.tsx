@@ -8,7 +8,7 @@ import { Card} from "@ensdomains/thorin";
 import { useEffect, useState } from "react";
 import "./MintPage.css";
 import { getSingleListing } from "../api";
-import { Listing } from "../api/types";
+import { NameListing } from "../api/types";
 import { useWeb3Network } from "../web3";
 import { toast } from "react-toastify";
 
@@ -16,7 +16,7 @@ export const MintPage = () => {
   const { parentName } = useParams();
   const [listing, setListing] = useState<{
     isFetching: boolean;
-    item?: Listing;
+    item?: NameListing;
   }>({
     isFetching: true,
   });
@@ -40,7 +40,7 @@ export const MintPage = () => {
     return <ScreenContainer isLoading={true} />;
   }
 
-  const isProperNetwork = listing.item.network === networkName;
+  const isProperNetwork = listing.item.tokenNetwork === networkName;
 
   return (
     <ScreenContainer>
@@ -48,10 +48,10 @@ export const MintPage = () => {
         <Card className="mint-page-container">
           <>
             {!isProperNetwork && (
-              <ChangeMintNetwork requiredNetwork={listing.item.network} />
+              <ChangeMintNetwork requiredNetwork={listing.item.tokenNetwork} />
             )}
             {isProperNetwork && (
-              <MintSubnameForm parentName={parentName as string} />
+              <MintSubnameForm tokenNetwork={listing.item.tokenNetwork} parentName={parentName as string} />
             )}
           </>
         </Card>

@@ -5,3 +5,5 @@ export type Web3Network =
   | "arbitrum"
   | "optimism"
   | "localhost";
+
+  export type L2Network = "base";

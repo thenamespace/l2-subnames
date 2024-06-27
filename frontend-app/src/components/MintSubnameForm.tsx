@@ -7,8 +7,8 @@ import {
 } from "@ensdomains/thorin";
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
-import { useNameRegistry, useWeb3Clients, useWeb3Network } from "../web3";
-import { getMintingParameters } from "../api";
+import { Web3Network, useWeb3Clients } from "../web3";
+import { getMintingParameters, getTokenForListing } from "../api";
 import { useAccount } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
@@ -21,6 +21,7 @@ import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
 import { NameRecords } from "./NameRecordsForm";
 import "./MintSubnameForm.css";
+import { EnsNameToken } from "../api/types";
 
 const enum MintProcess {
   SelectSubname = 1,
@@ -29,7 +30,7 @@ const enum MintProcess {
   MintSuccess = 4,
 }
 
-export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
+export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: string, tokenNetwork: Web3Network }) => {
   const [subnameLabel, setSubnameLabel] = useState("");
 
   const [nameRecords, setNameRecords] = useState<NameRecords>({
@@ -37,34 +38,20 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     texts: [],
   });
   const { address } = useAccount();
-  const [addrAdded, setAddrAdded] = useState<Record<string, boolean>>({});
+  const [addrAdded] = useState<Record<string, boolean>>({});
+  //@ts-ignore
+  const [nameToken, setNameToken] = useState<EnsNameToken>();
 
   useEffect(() => {
     // we want to add eth address record by default
     // but only once, if user removes it we don't want to add it again
-    if (address) {
-      if (
-        nameRecords.addresses.find((addr) => addr.coinType === 60) ||
-        addrAdded[address]
-      ) {
-        return;
-      } else {
-        setNameRecords({
-          ...nameRecords,
-          addresses: [
-            ...nameRecords.addresses,
-            { coinType: 60, value: address },
-          ],
-        });
-        setAddrAdded({ ...addrAdded, [address]: true });
-      }
-    }
+    getTokenForListing(parentName, tokenNetwork).then(res => {
+      setNameToken(res);
+    })
   }, [address, nameRecords, addrAdded]);
 
-  const { networkName } = useWeb3Network();
   const { publicClient } = useWeb3Clients();
-  const { isSubnameAvailable } = useNameRegistry();
-  const { mint } = useNameController();
+  const { mint, isNodeAvailable } = useNameController();
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
     waitingTx: boolean;
@@ -114,8 +101,8 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
       return;
     }
 
-    const fllName = `${subnameLabel}.${parentName}`;
-    const available = await isSubnameAvailable(fllName);
+    const parentNode = namehash(parentName);
+    const available = await isNodeAvailable(subnameLabel, parentNode, tokenNetwork as any);
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
@@ -174,13 +161,15 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
     }
 
     try {
+      const parentLabel = parentName.split(".")[0];
       const _params = await getMintingParameters(
         subnameLabel,
-        parentName,
+        parentLabel,
         address as any,
-        networkName
+        tokenNetwork
       );
 
+  
       try {
         const fllName = `${subnameLabel}.${parentName}`;
         const resolverData = convertRecordsToData(fllName);
@@ -193,7 +182,8 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
           _params.parameters.resolverData = resolverData;
         }
 
-        const tx = await mint(_params);
+        //@ts-ignore
+        const tx = await mint(_params, tokenNetwork);
         setMintIndicators({ waitingTx: true, waitingWallet: false });
         await publicClient?.waitForTransactionReceipt({
           hash: tx,
@@ -201,6 +191,7 @@ export const MintSubnameForm = ({ parentName }: { parentName: string }) => {
         });
         setMode(MintProcess.MintSuccess);
       } catch (err: any) {
+        console.log(err)
         if (err.details && err.details.includes("insufficient funds for gas")) {
           toast("Insufficient ETH balance.", { type: "warning" });
         } else if (err.details && err.details.includes("User denied")) {
