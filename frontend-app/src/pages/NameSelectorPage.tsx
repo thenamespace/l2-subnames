@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ScreenContainer } from "../components";
-import { Listing } from "../api/types";
-import { getListings } from "../api";
+import { NameListing } from "../api/types";
+import { getListingsV2 } from "../api";
 import { Button, Card, Typography } from "@ensdomains/thorin";
 import { ListedNameCard } from "../components/select-names/ListedNameCard";
 import "./NameSelectorPage.css";
@@ -10,20 +10,18 @@ import { Link } from "react-router-dom";
 export const NameSelectorPage = () => {
   const [listedNames, setListedNames] = useState<{
     isFetching: boolean;
-    items: Listing[];
+    items: NameListing[];
   }>({
     isFetching: true,
     items: [],
   });
-  const [selectedName, setSelectedName] = useState<Listing | null>(null);
+  const [selectedName, setSelectedName] = useState<NameListing | null>(null);
 
   useEffect(() => {
-    getListings("").then((res) => {
-      setListedNames({
-        isFetching: false,
-        items: res,
-      });
-    });
+   getListingsV2().then(res => {
+      console.log(res, "LISTINGS RECEIVED");
+      setListedNames({items: res.items, isFetching: false})
+   })
   }, []);
 
   if (listedNames.isFetching) {
@@ -45,18 +43,18 @@ export const NameSelectorPage = () => {
               <div
                 onClick={() => setSelectedName(i)}
                 className="col col-lg-6 card-container p-1"
-                key={i.name}
+                key={i.fullName}
               >
                 <ListedNameCard
-                  active={selectedName?.name === i.name}
-                  name={i.name}
-                  network={i.network}
+                  active={selectedName?.fullName === i.fullName}
+                  name={i.fullName}
+                  network={i.tokenNetwork}
                 />
               </div>
             ))}
           </div>
           {selectedName && (
-            <Link to={`/mint/${selectedName.name}`}>
+            <Link to={`/mint/${selectedName.fullName}`}>
               <Button className="mt-4">Next</Button>
             </Link>
           )}

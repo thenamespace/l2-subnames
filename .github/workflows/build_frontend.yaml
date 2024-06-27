@@ -38,4 +38,4 @@ jobs:
         with:
           context: ./frontend-app
           push: true
-          tags: ${{secrets.CONTANER_REGISTRY_URL}}/namespace/l2-frontend:latest
+          tags: ${{secrets.CONTANER_REGISTRY_URL}}/namespace/l2-frontend-v2:latest

@@ -18,13 +18,17 @@ import RESOLVER_ABI from './resolver_abi.json';
 import { privateKeyToAccount } from 'viem/accounts';
 import { ethers } from 'ethers';
 import { AppProperties } from 'src/configuration/app-properties';
-import { Web3Clients, NameResolver, getNetworkForOffchainResolver, getNameResolverAddr } from 'src/web3';
+import { Web3Clients, NameResolver, getNetworkForOffchainResolver, getNameResolverAddr, getNameResolverAddrV2 } from 'src/web3';
 
 const addr = 'addr';
 const text = 'text';
 const contentHash = 'contenthash';
 const supportedFunctions = [addr, text, contentHash];
 const defaultCoinType = '60';
+
+// old names which will be migrated on new v2 l2 subs
+// keeping for backward compatibility
+const oldNames = ["gotbased.eth","musicaw3.eth","enskeychain.eth", "terminator.eth"];
 
 @Injectable()
 export class GatewayService {
@@ -151,7 +155,7 @@ export class GatewayService {
       throw new BadRequestException('Unsupported opperation ' + functionName);
     }
 
-    const nameResolver = this.getNameResolver(resolverContract)
+    const nameResolver = this.getNameResolver(ensName, resolverContract)
     switch (functionName) {
       case addr:
         const coinType = args.length > 1 ? args[1] : defaultCoinType;
@@ -166,10 +170,24 @@ export class GatewayService {
     }
   };
 
-  private getNameResolver = (offchainResolverAddr: Address) => {
+  private getNameResolver = (ensName:string, offchainResolverAddr: Address) => {
     const network = getNetworkForOffchainResolver(offchainResolverAddr);
-    const nameResolverAddr = getNameResolverAddr(network);
+    let nameResolverAddr;
+    if (this.isOldName(ensName)) {
+      nameResolverAddr = getNameResolverAddr(network);
+    } else {
+      nameResolverAddr = getNameResolverAddrV2(network);
+    }
     const publicClient = this.web3Clients.getClient(network);
     return new NameResolver(publicClient, nameResolverAddr);
+  }
+
+  private isOldName = (ensName:string): boolean => {
+    const split = ensName.split(".");
+    let name = ensName;
+    if (split.length === 3) {
+      name = `${split[1]}.ens`
+    }
+    return oldNames.includes(name);
   }
 }
