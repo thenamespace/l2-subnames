@@ -24,6 +24,7 @@ export const NetworkSelector = () => {
   />
 }
 
+//@ts-ignore
 const chainIcons: Record<Web3Network, string> = {
     arbitrum: arbitrumIcon,
     base: baseIcon,
