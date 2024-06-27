@@ -186,7 +186,7 @@ export class GatewayService {
     const split = ensName.split(".");
     let name = ensName;
     if (split.length === 3) {
-      name = `${split[1]}.ens`
+      name = `${split[1]}.eth`
     }
     return oldNames.includes(name);
   }
