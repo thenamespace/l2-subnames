@@ -9,9 +9,9 @@ export interface L2ContractAddresses {
 
 export const l2Addresses: Record<L2Network, L2ContractAddresses> = {
   base: {
-    controller: "0x3E480bD3776b111F23F56e41203b696675180319",
-    manager: "0xc23885E5144F3B58B69a71b9B7D044Bf00828D28",
-    resolver: "0x8A4697A504467D65cdb913c371d3Ea06eDB1728E",
+    controller: '0x38dB2bA2Fc5A6aD13BA931377F938BBDe831D397',
+    manager: '0x903Ece28831a1c08D5e50D85626BFC72431930C4',
+    resolver: '0x0aBD0a6A1A98D7BD5D9909A3F1d7EE0B74587d70',
   },
 };
 
