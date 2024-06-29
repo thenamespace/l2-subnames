@@ -28,7 +28,7 @@ const defaultCoinType = '60';
 
 // old names which will be migrated on new v2 l2 subs
 // keeping for backward compatibility
-const oldNames = ["gotbased.eth","musicaw3.eth","enskeychain.eth", "terminator.eth"];
+const oldNames = ["musicaw3.eth","enskeychain.eth", "terminator.eth"];
 
 @Injectable()
 export class GatewayService {

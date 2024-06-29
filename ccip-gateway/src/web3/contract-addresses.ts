@@ -15,7 +15,7 @@ const offchainResolvers: SupportedNetworkContracts = {
 }
 
 const nameResolversV2: SupportedNetworkContracts = {
-    base: "0x8A4697A504467D65cdb913c371d3Ea06eDB1728E",
+    base: "0x0aBD0a6A1A98D7BD5D9909A3F1d7EE0B74587d70",
     sepolia: "0xd16B488f8c722E38582Df3Ebc2a68D03EDF3ae62"
 } 
 
