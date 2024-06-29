@@ -21,9 +21,9 @@ event NameMinted(
 event EnsTokenCreated(
     address tokenAddress,
     address listerAddress,
-    string listingName,
-    string symbol,
-    string indexed parentLabel,
+    string tokenName,
+    string tokenSymbol,
+    string parentLabel,
     string baseUri,
     address owner,
     address resolver,

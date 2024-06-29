@@ -55,9 +55,11 @@ contract NameRegistryFactory is EIP712, Ownable {
         nameToken.setController(controller, true);
         nameToken.setController(address(this), true);
 
-        INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken), msg.sender);
+        INameListingManager(manager).setNameTokenNode(nameNode, address(nameToken), controller);
         EnsTokenEmitter(emitter).setEmitter(address(nameToken), true);
 
+        // owner claims parentName.eth token under the deployed contract
+        // this token gives him admin priviledges
         claim2LDomain(context.owner, context.resolver, nameNode, address(nameToken));
 
         nameToken.setController(address(this), false);

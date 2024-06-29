@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Controllable} from "../access/Controllable.sol";
+import {IEnsNameToken} from "./tokens/IEnsNameToken.sol";
 
 interface INameListingManager {
     function setNameTokenNode(bytes32 node, address nameToken) external;
@@ -16,32 +17,28 @@ contract NameListingManager is Controllable {
     mapping(address nameToken => address controller) public tokenControllers;
 
     mapping(bytes32 node => address nameToken) public nameTokenNodes;
-    mapping(address lister => address nameToken) public tokenListers;
 
-    modifier onlyLister(address nameToken) {
-        address lister = tokenListers[nameToken];
-        require(msg.sender == lister, "Only lister can perform the action.");
-
+    modifier onlyTokenOwner(address nameToken) {
+        address tokenOwner = IEnsNameToken(nameToken).nameTokenOwner();
+        require(_msgSender() == tokenOwner, "Only token owner can perform the action.");
         _;
     }
 
-    function setNameTokenNode(bytes32 node, address nameToken) external onlyController {
+    function setNameTokenNode(bytes32 node, address nameToken) public onlyController {
         nameTokenNodes[node] = nameToken;
     }
 
-    function setNameTokenNode(bytes32 node, address nameToken, address lister) external onlyController {
-        nameTokenNodes[node] = nameToken;
-        tokenListers[lister] = nameToken;
-        tokenControllers[nameToken] = msg.sender;
+    function setNameTokenNode(bytes32 node, address nameToken, address mintController) public onlyController {
+        setNameTokenNode(node, nameToken);
+        tokenControllers[nameToken] = mintController;
     }
 
     function addController(address controller) external {
         versionedControllers[++controllerVersion] = controller;
-
         super.setController(controller, true);
     }
 
-    function updateTokenController(uint8 version, address nameToken) external onlyLister(nameToken) {
+    function updateTokenController(uint8 version, address nameToken) external onlyTokenOwner(nameToken) {
         address currentController = tokenControllers[nameToken];
         Controllable(nameToken).setController(currentController, false);
 
