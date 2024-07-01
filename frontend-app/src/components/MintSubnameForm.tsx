@@ -7,21 +7,22 @@ import {
 } from "@ensdomains/thorin";
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
-import { Web3Network, useWeb3Clients } from "../web3";
-import { getMintingParameters, getTokenForListing } from "../api";
-import { useAccount } from "wagmi";
+import { getChainId, useNameRegistry } from "../web3";
+import { getMintingParameters, mintSponsored } from "../api";
+import { useAccount, usePublicClient } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Address, Hash, encodeFunctionData, isAddress, namehash } from "viem";
 import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import logoImage from "../assets/logo/namespace.png";
 import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
 import { NameRecords } from "./NameRecordsForm";
 import "./MintSubnameForm.css";
-import { EnsNameToken } from "../api/types";
+import { Listing } from "../api/types";
+import calmNinjaImg from "../assets/logo/calm-ninja.png";
+import happyNinjaImg from "../assets/logo/happy-ninja.png";
 
 const enum MintProcess {
   SelectSubname = 1,
@@ -30,7 +31,47 @@ const enum MintProcess {
   MintSuccess = 4,
 }
 
-export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: string, tokenNetwork: Web3Network }) => {
+const labels: Record<FormVariation, Record<string, string>> = {
+  default: {
+    your_are_about_to_mint: "You are about to mint",
+    start_typing: "Start typing...",
+    your_name: "{yourName}",
+    congratulations: "Congratulations",
+    you_have_minted: "You have successfully minted"
+  },
+  basesummer: {
+    your_are_about_to_mint: "You are about to mint",
+    start_typing: "Start typing...",
+    your_name: "{yourName}",
+    congratulations: "Congratulations",
+    you_have_minted: "You have successfully minted"
+  },
+  musica: {
+    your_are_about_to_mint: "Vas a registrar",
+    start_typing: "Start typing...",
+    your_name: "{usario}",
+    congratulations: "Felicitaciones!",
+    you_have_minted: "Has registrado"
+  },
+};
+
+type FormVariation = "default" | "musica" | "basesummer";
+
+export const MintSubnameForm = ({
+  listing,
+  sponsoredMint,
+  defaultAvatar,
+  formVariation,
+  onMintSuccess,
+}: {
+  onMintSuccess?: (tx: Hash) => void
+  onComplete?: () => void
+  listing: Listing;
+  sponsoredMint?: boolean;
+  defaultAvatar?: string;
+  formVariation?: FormVariation;
+}) => {
+  const formType = formVariation || "default";
   const [subnameLabel, setSubnameLabel] = useState("");
 
   const [nameRecords, setNameRecords] = useState<NameRecords>({
@@ -38,20 +79,36 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
     texts: [],
   });
   const { address } = useAccount();
-  const [addrAdded] = useState<Record<string, boolean>>({});
-  //@ts-ignore
-  const [nameToken, setNameToken] = useState<EnsNameToken>();
+  const [addrAdded, setAddrAdded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     // we want to add eth address record by default
     // but only once, if user removes it we don't want to add it again
-    getTokenForListing(parentName, tokenNetwork).then(res => {
-      setNameToken(res);
-    })
+    if (address) {
+      if (
+        nameRecords.addresses.find((addr) => addr.coinType === 60) ||
+        addrAdded[address]
+      ) {
+        return;
+      } else {
+        setNameRecords({
+          ...nameRecords,
+          addresses: [
+            ...nameRecords.addresses,
+            { coinType: 60, value: address },
+          ],
+        });
+        setAddrAdded({ ...addrAdded, [address]: true });
+      }
+    }
   }, [address, nameRecords, addrAdded]);
 
-  const { publicClient } = useWeb3Clients();
-  const { mint, isNodeAvailable } = useNameController();
+  // const { networkName: currentNetwork } = useWeb3Network();
+  const listingChainId = getChainId(listing.network);
+  const publicClient = usePublicClient({ chainId: listingChainId });
+  const networkName = listing.network;
+  const { isSubnameAvailable } = useNameRegistry(listingChainId);
+  const { mint } = useNameController();
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
     waitingTx: boolean;
@@ -69,6 +126,17 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
 
   const { openConnectModal } = useConnectModal();
   const [mode, setMode] = useState<MintProcess>(MintProcess.SelectSubname);
+
+  if (
+    listing.name === "gotbased.eth" &&
+    !window.location.pathname.includes("based-summer")
+  ) {
+    return <Navigate to="/based-summer/gotbased.eth"></Navigate>;
+  }
+
+  if (listing.name === "musicaw3.eth" && !window.location.pathname.includes("/events/musicaw3")) {
+    return <Navigate to="/events/musicaw3"></Navigate>
+  }
 
   const handleLabelChange = (value: string) => {
     const _value = value.toLocaleLowerCase();
@@ -101,8 +169,8 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
       return;
     }
 
-    const parentNode = namehash(parentName);
-    const available = await isNodeAvailable(subnameLabel, parentNode, tokenNetwork as any);
+    const fllName = `${subnameLabel}.${listing.name}`;
+    const available = await isSubnameAvailable(fllName);
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
@@ -143,6 +211,17 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
         );
       });
     }
+
+    if (defaultAvatar && defaultAvatar.length) {
+      data.push(
+        encodeFunctionData({
+          abi: NAME_RESPOLVER_ABI,
+          args: [node, "avatar", defaultAvatar],
+          functionName: "setText",
+        })
+      );
+    }
+
     return data;
   };
 
@@ -161,19 +240,16 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
     }
 
     try {
-      const parentLabel = parentName.split(".")[0];
       const _params = await getMintingParameters(
         subnameLabel,
-        parentLabel,
+        listing.name,
         address as any,
-        tokenNetwork
+        networkName
       );
 
-  
       try {
-        const fllName = `${subnameLabel}.${parentName}`;
+        const fllName = `${subnameLabel}.${listing.name}`;
         const resolverData = convertRecordsToData(fllName);
-        setMintIndicators({ ...mintIndicators, waitingWallet: true });
 
         if (resolverData.length === 0) {
           const encodedFunc = getSetAddrFunc(fllName, address as Address);
@@ -182,16 +258,23 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
           _params.parameters.resolverData = resolverData;
         }
 
-        //@ts-ignore
-        const tx = await mint(_params, tokenNetwork);
+        let tx;
+        if (sponsoredMint) {
+          setMintIndicators({ ...mintIndicators, waitingTx: true });
+          tx = await _mintSponsored(resolverData);
+        } else {
+          setMintIndicators({ ...mintIndicators, waitingWallet: true });
+          tx = await mint(_params);
+        }
+
         setMintIndicators({ waitingTx: true, waitingWallet: false });
+        onMintSuccess?.(tx)
         await publicClient?.waitForTransactionReceipt({
           hash: tx,
           confirmations: 2,
         });
         setMode(MintProcess.MintSuccess);
       } catch (err: any) {
-        console.log(err)
         if (err.details && err.details.includes("insufficient funds for gas")) {
           toast("Insufficient ETH balance.", { type: "warning" });
         } else if (err.details && err.details.includes("User denied")) {
@@ -210,6 +293,16 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
     }
   };
 
+  const _mintSponsored = async (resolverData: Hash[]) => {
+    return await mintSponsored(
+      subnameLabel,
+      listing.name,
+      address as any,
+      networkName,
+      resolverData
+    );
+  };
+
   const getSetAddrFunc = (fullName: string, wallet: Address) => {
     return encodeFunctionData({
       abi: NAME_RESPOLVER_ABI,
@@ -221,6 +314,8 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
   const handleNameRecordsSaved = (value: NameRecords) => {
     setNameRecords(value);
   };
+
+  const formLabels = labels[formType];
 
   const isTaken =
     !indicators.isChecking &&
@@ -242,14 +337,15 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
     mintBtnLabel = "Waiting for wallet";
   }
 
-  const fullName = `${subnameLabel}.${parentName}`;
+  const fullName = `${subnameLabel}.${listing.name}`;
   if (mode === MintProcess.MintSuccess) {
-    return <SuccessScreen fullName={fullName} />;
+    return <SuccessScreen formType={formType} fullName={fullName} />;
   }
 
   if (mode === MintProcess.SelectRecords) {
     return (
       <SetRecordsForm
+        isMusica={formType === "musica"}
         nameRecords={nameRecords}
         setNameRecords={(v) => {
           handleNameRecordsSaved(v);
@@ -264,14 +360,13 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
     return (
       <div>
         <div className="mb-3 text-center">
-          <Typography style={{textAlign:"left"}} fontVariant="extraLarge">Minting</Typography>
-          <img src={logoImage} width="80px" className="mb-3"></img>
-          <Typography fontVariant="small" color="grey">You are about to mint</Typography>
-          <Typography fontVariant="largeBold" className="mt-1">
+          <img src={calmNinjaImg} width="100px" className="mb-3"></img>
+          <Typography>{formLabels.your_are_about_to_mint}</Typography>
+          <Typography fontVariant="extraLargeBold" className="mt-1">
             <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
               {subnameLabel}
             </Typography>
-            {`.${parentName}`}
+            {`.${listing.name}`}
           </Typography>
         </div>
         <div className="d-flex">
@@ -298,43 +393,65 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
 
   return (
     <div className="text-center mint-subname-form">
-      <div className="back-icon">
-        <Link to="/">
-          <LeftArrowSVG />
-        </Link>
-      </div>
-      <Typography fontVariant="large">Find perfect Subname</Typography>
-      <Typography fontVariant="largeBold" className="mt-1">
-        <Typography
-          style={{ marginRight: -5 }}
-          fontVariant="largeBold"
-          color="blue"
-          asProp="span"
-        >
-          {subnameLabel.length > 0 ? subnameLabel : "{yourName}"}{" "}
-        </Typography>
-        {`.${parentName}`}
-      </Typography>
+      {formType === "musica" && (
+        <div>
+          <div className="d-flex justify-content-center flex-column align-items-center">
+            <Typography fontVariant="largeBold">
+              Únete a nuestra comunidad! ✨
+            </Typography>
+          </div>
+        </div>
+      )}
+      {formType === "default" && (
+        <>
+          <div className="back-icon">
+            <Link to="/">
+              <LeftArrowSVG />
+            </Link>
+          </div>
+          <Typography fontVariant="large">Find perfect Subname</Typography>
+        </>
+      )}
+      {formType === "basesummer" && (
+        <>
+          <div className="d-flex justify-content-center flex-column align-items-center">
+            <Typography color="grey">☀️ Onchain Summer ☀️</Typography>
+            <Typography
+              fontVariant="extraLargeBold"
+              color="blue"
+              className="title"
+            >
+              GotBased.eth yet?
+            </Typography>
+            <Typography>Mint free ENS subname and get yourself BASED!</Typography>
+          </div>
+        </>
+      )}
       <div className="mt-3 text-align-left" style={{ textAlign: "left" }}>
+        {formType === "musica" && (
+          <Typography fontVariant="small" className="mb-1">
+            👇 Únete a nuestra comunidad registrando tu nombre de usuario único
+            de MúsicaW3:
+          </Typography>
+        )}
         <Typography fontVariant="small" color="grey">
-          Your subname
+          <Typography asProp="span" color="blue" fontVariant="small">
+            {subnameLabel.length > 0 ? subnameLabel : formLabels.your_name}
+          </Typography>
+          .{listing.name}
         </Typography>
         <Input
           error={isTaken && `Name ${fullName} is already taken`}
           size="large"
           value={subnameLabel}
           onChange={(e) => handleLabelChange(e.target.value)}
-          placeholder="Start typing..."
+          placeholder={formLabels.start_typing}
           label=""
           suffix={indicators.isChecking ? <Spinner /> : null}
         ></Input>
       </div>
       <div className="mt-3 d-flex">
-        <Button
-          colorStyle="blueGradient"
-          disabled={isMintBtnDisabled}
-          onClick={() => handleSetRecords()}
-        >
+        <Button disabled={isMintBtnDisabled} onClick={() => handleSetRecords()}>
           Next
         </Button>
       </div>
@@ -342,12 +459,19 @@ export const MintSubnameForm = ({ parentName, tokenNetwork }: { parentName: stri
   );
 };
 
-const SuccessScreen = ({ fullName }: { fullName: string }) => {
+const SuccessScreen = ({ fullName, formType  }: { fullName: string, formType?: FormVariation }) => {
+
+  const type = formType || "default";
+  const formLabels = labels[type];
+
   return (
     <div className="d-flex flex-column justify-content-center align-items-center mt-4">
-      <img src={logoImage} width="80px"></img>
-      <Typography className="mt-4">You have successfully minted</Typography>
-      <Typography fontVariant="largeBold" color="blue">
+      <img src={happyNinjaImg} width="80px"></img>
+      <Typography className="mt-4 mb-2" fontVariant="extraLargeBold">
+        {formLabels.congratulations}
+      </Typography>
+      <Typography className="mb-2">{formLabels.you_have_minted}</Typography>
+      <Typography fontVariant="extraLargeBold" color="blue">
         {fullName}
       </Typography>
       <div className="d-flex mt-3">

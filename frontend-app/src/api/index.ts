@@ -1,61 +1,69 @@
 import axios from "axios";
-import {
-  EnsNameToken,
-  MintContextResponse,
-  NameListing,
-} from "./types";
-import { Address, namehash } from "viem";
+import { Listing, MintContextResponse } from "./types";
+import { Address, Hash } from "viem";
 import { Web3Network } from "../web3";
 
 const api = import.meta.env.VITE_BACKEND_API;
 
-export const getListingsV2 = async () => {
+//@ts-ignore
+export const getListings = (name: string): Promise<Listing[]> => {
   return axios
-    .get<{ items: NameListing[] }>(
-      `${api}/api/v1/listings/all?network=mainnet&listingType=l2`
-    )
+    .get<Listing[]>(`${api}/api/v0.1.0/listings`)
     .then((res) => res.data);
 };
 
-export const getTokenForListing = (ensName: string, listingNetwork: string) => {
+export const getSingleListing = (name: string): Promise<Listing> => {
   return axios
-    .get<EnsNameToken>(
-      `${api}/api/v1/l2/token/${ensName}/network/${listingNetwork}`
-    )
-    .then((res) => {
-        console.log(res.data, "RES DADA HERE!!")
-       return res.data;
-    });
-};
-
-export const getSingleListing = (name: string): Promise<NameListing> => {
-  return axios
-    .get<NameListing>(
-      `${api}/api/v1/listings/single?namehash=${namehash(
-        name
-      )}&network=mainnet`
-    )
+    .get<Listing>(`${api}/api/v0.1.0/listings/${name}`)
     .then((res) => res.data);
 };
 
 export const getMintingParameters = (
   subnameLabel: string,
-  parentLabel: string,
+  parentEnsName: string,
   owner: Address,
-  tokenNetwork: Web3Network
+  network: Web3Network
 ) => {
-
-    const req = {
-        label: subnameLabel,
-        parentLabel,
-        owner,
-        mainNetwork: "mainnet",
-        tokenNetwork,
-    }
-
-    console.log(req, "REQUEST!!")
-
   return axios
-    .post<MintContextResponse>(`${api}/api/v1/mint/l2`, req)
+    .post<MintContextResponse>(`${api}/api/v0.1.0/mint`, {
+      label: subnameLabel,
+      ensName: parentEnsName,
+      owner: owner,
+      network,
+    })
     .then((res) => res.data);
 };
+
+export const mintSponsored = (
+  subnameLabel: string,
+  parentEnsName: string,
+  owner: Address,
+  network: Web3Network,
+  resolverData: string[]
+) => {
+  return axios
+    .post<Hash>(`${api}/api/v0.1.0/mint/sponsored`, {
+      label: subnameLabel,
+      ensName: parentEnsName,
+      owner: owner,
+      network,
+      resolverData,
+    })
+    .then((res) => res.data);
+};
+
+type KeychainEmail = {
+  ensName: string
+  transaction: string
+  email: string
+  shippingInfo: {
+    postalCode: string
+    address: string
+    city: string
+    country: string
+  }
+}
+
+export const sendEmail = (data: KeychainEmail) => {
+  return axios.post(`${api}/api/v0.1.0/mint/enskeychains`, data).then(res => res.data);
+}
