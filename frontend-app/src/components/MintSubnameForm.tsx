@@ -290,20 +290,17 @@ export const MintSubnameForm = ({
           if (version === 1) {
             tx = await _mintSponsored(resolverData);
           } else {
-            console.log(_params, "MINTING SPONSORED WITH PARAMS")
             tx = await _mintSponsoredV2(_params)
           }
 
         } else {
           setMintIndicators({ ...mintIndicators, waitingWallet: true });
           if (version === 2) {
-            console.log(_params, "MINTING REGULAR WITH PARAMS")
             tx = await mintV2(_params)
           } else {
             tx = await mint(_params);
           }
         }
-        console.log("TXHERE" + tx)
 
         setMintIndicators({ waitingTx: true, waitingWallet: false });
         onMintSuccess?.(tx);

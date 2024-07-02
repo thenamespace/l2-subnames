@@ -35,7 +35,7 @@ export const MusicaW3Page = () => {
         </div>
         <Card className="mint-page-container">
           <MintSubnameForm
-            version={1}
+            version={2}
             listing={listing}
             sponsoredMint={true}
             formVariation="musica"

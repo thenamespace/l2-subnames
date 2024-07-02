@@ -22,6 +22,7 @@ export const NameSelectorPage = () => {
       // this mess is a temp fix until we migrate all to V2
       const allListings = [...res.items];
       const listingMap: Record<string, boolean> = {};
+      console.log(res, "RECEIVED ALL ")
       allListings.forEach((l) => {
         listingMap[l.fullName] = true;
       });
