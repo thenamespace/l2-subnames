@@ -24,7 +24,12 @@ export class MintController {
     parameters.resolverData = req.resolverData;
     
     return await this.sponsoredMinter.sponsorMint(parameters, signature);
+  }
 
+  @Post("/sponsored-v2")
+  public async mintSponsoredV2(@Body() params: { parameters: any, signature: string}) {
+    console.log(params, "PARAMS HERE")
+    return await this.sponsoredMinter.sponsorMintV2(params.parameters, params.signature);
   }
 
   @Post("/enskeychains")
