@@ -34,7 +34,9 @@ export const SetRecordsForm = ({
   nameRecords,
   setNameRecords,
   onRecordsSelected,
+  isMusica
 }: {
+  isMusica? :boolean
   onBack: () => void;
   nameRecords: NameRecords;
   setNameRecords: (value: NameRecords) => void;
@@ -143,7 +145,8 @@ export const SetRecordsForm = ({
   if (mode === "select") {
     return (
       <div className="mint-records-form">
-        <Typography fontVariant="extraLarge" className="mb-2">Select records</Typography>
+        <Typography fontVariant="extraLarge" className="mb-2">Web3 Profile</Typography>
+        {isMusica && <Typography fontVariant="small" className="mb-2">Añade más detalles a tu perfil</Typography>}
         {noRecordsSelected && (
           <Helper className="mt-4">
             <Typography>No records selected</Typography>
@@ -195,7 +198,7 @@ export const SetRecordsForm = ({
     return (
       <div className="mint-records-form">
         <Typography fontVariant="extraLarge" className="mb-2">
-          Select records
+          Update Web3 profile
         </Typography>
         <ScrollBox style={{ height: 300, padding: 10, overflowX: "hidden" }}>
           <div>

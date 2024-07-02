@@ -1,0 +1,37 @@
+[
+  {
+    "name": "terminator.eth",
+    "namehash": "0xe4cc0d2b49871927f664e77465c21be7a97fc770967e3fa7fa35102b56f22fe2",
+    "price": 0,
+    "network": "sepolia",
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name": "basedsubs.eth",
+    "namehash": "0xfa3f384d3b9aa962bf124b6e49e4aeb0fd1d4fcd08055e2239c90bbb0afe3147",
+    "price": 0,
+    "network": "base",
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name": "gotbased.eth",
+    "namehash": "0x929cb1ba2a4419d899b177b20448325ca4c746bf12a4e3a41709f154fc654f14",
+    "price": 0,
+    "network": "base",
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name": "musicaw3.eth",
+    "namehash": "0x26c681a964af7d1835aa894003dbd90ab3e1d04500d705b7476997d3ef116bcd",
+    "price": 0,
+    "network": "base",
+    "owner": "0xFA660fee1b98A5A0424893Ed737937D1D9Dd64a5"
+  },
+  {
+    "name":"enskeychain.eth",
+    "namehash": "0x4c12d7307560341b65ee4ecaa619e4d76119789ece27099889a1faeafd173f76",
+    "price": 0.0099,
+    "network": "base",
+    "owner": "0xC480C3FD10d8965EB74B9B53ee65Bea24B2a6A73"
+  }
+]

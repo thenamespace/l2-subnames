@@ -1,0 +1,10 @@
+.sponsored .title {
+    margin-top: 10px;
+    font-size: 34px;
+    line-height: 43px;
+    font-weight: 900;
+    letter-spacing: -3;
+    background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(90deg, rgba(0,128,177,1) 0%, rgba(0,212,255,1) 100%);
+}

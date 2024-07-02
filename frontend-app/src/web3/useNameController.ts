@@ -1,46 +1,67 @@
 import { MintContextResponse } from "../api/types";
 import { useWeb3Clients } from "./use-web3-clients";
-import REGISTRY_CONTROLLER_ABI from "./abi/v2/controller.json";
-import { Hash, toBytes, toHex } from "viem";
+import REGISTRY_CONTROLLER_ABI from "./abi/name-registry-controller.json";
+import CONTROLLER_ABI_V2 from "./abi/controller-v2.json";
+import { useGetAddresses } from "./use-get-addresses";
+import { Hash, toBytes, toHex, zeroAddress } from "viem";
 import { useAccount } from "wagmi";
-import { getL2Addresses } from "./l2-contract-addresses";
-import { L2Network } from "./types";
 
 export const useNameController = () => {
   const { publicClient, walletClient } = useWeb3Clients();
+  const { nameRegistryController, controllerV2 } = useGetAddresses();
   const { address } = useAccount();
 
-  const mint = async (params: MintContextResponse, network: L2Network): Promise<Hash> => {
-    const mintFee = BigInt(params.parameters.fee || 0)
-    const mintPrice = BigInt(params.parameters.price || 0)
-    const totalPrice = mintFee + mintPrice;
-    const { controller } = await getL2Addresses(network)
-
+  const mint = async (params: MintContextResponse): Promise<Hash> => {
+    const mintFee = BigInt(params.parameters.fee || 0);
+    const mintPrice = BigInt(params.parameters.price || 0);
     //@ts-ignore
     const { request } = await publicClient?.simulateContract({
       abi: REGISTRY_CONTROLLER_ABI,
       functionName: "mint",
-      address: controller,
-      args: [params.parameters, params.signature, toHex(toBytes("demo-app"))],
+      address: nameRegistryController,
+      args: [params.parameters, params.signature],
       account: address,
-      value: totalPrice
+      value: mintFee + mintPrice,
     });
     return (await walletClient?.writeContract(request)) as Hash;
   };
 
-  const isNodeAvailable = async (label: string, node: string, network: L2Network): Promise<boolean> => {
+  const mintV2 = async (params: MintContextResponse): Promise<Hash> => {
+    if (!walletClient || !publicClient) {
+      return zeroAddress;
+    }
 
-    const { controller } = await getL2Addresses(network)
-    return await publicClient?.readContract({
-      abi: REGISTRY_CONTROLLER_ABI,
+    const { request } = await publicClient.simulateContract({
+      abi: CONTROLLER_ABI_V2,
+      address: controllerV2,
+      account: address,
+      functionName: "mint",
+      args: [params.parameters, params.signature, toHex(toBytes("hello"))],
+    });
+    return await walletClient.writeContract(request);
+  };
+
+  const inNodeAvailableV2 = async (
+    label: string,
+    parentNode: string
+  ): Promise<boolean> => {
+    if (!publicClient) {
+      return false;
+    }
+
+    const available = await publicClient.readContract({
+      abi: CONTROLLER_ABI_V2,
+      address: controllerV2,
       functionName: "isNodeAvailable",
-      address: controller,
-      args: [label, node]
+      args: [label, parentNode],
     }) as boolean
-  }
+
+    return available;
+  };
 
   return {
     mint,
-    isNodeAvailable
+    mintV2,
+    inNodeAvailableV2,
   };
 };
