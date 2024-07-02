@@ -3,8 +3,7 @@ import { MintSubnameForm, ScreenContainer } from "../components";
 import { Card } from "@ensdomains/thorin";
 import { useEffect, useState } from "react";
 import "./MintPage.css";
-import { getSingleListing } from "../api";
-import { Listing } from "../api/types";
+import { NameListing, getSingleListing } from "../api/listings-v2";
 import { toast } from "react-toastify";
 import namespaceLogo from "../assets/logo/namespace.png";
 import baseLogo from "../assets/logo/base.svg";
@@ -19,7 +18,7 @@ const bgImage = "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/gotbased
 export const MintPageSponsored = () => {
   const [listing, setListing] = useState<{
     isFetching: boolean;
-    item?: Listing;
+    item?: NameListing;
   }>({
     isFetching: true,
   });
@@ -49,6 +48,7 @@ export const MintPageSponsored = () => {
       <div className="mint-page d-flex flex-column">
         <Card className="mint-page-container">
           <MintSubnameForm
+            version={2}
             listing={listing.item}
             sponsoredMint={true}
             formVariation="basesummer"

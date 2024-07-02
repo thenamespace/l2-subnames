@@ -8,7 +8,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
 import { getChainId, useNameRegistry } from "../web3";
-import { getMintingParameters, mintSponsored } from "../api";
+import { getMintingParameters, mintSponsored, mintSponsoredV2 } from "../api";
 import { useAccount, usePublicClient } from "wagmi";
 import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
@@ -20,9 +20,9 @@ import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
 import { NameRecords } from "./NameRecordsForm";
 import "./MintSubnameForm.css";
-import { Listing } from "../api/types";
 import calmNinjaImg from "../assets/logo/calm-ninja.png";
 import happyNinjaImg from "../assets/logo/happy-ninja.png";
+import { NameListing, getMintingParametersV2 } from "../api/listings-v2";
 
 const enum MintProcess {
   SelectSubname = 1,
@@ -37,21 +37,21 @@ const labels: Record<FormVariation, Record<string, string>> = {
     start_typing: "Start typing...",
     your_name: "{yourName}",
     congratulations: "Congratulations",
-    you_have_minted: "You have successfully minted"
+    you_have_minted: "You have successfully minted",
   },
   basesummer: {
     your_are_about_to_mint: "You are about to mint",
     start_typing: "Start typing...",
     your_name: "{yourName}",
     congratulations: "Congratulations",
-    you_have_minted: "You have successfully minted"
+    you_have_minted: "You have successfully minted",
   },
   musica: {
     your_are_about_to_mint: "Vas a registrar",
     start_typing: "Start typing...",
     your_name: "{usario}",
     congratulations: "Felicitaciones!",
-    you_have_minted: "Has registrado"
+    you_have_minted: "Has registrado",
   },
 };
 
@@ -63,13 +63,15 @@ export const MintSubnameForm = ({
   defaultAvatar,
   formVariation,
   onMintSuccess,
+  version,
 }: {
-  onMintSuccess?: (tx: Hash) => void
-  onComplete?: () => void
-  listing: Listing;
+  onMintSuccess?: (tx: Hash) => void;
+  onComplete?: () => void;
+  listing: NameListing;
   sponsoredMint?: boolean;
   defaultAvatar?: string;
   formVariation?: FormVariation;
+  version: number;
 }) => {
   const formType = formVariation || "default";
   const [subnameLabel, setSubnameLabel] = useState("");
@@ -104,11 +106,11 @@ export const MintSubnameForm = ({
   }, [address, nameRecords, addrAdded]);
 
   // const { networkName: currentNetwork } = useWeb3Network();
-  const listingChainId = getChainId(listing.network);
+  const listingChainId = getChainId(listing.tokenNetwork);
   const publicClient = usePublicClient({ chainId: listingChainId });
-  const networkName = listing.network;
+  const networkName = listing.tokenNetwork;
   const { isSubnameAvailable } = useNameRegistry(listingChainId);
-  const { mint } = useNameController();
+  const { mint, mintV2, inNodeAvailableV2 } = useNameController();
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
     waitingTx: boolean;
@@ -128,14 +130,17 @@ export const MintSubnameForm = ({
   const [mode, setMode] = useState<MintProcess>(MintProcess.SelectSubname);
 
   if (
-    listing.name === "gotbased.eth" &&
+    listing.fullName === "gotbased.eth" &&
     !window.location.pathname.includes("based-summer")
   ) {
     return <Navigate to="/based-summer/gotbased.eth"></Navigate>;
   }
 
-  if (listing.name === "musicaw3.eth" && !window.location.pathname.includes("/events/musicaw3")) {
-    return <Navigate to="/events/musicaw3"></Navigate>
+  if (
+    listing.fullName === "musicaw3.eth" &&
+    !window.location.pathname.includes("/events/musicaw3")
+  ) {
+    return <Navigate to="/events/musicaw3"></Navigate>;
   }
 
   const handleLabelChange = (value: string) => {
@@ -169,8 +174,15 @@ export const MintSubnameForm = ({
       return;
     }
 
-    const fllName = `${subnameLabel}.${listing.name}`;
-    const available = await isSubnameAvailable(fllName);
+    let available = false;
+    if (version === 1) {
+      const fllName = `${subnameLabel}.${listing.fullName}`;
+      available = await isSubnameAvailable(fllName);
+    } else {
+      const parentNode = namehash(listing.fullName);
+      available = await inNodeAvailableV2(subnameLabel, parentNode);
+    }
+
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
@@ -233,22 +245,36 @@ export const MintSubnameForm = ({
     setMode(MintProcess.SelectRecords);
   };
 
+  const getMintParams = async() => {
+    if (version === 2) {
+      return await getMintingParametersV2(
+        subnameLabel,
+        listing.label,
+        address as any,
+        networkName
+      );
+    } else {
+      return await getMintingParameters(
+        subnameLabel,
+        listing.fullName,
+        address as any,
+        networkName
+      );
+    }
+  }
+
   const handleMint = async () => {
     if (!address) {
       openConnectModal?.();
       return;
     }
 
+
     try {
-      const _params = await getMintingParameters(
-        subnameLabel,
-        listing.name,
-        address as any,
-        networkName
-      );
+      const _params = await getMintParams() as any;
 
       try {
-        const fllName = `${subnameLabel}.${listing.name}`;
+        const fllName = `${subnameLabel}.${listing.fullName}`;
         const resolverData = convertRecordsToData(fllName);
 
         if (resolverData.length === 0) {
@@ -261,14 +287,26 @@ export const MintSubnameForm = ({
         let tx;
         if (sponsoredMint) {
           setMintIndicators({ ...mintIndicators, waitingTx: true });
-          tx = await _mintSponsored(resolverData);
+          if (version === 1) {
+            tx = await _mintSponsored(resolverData);
+          } else {
+            console.log(_params, "MINTING SPONSORED WITH PARAMS")
+            tx = await _mintSponsoredV2(_params)
+          }
+
         } else {
           setMintIndicators({ ...mintIndicators, waitingWallet: true });
-          tx = await mint(_params);
+          if (version === 2) {
+            console.log(_params, "MINTING REGULAR WITH PARAMS")
+            tx = await mintV2(_params)
+          } else {
+            tx = await mint(_params);
+          }
         }
+        console.log("TXHERE" + tx)
 
         setMintIndicators({ waitingTx: true, waitingWallet: false });
-        onMintSuccess?.(tx)
+        onMintSuccess?.(tx);
         await publicClient?.waitForTransactionReceipt({
           hash: tx,
           confirmations: 2,
@@ -296,12 +334,16 @@ export const MintSubnameForm = ({
   const _mintSponsored = async (resolverData: Hash[]) => {
     return await mintSponsored(
       subnameLabel,
-      listing.name,
+      listing.fullName,
       address as any,
       networkName,
       resolverData
     );
   };
+
+  const _mintSponsoredV2 = async (params: any) => {
+    return mintSponsoredV2(params)
+  }
 
   const getSetAddrFunc = (fullName: string, wallet: Address) => {
     return encodeFunctionData({
@@ -337,7 +379,7 @@ export const MintSubnameForm = ({
     mintBtnLabel = "Waiting for wallet";
   }
 
-  const fullName = `${subnameLabel}.${listing.name}`;
+  const fullName = `${subnameLabel}.${listing.fullName}`;
   if (mode === MintProcess.MintSuccess) {
     return <SuccessScreen formType={formType} fullName={fullName} />;
   }
@@ -366,7 +408,7 @@ export const MintSubnameForm = ({
             <Typography fontVariant="extraLargeBold" color="blue" asProp="span">
               {subnameLabel}
             </Typography>
-            {`.${listing.name}`}
+            {`.${listing.fullName}`}
           </Typography>
         </div>
         <div className="d-flex">
@@ -423,7 +465,9 @@ export const MintSubnameForm = ({
             >
               GotBased.eth yet?
             </Typography>
-            <Typography>Mint free ENS subname and get yourself BASED!</Typography>
+            <Typography fontVariant="small" color="grey" className="mt-2">
+              Mint free ENS subname and get yourself BASED!
+            </Typography>
           </div>
         </>
       )}
@@ -438,7 +482,7 @@ export const MintSubnameForm = ({
           <Typography asProp="span" color="blue" fontVariant="small">
             {subnameLabel.length > 0 ? subnameLabel : formLabels.your_name}
           </Typography>
-          .{listing.name}
+          .{listing.fullName}
         </Typography>
         <Input
           error={isTaken && `Name ${fullName} is already taken`}
@@ -459,8 +503,13 @@ export const MintSubnameForm = ({
   );
 };
 
-const SuccessScreen = ({ fullName, formType  }: { fullName: string, formType?: FormVariation }) => {
-
+const SuccessScreen = ({
+  fullName,
+  formType,
+}: {
+  fullName: string;
+  formType?: FormVariation;
+}) => {
   const type = formType || "default";
   const formLabels = labels[type];
 

@@ -52,6 +52,15 @@ export const mintSponsored = (
     .then((res) => res.data);
 };
 
+export const mintSponsoredV2 = (
+  params: any
+) => {
+  return axios
+    .post<Hash>(`${api}/api/v0.1.0/mint/sponsored-v2`, params)
+    .then((res) => res.data);
+};
+
+
 type KeychainEmail = {
   ensName: string
   transaction: string
@@ -66,4 +75,8 @@ type KeychainEmail = {
 
 export const sendEmail = (data: KeychainEmail) => {
   return axios.post(`${api}/api/v0.1.0/mint/enskeychains`, data).then(res => res.data);
+}
+
+export const getV2ListedNames = () => {
+  
 }

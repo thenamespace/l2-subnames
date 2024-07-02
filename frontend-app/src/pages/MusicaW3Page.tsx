@@ -1,11 +1,8 @@
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { MintSubnameForm, ScreenContainer } from "../components";
 import { Card, Typography } from "@ensdomains/thorin";
-import { useEffect, useState } from "react";
 import "./MintPage.css";
-import { getSingleListing } from "../api";
-import { Listing } from "../api/types";
-import { toast } from "react-toastify";
+import { L2Listings } from "../api/types";
 import namespaceLogo from "../assets/logo/namespace.png";
 import baseLogo from "../assets/logo/base.svg";
 import ensLogo from "../assets/logo/ens.png";
@@ -16,32 +13,12 @@ const defaultAvatarImg =
   "https://namespace.fra1.cdn.digitaloceanspaces.com/misc/musicaw3logo.png";
 const ensName = "musicaw3.eth";
 
+const listing = L2Listings.find(l => l.fullName === ensName);
+
 export const MusicaW3Page = () => {
-  const [listing, setListing] = useState<{
-    isFetching: boolean;
-    item?: Listing;
-  }>({
-    isFetching: true,
-  });
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    getSingleListing(ensName)
-      .then((res) => {
-        setListing({
-          isFetching: false,
-          item: res,
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        toast(ensName + " not found", { type: "warning" });
-        navigate("/");
-      });
-  }, []);
-
-  if (listing.isFetching || !listing.item) {
-    return <ScreenContainer isLoading={true} />;
+  if (!listing) {
+    return <Navigate to="/"></Navigate>
   }
 
   return (
@@ -58,7 +35,8 @@ export const MusicaW3Page = () => {
         </div>
         <Card className="mint-page-container">
           <MintSubnameForm
-            listing={listing.item}
+            version={1}
+            listing={listing}
             sponsoredMint={true}
             formVariation="musica"
             defaultAvatar={defaultAvatarImg}
