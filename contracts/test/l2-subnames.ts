@@ -142,7 +142,7 @@ describe("L2 Subnames", function () {
       resolverData: [] as Hash[],
     };
 
-    const tx = await controller.write.mint([mintContext, signature], {
+    const tx = await controller.write.mint([mintContext, signature, ""], {
       account: minter.account,
       value: message.price + message.fee,
     });
@@ -201,8 +201,8 @@ describe("L2 Subnames", function () {
       const args = tokenCreated[0].args as {
         tokenAddress: string;
         listerAddress: string;
-        listingName: string;
-        symbol: string;
+        tokenName: string;
+        tokenSymbol: string;
         parentLabel: string;
         baseUri: string;
         owner: string;
@@ -213,8 +213,8 @@ describe("L2 Subnames", function () {
       expect(args.listerAddress.toLowerCase()).to.eq(
         lister1.account.address.toLowerCase()
       );
-      expect(args.listingName).to.eq(listing.listingName);
-      expect(args.symbol).to.eq(listing.symbol);
+      expect(args.tokenName).to.eq(listing.listingName);
+      expect(args.tokenSymbol).to.eq(listing.symbol);
       expect(args.parentLabel).to.eq(listing.parentLabel);
       expect(args.baseUri).to.eq(listing.baseUri);
       expect(args.owner.toLowerCase()).to.eq(listing.owner.toLowerCase());
