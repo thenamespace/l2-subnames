@@ -5,7 +5,6 @@ import { Address } from "viem";
 
 export type SupportedNetworkContracts = Record<SupportedNetwork, Address>
 
-
 const offchainResolvers: SupportedNetworkContracts = {
     base: "0xaE04a09CF2c408803AC7718e3dE22ac346a05B58",
     sepolia: "0xaa34Ba91cF6Cf642a6bfC76707Ca877E185d3774"
