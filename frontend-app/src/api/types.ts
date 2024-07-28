@@ -42,12 +42,6 @@ export const L2Listings: NameListing[] = [
     version: 1
   },
   {
-    fullName: "enskeychain.eth",
-    tokenNetwork: "base",
-    label: "enskeychain",
-    version: 1
-  },
-  {
     fullName: "gotbased.eth",
     tokenNetwork: "base",
     label: "gotbased",
