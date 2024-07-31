@@ -34,7 +34,6 @@ export const MintPage = () => {
   useEffect(() => {
     getSingleListing(parentName as string)
       .then((res) => {
-        console.log(res, "RES!!")
         setListing({
           isFetching: false,
           item: res,
@@ -64,7 +63,7 @@ export const MintPage = () => {
     return <ScreenContainer isLoading={true} />;
   }
 
-  const isProperNetwork = listing.item.tokenNetwork === networkName;
+  const isProperNetwork = "base" === networkName;
 
   return (
     <ScreenContainer>
@@ -72,7 +71,7 @@ export const MintPage = () => {
         <Card className="mint-page-container">
           <>
             {!isProperNetwork && (
-              <ChangeMintNetwork requiredNetwork={listing.item.tokenNetwork} />
+              <ChangeMintNetwork requiredNetwork={"base"} />
             )}
             {isProperNetwork && <MintSubnameForm listing={listing.item} version={listing.version} />}
           </>

@@ -106,9 +106,9 @@ export const MintSubnameForm = ({
   }, [address, nameRecords, addrAdded]);
 
   // const { networkName: currentNetwork } = useWeb3Network();
-  const listingChainId = getChainId(listing.tokenNetwork);
+  const listingChainId = getChainId("base");
   const publicClient = usePublicClient({ chainId: listingChainId });
-  const networkName = listing.tokenNetwork;
+  const networkName = "base";
   const { isSubnameAvailable } = useNameRegistry(listingChainId);
   const { mint, mintV2, inNodeAvailableV2 } = useNameController();
   const [mintIndicators, setMintIndicators] = useState<{
@@ -175,12 +175,16 @@ export const MintSubnameForm = ({
     }
 
     let available = false;
-    if (version === 1) {
-      const fllName = `${subnameLabel}.${listing.fullName}`;
-      available = await isSubnameAvailable(fllName);
-    } else {
-      const parentNode = namehash(listing.fullName);
-      available = await inNodeAvailableV2(subnameLabel, parentNode);
+    try {
+      if (version === 1) {
+        const fllName = `${subnameLabel}.${listing.fullName}`;
+        available = await isSubnameAvailable(fllName);
+      } else {
+        const parentNode = namehash(listing.fullName);
+        available = await inNodeAvailableV2(subnameLabel, parentNode);
+      }
+    } catch(err) {
+      console.log(JSON.stringify(err));
     }
 
     setIndicators({ isAvailable: available, isChecking: false });

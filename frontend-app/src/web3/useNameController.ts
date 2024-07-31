@@ -49,14 +49,23 @@ export const useNameController = () => {
       return false;
     }
 
-    const available = await publicClient.readContract({
-      abi: CONTROLLER_ABI_V2,
-      address: controllerV2,
-      functionName: "isNodeAvailable",
-      args: [label, parentNode],
-    }) as boolean
+    console.log("Checking node: label:" + label, "parent: " + parentNode)
 
-    return available;
+    try {
+      console.log(publicClient.chain.id)
+      const available = await publicClient.readContract({
+        abi: CONTROLLER_ABI_V2,
+        address: controllerV2,
+        functionName: "isNodeAvailable",
+        args: [label, parentNode],
+      }) as boolean
+  
+      return available;
+    } catch(err) {
+      // console.log("ERROR", JSON.stringify(err))
+
+    }
+    return false;
   };
 
   return {
