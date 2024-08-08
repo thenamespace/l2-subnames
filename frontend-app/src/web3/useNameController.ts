@@ -1,13 +1,14 @@
 import { MintContextResponse } from "../api/types";
-import { useWeb3Clients } from "./use-web3-clients";
 import REGISTRY_CONTROLLER_ABI from "./abi/name-registry-controller.json";
 import CONTROLLER_ABI_V2 from "./abi/controller-v2.json";
 import { useGetAddresses } from "./use-get-addresses";
 import { Hash, toBytes, toHex, zeroAddress } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { base } from "viem/chains";
 
 export const useNameController = () => {
-  const { publicClient, walletClient } = useWeb3Clients();
+  const publicClient = usePublicClient({chainId: base.id})
+  const {data: walletClient} = useWalletClient({ chainId: base.id})
   const { nameRegistryController, controllerV2 } = useGetAddresses();
   const { address } = useAccount();
 
@@ -23,6 +24,7 @@ export const useNameController = () => {
       account: address,
       value: mintFee + mintPrice,
     });
+    //@ts-ignore
     return (await walletClient?.writeContract(request)) as Hash;
   };
 
