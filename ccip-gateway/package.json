@@ -25,7 +25,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "ethers": "^6.10.0",
-    "namespace-sdk": "^1.1.7",
+    "namespace-sdk": "^1.1.11",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "viem": "^2.7.3"
