@@ -1,1 +1,1 @@
-export type SupportedNetwork = "sepolia" | "base";
+export type SupportedNetwork = "sepolia" | "base" | "baseSepolia";

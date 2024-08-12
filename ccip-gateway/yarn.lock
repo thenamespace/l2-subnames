@@ -3845,10 +3845,10 @@ mute-stream@1.0.0:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-1.0.0.tgz#e31bd9fe62f0aed23520aa4324ea6671531e013e"
   integrity sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==
 
-namespace-sdk@^1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/namespace-sdk/-/namespace-sdk-1.1.7.tgz#6f4484c5a14745fa619d59abe36bc837c446a440"
-  integrity sha512-Ndch1w11icDZ9o6kGN47dWOWAOFS2ryJc6oGT2CgtyijF9GhuLSpaXRSVLJEVh3hMk2ekTu1BSU6mhaUVO5AaA==
+namespace-sdk@^1.1.11:
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/namespace-sdk/-/namespace-sdk-1.1.11.tgz#4e252398018e3a1c9fbc3ccc4c734c1fb8946733"
+  integrity sha512-kcmO/XgqEsoaRADY30Z+FX9qyqV7Ja/av1RqpkoR9BGSYjX9nTJk5r1nLLzqyJj2okE3piP9fKcCiQp3kguE6A==
   dependencies:
     axios "^1.7.2"
     tsc "^2.0.4"
