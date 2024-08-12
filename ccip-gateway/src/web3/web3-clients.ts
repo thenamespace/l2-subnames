@@ -3,7 +3,7 @@ import { create } from "domain";
 import { AppProperties } from "src/configuration/app-properties";
 import { SupportedNetwork } from "src/types";
 import { PublicClient, createPublicClient, http } from "viem";
-import { base, sepolia } from "viem/chains";
+import { base, baseSepolia, sepolia } from "viem/chains";
 
 @Injectable()
 export class Web3Clients implements OnModuleInit {
@@ -21,9 +21,15 @@ export class Web3Clients implements OnModuleInit {
             transport: this.config.baseRPC ? http(this.config.baseRPC) : http(),
             chain: base
         })
+        const baseSepoliaClient = createPublicClient({
+            transport: this.config.baseSepoliaRPC ? http(this.config.baseSepoliaRPC) : http(),
+            chain: baseSepolia
+        })
         this.clients = {
             base: baseClient,
-            sepolia: sepoliaClient
+            sepolia: sepoliaClient,
+            //@ts-ignore
+            baseSepolia 
         }
     }
 
