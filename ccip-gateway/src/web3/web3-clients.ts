@@ -28,8 +28,7 @@ export class Web3Clients implements OnModuleInit {
         this.clients = {
             base: baseClient,
             sepolia: sepoliaClient,
-            //@ts-ignore
-            baseSepolia 
+            baseSepolia: baseSepoliaClient
         }
     }
 
