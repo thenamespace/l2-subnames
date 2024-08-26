@@ -7,10 +7,9 @@ import {
 } from "@ensdomains/thorin";
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
-import { getChainId, useNameRegistry } from "../web3";
-import { getMintingParameters, mintSponsored, mintSponsoredV2 } from "../api";
+import { getChainId, useNamespaceClient } from "../web3";
+import { getMintingParameters } from "../api";
 import { useAccount, usePublicClient } from "wagmi";
-import { useNameController } from "../web3/useNameController";
 import { debounce } from "lodash";
 import { Link, Navigate } from "react-router-dom";
 import { Address, Hash, encodeFunctionData, isAddress, namehash } from "viem";
@@ -23,6 +22,9 @@ import "./MintSubnameForm.css";
 import calmNinjaImg from "../assets/logo/calm-ninja.png";
 import happyNinjaImg from "../assets/logo/happy-ninja.png";
 import { NameListing, getMintingParametersV2 } from "../api/listings-v2";
+import { Listing,  } from "namespace-sdk";
+import { base } from "viem/chains";
+import { ChangeMintNetwork } from "./ChangeMintNetwork";
 
 const enum MintProcess {
   SelectSubname = 1,
@@ -59,16 +61,13 @@ type FormVariation = "default" | "musica" | "basesummer";
 
 export const MintSubnameForm = ({
   listing,
-  sponsoredMint,
   defaultAvatar,
   formVariation,
-  onMintSuccess,
   version,
 }: {
   onMintSuccess?: (tx: Hash) => void;
   onComplete?: () => void;
   listing: NameListing;
-  sponsoredMint?: boolean;
   defaultAvatar?: string;
   formVariation?: FormVariation;
   version: number;
@@ -80,8 +79,16 @@ export const MintSubnameForm = ({
     addresses: [],
     texts: [],
   });
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
   const [addrAdded, setAddrAdded] = useState<Record<string, boolean>>({});
+  const sdkListing: Listing = {
+    fullName: listing.fullName,
+    label: listing.label,
+    network: "mainnet",
+    node: namehash(listing.fullName),
+    listingType: "l2",
+    registryNetwork: "base"
+  }
 
   useEffect(() => {
     // we want to add eth address record by default
@@ -107,10 +114,10 @@ export const MintSubnameForm = ({
 
   // const { networkName: currentNetwork } = useWeb3Network();
   const listingChainId = getChainId("base");
+
   const publicClient = usePublicClient({ chainId: listingChainId });
   const networkName = "base";
-  const { isSubnameAvailable } = useNameRegistry(listingChainId);
-  const { mint, mintV2, inNodeAvailableV2 } = useNameController();
+  const { signer, namespaceClient} = useNamespaceClient(listingChainId);
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
     waitingTx: boolean;
@@ -176,13 +183,7 @@ export const MintSubnameForm = ({
 
     let available = false;
     try {
-      if (version === 1) {
-        const fllName = `${subnameLabel}.${listing.fullName}`;
-        available = await isSubnameAvailable(fllName);
-      } else {
-        const parentNode = namehash(listing.fullName);
-        available = await inNodeAvailableV2(subnameLabel, parentNode);
-      }
+      available = await namespaceClient.isSubnameAvailable(sdkListing, subnameLabel);
     } catch(err) {
       console.log(JSON.stringify(err));
     }
@@ -249,22 +250,8 @@ export const MintSubnameForm = ({
     setMode(MintProcess.SelectRecords);
   };
 
-  const getMintParams = async() => {
-    if (version === 2) {
-      return await getMintingParametersV2(
-        subnameLabel,
-        listing.label,
-        address as any,
-        networkName
-      );
-    } else {
-      return await getMintingParameters(
-        subnameLabel,
-        listing.fullName,
-        address as any,
-        networkName
-      );
-    }
+  if (chain && chain.id !== base.id) {
+    return <ChangeMintNetwork requiredNetwork="base"></ChangeMintNetwork>
   }
 
   const handleMint = async () => {
@@ -273,78 +260,75 @@ export const MintSubnameForm = ({
       return;
     }
 
-
     try {
-      const _params = await getMintParams() as any;
 
-      try {
-        const fllName = `${subnameLabel}.${listing.fullName}`;
-        const resolverData = convertRecordsToData(fllName);
+      const textRecords: {key:string, value: string}[] = [];
+      const addrRecords: {coinType: number, address: string}[] = [];
 
-        if (resolverData.length === 0) {
-          const encodedFunc = getSetAddrFunc(fllName, address as Address);
-          _params.parameters.resolverData = [encodedFunc];
-        } else {
-          _params.parameters.resolverData = resolverData;
-        }
+      const { texts, addresses } = nameRecords;
+      texts.forEach(txt => {
+        textRecords.push(txt)
+      })
+      addresses.forEach(addr => {
+        addrRecords.push({ coinType: addr.coinType, address: addr.value });
+      })
 
-        let tx;
-        if (sponsoredMint) {
-          setMintIndicators({ ...mintIndicators, waitingTx: true });
-          if (version === 1) {
-            tx = await _mintSponsored(resolverData);
-          } else {
-            tx = await _mintSponsoredV2(_params)
-          }
-
-        } else {
-          setMintIndicators({ ...mintIndicators, waitingWallet: true });
-          if (version === 2) {
-            tx = await mintV2(_params)
-          } else {
-            tx = await mint(_params);
-          }
-        }
-
-        setMintIndicators({ waitingTx: true, waitingWallet: false });
-        onMintSuccess?.(tx);
-        await publicClient?.waitForTransactionReceipt({
-          hash: tx,
-          confirmations: 2,
-        });
-        setMode(MintProcess.MintSuccess);
-      } catch (err: any) {
-        if (err.details && err.details.includes("insufficient funds for gas")) {
-          toast("Insufficient ETH balance.", { type: "warning" });
-        } else if (err.details && err.details.includes("User denied")) {
-          // do nothing, signature denied
-        } else {
-          toast("Error ocurred. Check console for more info", {
-            type: "error",
-          });
-        }
+      if (addrRecords.length === 0) {
+        addrRecords.push({ coinType: 60, address: address })
       }
-    } catch (err: any) {
-      console.error(err);
-      toast("Error ocurred. Check console for more info", { type: "error" });
+
+      const params = await namespaceClient.getMintTransactionParameters(sdkListing, {
+        minterAddress: address,
+        subnameLabel: subnameLabel,
+        records: {
+          addresses: addrRecords,
+          texts: textRecords
+        },
+        subnameOwner: address
+      })
+
+      setMintIndicators({
+        ...mintIndicators,
+        waitingWallet: true
+      })
+
+      const tx = await signer?.writeContract({
+        abi: params.abi,
+        address: params.contractAddress,
+        functionName: params.functionName,
+        value: params.value,
+        args: params.args,
+      })
+      await publicClient?.waitForTransactionReceipt({hash: tx as Hash, confirmations: 2});
+      
+      setMintIndicators({
+        waitingTx: true,
+        waitingWallet: false
+      })
+      setMode(MintProcess.MintSuccess);
+    } catch(err : any) {
+      if (err.details && err.details.includes("insufficient funds for gas")) {
+        toast("Insufficient ETH balance.", { type: "warning" });
+      } else if (err.details && err.details.includes("User denied")) {
+        // do nothing, signature denied
+      } else {
+        console.error(JSON.stringify(err))
+        toast("Error ocurred. Check console for more info", {
+          type: "error",
+        });
+      }
     } finally {
-      setMintIndicators({ waitingTx: false, waitingWallet: false });
+      setMintIndicators({
+        waitingTx: false,
+        waitingWallet: false
+      })
+
+    }
+    if (true) {
+      return;
     }
   };
 
-  const _mintSponsored = async (resolverData: Hash[]) => {
-    return await mintSponsored(
-      subnameLabel,
-      listing.fullName,
-      address as any,
-      networkName,
-      resolverData
-    );
-  };
-
-  const _mintSponsoredV2 = async (params: any) => {
-    return mintSponsoredV2(params)
-  }
 
   const getSetAddrFunc = (fullName: string, wallet: Address) => {
     return encodeFunctionData({

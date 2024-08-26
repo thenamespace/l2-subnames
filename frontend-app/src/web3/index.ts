@@ -5,3 +5,4 @@ export * from "./use-name-registry";
 export * from "./use-web3-network";
 export * from "./useMainnetPublicClient";
 export * from "./useNameController";
+export * from "./use-namespace-client";
