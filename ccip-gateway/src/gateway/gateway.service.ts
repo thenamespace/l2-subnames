@@ -26,9 +26,6 @@ const contentHash = 'contenthash';
 const supportedFunctions = [addr, text, contentHash];
 const defaultCoinType = '60';
 
-// old names which will be migrated on new v2 l2 subs
-// keeping for backward compatibility
-const oldNames = ["gotbased.eth", "musicaw3.eth"];
 
 @Injectable()
 export class GatewayService {
@@ -173,21 +170,9 @@ export class GatewayService {
   private getNameResolver = (ensName:string, offchainResolverAddr: Address) => {
     const network = getNetworkForOffchainResolver(offchainResolverAddr);
     let nameResolverAddr;
-    if (this.isOldName(ensName)) {
-      nameResolverAddr = getNameResolverAddr(network);
-    } else {
-      nameResolverAddr = getNameResolverAddrV2(network);
-    }
+    nameResolverAddr = getNameResolverAddrV2(network);
     const publicClient = this.web3Clients.getClient(network);
     return new NameResolver(publicClient, nameResolverAddr);
   }
 
-  private isOldName = (ensName:string): boolean => {
-    const split = ensName.split(".");
-    let name = ensName;
-    if (split.length === 3) {
-      name = `${split[1]}.eth`
-    }
-    return oldNames.includes(name);
-  }
 }

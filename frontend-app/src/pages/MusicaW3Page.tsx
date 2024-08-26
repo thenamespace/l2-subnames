@@ -37,7 +37,6 @@ export const MusicaW3Page = () => {
           <MintSubnameForm
             version={2}
             listing={listing}
-            sponsoredMint={true}
             formVariation="musica"
             defaultAvatar={defaultAvatarImg}
           />

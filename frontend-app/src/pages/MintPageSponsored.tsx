@@ -50,7 +50,6 @@ export const MintPageSponsored = () => {
           <MintSubnameForm
             version={2}
             listing={listing.item}
-            sponsoredMint={true}
             formVariation="basesummer"
             defaultAvatar={defaultAvatarImg}
           />

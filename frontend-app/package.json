@@ -22,7 +22,7 @@
     "dotenv": "^16.4.5",
     "env-cmd": "^10.1.0",
     "lodash": "^4.17.21",
-    "namespace-sdk": "^1.1.10",
+    "namespace-sdk": "^1.1.15",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1",
