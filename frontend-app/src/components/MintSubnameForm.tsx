@@ -209,7 +209,6 @@ export const MintSubnameForm = ({
 
       const textRecords: {key:string, value: string}[] = [];
       const addrRecords: {coinType: number, address: string}[] = [];
-      
 
       const { texts, addresses } = nameRecords;
       texts.forEach(txt => {
@@ -276,7 +275,6 @@ export const MintSubnameForm = ({
         waitingTx: false,
         waitingWallet: false
       })
-
     }
   };
 
