@@ -8,12 +8,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { normalize } from "viem/ens";
 import { getChainId, useNamespaceClient } from "../web3";
-import { getMintingParameters } from "../api";
 import { useAccount, usePublicClient } from "wagmi";
 import { debounce } from "lodash";
 import { Link, Navigate } from "react-router-dom";
-import { Address, Hash, encodeFunctionData, isAddress, namehash } from "viem";
-import NAME_RESPOLVER_ABI from "../web3/abi/name-resolver-abi.json";
+import { Hash, isAddress, namehash } from "viem";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { SetRecordsForm } from "./MintRecordsForm";
 import { toast } from "react-toastify";
@@ -21,7 +19,7 @@ import { NameRecords } from "./NameRecordsForm";
 import "./MintSubnameForm.css";
 import calmNinjaImg from "../assets/logo/calm-ninja.png";
 import happyNinjaImg from "../assets/logo/happy-ninja.png";
-import { NameListing, getMintingParametersV2 } from "../api/listings-v2";
+import { NameListing } from "../api/listings-v2";
 import { Listing,  } from "namespace-sdk";
 import { base } from "viem/chains";
 import { ChangeMintNetwork } from "./ChangeMintNetwork";
@@ -63,7 +61,6 @@ export const MintSubnameForm = ({
   listing,
   defaultAvatar,
   formVariation,
-  version,
 }: {
   onMintSuccess?: (tx: Hash) => void;
   onComplete?: () => void;
@@ -116,7 +113,6 @@ export const MintSubnameForm = ({
   const listingChainId = getChainId("base");
 
   const publicClient = usePublicClient({ chainId: listingChainId });
-  const networkName = "base";
   const { signer, namespaceClient} = useNamespaceClient(listingChainId);
   const [mintIndicators, setMintIndicators] = useState<{
     waitingWallet: boolean;
@@ -191,57 +187,6 @@ export const MintSubnameForm = ({
     setIndicators({ isAvailable: available, isChecking: false });
   };
 
-  const convertRecordsToData = (fullSubname: string) => {
-    const node = namehash(fullSubname);
-    const { texts, addresses } = nameRecords;
-    const data: Hash[] = [];
-    if (addresses.length > 0) {
-      addresses.forEach((addr) => {
-        // todo check values for different chains
-        if (!isAddress(addr.value)) {
-          return;
-        }
-        const coinType = BigInt(addr.coinType);
-
-        data.push(
-          encodeFunctionData({
-            abi: NAME_RESPOLVER_ABI,
-            args: [node, coinType, addr.value],
-            functionName: "setAddr",
-          })
-        );
-      });
-    }
-
-    if (texts.length > 0) {
-      texts.forEach((text) => {
-        if (!text.value || text.value.length === 0) {
-          return;
-        }
-
-        data.push(
-          encodeFunctionData({
-            abi: NAME_RESPOLVER_ABI,
-            args: [node, text.key, text.value],
-            functionName: "setText",
-          })
-        );
-      });
-    }
-
-    if (defaultAvatar && defaultAvatar.length) {
-      data.push(
-        encodeFunctionData({
-          abi: NAME_RESPOLVER_ABI,
-          args: [node, "avatar", defaultAvatar],
-          functionName: "setText",
-        })
-      );
-    }
-
-    return data;
-  };
-
   const handleSetRecords = async () => {
     if (!address) {
       openConnectModal?.();
@@ -267,11 +212,19 @@ export const MintSubnameForm = ({
 
       const { texts, addresses } = nameRecords;
       texts.forEach(txt => {
-        textRecords.push(txt)
+        if (txt.value && txt.value.length > 0) {
+          textRecords.push(txt)
+        }
       })
       addresses.forEach(addr => {
-        addrRecords.push({ coinType: addr.coinType, address: addr.value });
+        if (addr.value && addr.value.length > 0 && isAddress(addr.value)) {
+          addrRecords.push({ coinType: addr.coinType, address: addr.value });
+        }
       })
+
+      if (defaultAvatar && defaultAvatar.length) {
+        textRecords.push({key: "avatar", value: defaultAvatar });
+      }
 
       if (addrRecords.length === 0) {
         addrRecords.push({ coinType: 60, address: address })
@@ -322,20 +275,7 @@ export const MintSubnameForm = ({
         waitingTx: false,
         waitingWallet: false
       })
-
     }
-    if (true) {
-      return;
-    }
-  };
-
-
-  const getSetAddrFunc = (fullName: string, wallet: Address) => {
-    return encodeFunctionData({
-      abi: NAME_RESPOLVER_ABI,
-      functionName: "setAddr",
-      args: [namehash(fullName), wallet],
-    });
   };
 
   const handleNameRecordsSaved = (value: NameRecords) => {
