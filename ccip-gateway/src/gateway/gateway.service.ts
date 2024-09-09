@@ -10,6 +10,7 @@ import {
   encodePacked,
   keccak256,
   namehash,
+  parseAbi,
   parseAbiParameters,
   zeroAddress,
 } from 'viem';
@@ -18,14 +19,18 @@ import RESOLVER_ABI from './resolver_abi.json';
 import { privateKeyToAccount } from 'viem/accounts';
 import { ethers } from 'ethers';
 import { AppProperties } from 'src/configuration/app-properties';
-import { Web3Clients, NameResolver, getNetworkForOffchainResolver, getNameResolverAddr, getNameResolverAddrV2 } from 'src/web3';
+import {
+  Web3Clients,
+  NameResolver,
+  getNetworkForOffchainResolver,
+  getNameResolverAddrV2,
+} from 'src/web3';
 
 const addr = 'addr';
 const text = 'text';
 const contentHash = 'contenthash';
 const supportedFunctions = [addr, text, contentHash];
 const defaultCoinType = '60';
-
 
 @Injectable()
 export class GatewayService {
@@ -42,7 +47,7 @@ export class GatewayService {
 
     // currently there is an issue when generating signature with viem signer
     this.ethersSigner = new ethers.SigningKey(_pk);
-    console.log(this.viemSigner.address)
+    console.log(this.viemSigner.address);
   }
 
   public async handle(
@@ -79,7 +84,7 @@ export class GatewayService {
     );
 
     let _value = value;
-    if (value === "0x") {
+    if (value === '0x') {
       _value = zeroAddress;
     }
 
@@ -89,11 +94,26 @@ export class GatewayService {
       Args ${decodedFunction.args}, 
       Result ${_value}`);
 
-    const result = encodeFunctionResult({
+    let result = encodeFunctionResult({
       abi: RESOLVER_ABI,
       functionName: decodedFunction.functionName,
       result: [_value],
     });
+
+    // temp solution, will be refactored
+    if (
+      decodedFunction.functionName === 'addr' &&
+      decodedFunction.args.length > 1
+    ) {
+      result = encodeFunctionResult({
+        abi: parseAbi([
+          'function addr(uint256 coinType, bytes memory newAdddress) external view returns(bytes)',
+        ]),
+        functionName: 'addr',
+        //@ts-ignore
+        result: [_value as Hash],
+      });
+    }
 
     const digest = keccak256(
       encodePacked(
@@ -152,7 +172,7 @@ export class GatewayService {
       throw new BadRequestException('Unsupported opperation ' + functionName);
     }
 
-    const nameResolver = this.getNameResolver(ensName, resolverContract)
+    const nameResolver = this.getNameResolver(ensName, resolverContract);
     switch (functionName) {
       case addr:
         const coinType = args.length > 1 ? args[1] : defaultCoinType;
@@ -167,12 +187,14 @@ export class GatewayService {
     }
   };
 
-  private getNameResolver = (ensName:string, offchainResolverAddr: Address) => {
+  private getNameResolver = (
+    ensName: string,
+    offchainResolverAddr: Address,
+  ) => {
     const network = getNetworkForOffchainResolver(offchainResolverAddr);
     let nameResolverAddr;
     nameResolverAddr = getNameResolverAddrV2(network);
     const publicClient = this.web3Clients.getClient(network);
     return new NameResolver(publicClient, nameResolverAddr);
-  }
-
+  };
 }
